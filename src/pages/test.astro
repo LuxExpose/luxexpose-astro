@@ -1,0 +1,29 @@
+---
+const title = "LuxExpose Astro Test Page";
+const description = "This page proves Astro renders real HTML and Open Graph tags correctly.";
+const image = "https://luxexpose.com/wp-content/uploads/2023/08/LuxExpose-Logo.png";
+const url = "http://localhost:4321/test";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:url" content={url} />
+    <meta property="og:type" content="article" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+
+  <body>
+    <h1>{title}</h1>
+    <p>{description}</p>
+  </body>
+</html>
