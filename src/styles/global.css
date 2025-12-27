@@ -1,0 +1,425 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================
+   BASE THEME (Lux Exposé)
+   ========================================= */
+@layer base {
+  :root {
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+    --border: 0 0% 14%;
+    --radius: 0.75rem;
+
+    /* Luxury Gold */
+    --luxury-gold: 45 100% 51%;
+    --luxury-gold-light: 45 100% 70%;
+    --luxury-gold-dark: 45 100% 35%;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  }
+
+  /* Kill purple / blue links everywhere */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  a:visited,
+  a:hover,
+  a:active,
+  a:focus {
+    color: inherit;
+  }
+}
+
+/* =========================================
+   UTILITIES (Backgrounds + Cards)
+   ========================================= */
+@layer utilities {
+  .bg-gradient-subtle {
+    background:
+      radial-gradient(800px 400px at 30% 10%, rgba(218,165,32,0.10), transparent 55%),
+      radial-gradient(900px 500px at 70% 30%, rgba(255,255,255,0.06), transparent 55%),
+      linear-gradient(180deg, #000 0%, #0a0a0a 100%);
+  }
+
+  .glass-card-dark {
+    background: rgba(0, 0, 0, 0.60);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+
+  .lux-hover-lift {
+    transition:
+      transform 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease;
+    will-change: transform;
+  }
+
+  .lux-hover-lift:hover {
+    transform: translateY(-4px);
+    border-color: hsl(var(--luxury-gold) / 0.35);
+    box-shadow:
+      0 18px 55px rgba(0,0,0,0.45),
+      0 0 0 1px hsl(var(--luxury-gold) / 0.10),
+      0 0 42px hsl(var(--luxury-gold) / 0.12);
+  }
+}
+
+/* =========================================
+   NAVBAR SHELL
+   ========================================= */
+.lux-navbar {
+  background: rgba(0,0,0,0.70);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 1px 25px rgba(0,0,0,0.35);
+}
+
+.lux-navbar-top {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* =========================================
+   LOGO MATCH
+   ========================================= */
+.lux-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lux-logo-mark {
+  height: 34px;
+  width: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.4));
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.lux-logo-type {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: ui-serif, Georgia, "Cormorant Garamond", serif;
+  letter-spacing: 0.18em;
+}
+
+.lux-logo-lux {
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.lux-logo-expose {
+  color: hsl(var(--luxury-gold));
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* =========================================
+   ICON BUTTONS
+   ========================================= */
+.lux-icon-btn {
+  height: 34px;
+  width: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  color: rgba(255,255,255,0.75);
+  transition: all 220ms ease;
+}
+
+.lux-icon-btn:hover {
+  border-color: hsl(var(--luxury-gold) / 0.35);
+  color: hsl(var(--luxury-gold));
+  box-shadow: 0 0 24px hsl(var(--luxury-gold) / 0.12);
+}
+
+/* =========================================
+   DESKTOP NAV LINKS + HOVER
+   ========================================= */
+.lux-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.78);
+  border: 1px solid transparent;
+
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease,
+    border-color 220ms ease;
+}
+
+.lux-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-1px);
+  border-color: hsl(var(--luxury-gold) / 0.28);
+  box-shadow:
+    0 0 0 1px hsl(var(--luxury-gold) / 0.10),
+    0 0 22px hsl(var(--luxury-gold) / 0.12),
+    0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.lux-caret {
+  margin-left: 8px;
+  opacity: 0.75;
+  font-size: 12px;
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   DESKTOP DROPDOWNS (FIX HOVER GAP)
+   ========================================= */
+.lux-dd {
+  position: relative;
+}
+
+/* 🔥 This is the “bridge” that fixes the hover gap.
+   It creates an invisible strip under the link so your mouse can travel
+   down into the dropdown without it disappearing. */
+.lux-dd::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;         /* hover bridge size */
+  background: transparent;
+}
+
+/* Dropdown panel */
+.lux-dd-panel {
+  position: absolute;
+  top: calc(100% + 8px);   /* smaller gap */
+  left: 0;
+  width: 360px;
+  padding: 14px;
+  border-radius: 16px;
+
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 18px 60px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.03);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    visibility 180ms ease;
+
+  z-index: 80;
+}
+
+/* Show dropdown while hovering link OR hovering the panel */
+.lux-dd.group:hover .lux-dd-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.lux-dd-item {
+  display: block;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+.lux-dd-item + .lux-dd-item {
+  margin-top: 10px;
+}
+
+.lux-dd-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: hsl(var(--luxury-gold) / 0.30);
+  box-shadow:
+    0 0 0 1px hsl(var(--luxury-gold) / 0.10),
+    0 0 28px hsl(var(--luxury-gold) / 0.14),
+    0 12px 36px rgba(0, 0, 0, 0.55);
+}
+
+.lux-dd-title {
+  font-family: ui-serif, Georgia, "Cormorant Garamond", serif;
+  font-size: 16px;
+  color: rgba(255,255,255,0.92);
+  transition: color 200ms ease, text-shadow 200ms ease;
+}
+
+.lux-dd-item:hover .lux-dd-title {
+  color: hsl(var(--luxury-gold));
+  text-shadow: 0 0 18px hsl(var(--luxury-gold) / 0.35);
+}
+
+.lux-dd-desc {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.60);
+  line-height: 1.35;
+}
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+.lux-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  background: hsl(var(--luxury-gold));
+  color: #000;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.lux-btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.lux-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.90);
+  transition: all 220ms ease;
+}
+
+.lux-btn-secondary:hover {
+  border-color: hsl(var(--luxury-gold) / 0.30);
+  box-shadow: 0 0 26px hsl(var(--luxury-gold) / 0.10);
+  color: #fff;
+}
+
+/* =========================================
+   MOBILE MENU + ACCORDIONS (SMOOTH)
+   ========================================= */
+.lux-mobile-primary,
+.lux-mobile-secondary {
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.lux-mobile-primary:hover,
+.lux-mobile-secondary:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.lux-mobile-link {
+  display: block;
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  color: rgba(255,255,255,0.86);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: all 200ms ease;
+}
+
+.lux-mobile-link:hover {
+  border-color: hsl(var(--luxury-gold) / 0.25);
+  box-shadow: 0 0 22px hsl(var(--luxury-gold) / 0.10);
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+.lux-acc {
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  overflow: hidden;
+}
+
+.lux-acc-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.9);
+  cursor: pointer;
+}
+
+.lux-acc-btn:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.lux-acc-caret {
+  opacity: 0.75;
+  transition: transform 160ms ease;
+}
+
+.lux-acc-btn[aria-expanded="true"] .lux-acc-caret {
+  transform: rotate(180deg);
+}
+
+.lux-acc-panel {
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height 260ms ease;
+  padding: 0 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.lux-acc-panel.is-open {
+  padding: 12px;
+}

@@ -1,0 +1,95 @@
+---
+/**
+ * ArticleCard.astro
+ * Usage:
+ * <ArticleCard
+ *   slug={a.slug}
+ *   title={a.title}
+ *   excerpt={a.excerpt}
+ *   image={a.featured_image}
+ *   date={a.published_at}
+ * />
+ */
+
+const {
+  slug = "#",
+  title = "Untitled",
+  excerpt = "",
+  image = "",
+  date = "",
+  size = "md", // "md" | "lg"
+} = Astro.props;
+
+const href = slug?.startsWith("/") ? slug : `/${slug}`;
+
+function formatDate(value: string) {
+  if (!value) return "";
+  try {
+    const d = new Date(value);
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  } catch {
+    return value;
+  }
+}
+
+const isLarge = size === "lg";
+---
+
+<a
+  href={href}
+  class={`group block overflow-hidden rounded-xl border border-white/10 bg-black/40 backdrop-blur-md transition-all duration-300 lux-hover-lift ${
+    isLarge ? "md:col-span-2" : ""
+  }`}
+>
+  <!-- Image -->
+  <div class={`relative w-full overflow-hidden ${isLarge ? "aspect-[16/9]" : "aspect-[4/3]"}`}>
+    {image ? (
+      <img
+        src={image}
+        alt={title}
+        loading="lazy"
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+      />
+    ) : (
+      <div class="h-full w-full bg-white/5" />
+    )}
+
+    <!-- subtle overlay -->
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+  </div>
+
+  <!-- Content -->
+  <div class={isLarge ? "p-6 md:p-7" : "p-5"}>
+    {date ? (
+      <p class="mb-3 text-[11px] uppercase tracking-[0.35em] text-white/45">
+        {formatDate(date)}
+      </p>
+    ) : (
+      <div class="mb-3 h-4" />
+    )}
+
+    <h3
+      class={`font-serif leading-tight text-white transition-colors duration-300 ${
+        isLarge ? "text-2xl md:text-3xl" : "text-xl"
+      } group-hover:text-luxury-gold`}
+    >
+      {title}
+    </h3>
+
+    {excerpt ? (
+      <p class={`mt-3 text-white/70 ${isLarge ? "text-base md:text-lg" : "text-sm"} line-clamp-3`}>
+        {excerpt}
+      </p>
+    ) : (
+      <p class="mt-3 text-white/50 text-sm italic">
+        Read this article on Lux Exposé.
+      </p>
+    )}
+
+    <div class="mt-5 flex items-center gap-2 text-sm font-medium text-white/70">
+      <span class="inline-flex h-1.5 w-1.5 rounded-full bg-[hsl(var(--luxury-gold))]" />
+      <span class="group-hover:text-white transition-colors">Read</span>
+      <span class="opacity-40">→</span>
+    </div>
+  </div>
+</a>

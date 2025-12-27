@@ -1,0 +1,46 @@
+---
+const items = [
+  { title: "Luxury Lifestyle", href: "/luxury-lifestyle" },
+  { title: "Cities", href: "/cities" },
+  { title: "Experiences", href: "/experiences" },
+  { title: "Directory", href: "/directory" },
+  { title: "Brands", href: "/brands" },
+];
+---
+
+<section class="relative z-10 w-full border-y border-white/10">
+  <div class="container max-w-6xl mx-auto px-6 py-16">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
+      {items.map((item) => (
+        <a
+          href={item.href}
+          class="
+            group
+            rounded-xl
+            bg-black/70
+            backdrop-blur-xl
+            border border-white/10
+            px-6 py-7
+            text-center
+            transition-all duration-300 ease-out
+
+            hover:!-translate-y-2
+            hover:!border-[rgba(218,165,32,0.55)]
+            hover:!shadow-[0_30px_80px_-30px_rgba(218,165,32,0.65)]
+          "
+        >
+          <p class="mb-3 text-[10px] tracking-[0.35em] text-white/40">
+            EXPLORE
+          </p>
+
+          <p class="font-serif text-lg text-white/90 transition-colors group-hover:text-white">
+            {item.title}
+          </p>
+
+          <!-- subtle inner glow line -->
+          <div class="mx-auto mt-4 h-px w-12 bg-white/10 transition-all duration-300 group-hover:!bg-[rgba(218,165,32,0.55)]"></div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

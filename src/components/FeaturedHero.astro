@@ -1,0 +1,66 @@
+---
+const { article } = Astro.props;
+
+if (!article) {
+  // Safety: if no article is passed, render nothing
+  // (So homepage won't crash)
+}
+---
+
+{article ? (
+  <section class="relative">
+    <!-- Background image -->
+    <div class="absolute inset-0 overflow-hidden">
+      <img
+        src={article.featured_image || "https://luxexpose.com/wp-content/uploads/2023/08/LuxExpose-Logo.png"}
+        alt={article.title || "Featured article"}
+        class="h-full w-full object-cover opacity-55 scale-105"
+        loading="eager"
+      />
+      <!-- Dark gradient overlay -->
+      <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-black/95"></div>
+      <!-- Soft gold glow -->
+      <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full blur-3xl opacity-25"
+        style="background: radial-gradient(circle, hsl(var(--luxury-gold)) 0%, transparent 70%);"
+      ></div>
+    </div>
+
+    <!-- Content -->
+    <div class="relative container max-w-6xl mx-auto px-6 pt-28 pb-20">
+      <div class="max-w-3xl">
+        <p class="mb-5 text-xs uppercase tracking-[0.35em] text-white/55">
+          Featured Editorial
+        </p>
+
+        <h1 class="font-serif text-4xl md:text-6xl leading-tight text-white">
+          {article.title}
+        </h1>
+
+        <p class="mt-6 text-lg md:text-xl text-white/75 leading-relaxed">
+          {article.excerpt || "Read this featured story on Lux Exposé."}
+        </p>
+
+        <div class="mt-10 flex flex-wrap gap-3">
+          <a
+            href={`/${article.slug}`}
+            class="inline-flex items-center rounded-lg bg-[hsl(var(--luxury-gold))] px-7 py-3 text-black font-semibold hover:opacity-90 transition"
+          >
+            Read Story →
+          </a>
+
+          <a
+            href="#latest-articles"
+            class="inline-flex items-center rounded-lg border border-white/20 px-7 py-3 text-white hover:border-white/40 transition"
+          >
+            Browse Editorial
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="relative">
+      <div class="mx-auto h-px w-full max-w-6xl bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
+  </section>
+) : null}

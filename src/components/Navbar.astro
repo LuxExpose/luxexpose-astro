@@ -1,0 +1,288 @@
+---
+/**
+ * Mobile dropdowns (accordions) polished:
+ * - Smooth open/close animation
+ * - Only one accordion open at a time
+ * - Close menu on outside click + Escape
+ * - Close menu after tapping any link
+ */
+---
+
+<nav class="lux-navbar sticky top-0 z-50">
+  <!-- Top utility bar (desktop only) -->
+  <div class="lux-navbar-top hidden md:block">
+    <div class="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 py-2.5">
+      <div class="flex items-center justify-end gap-2">
+        <button class="lux-icon-btn" aria-label="Toggle theme" type="button">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v6m0 10v6M23 12h-6M7 12H1M20.485 3.515l-4.243 4.243M7.758 7.758 3.515 3.515M20.485 20.485l-4.243-4.243M7.758 16.242l-4.243 4.243"></path>
+          </svg>
+        </button>
+
+        <button class="lux-icon-btn" aria-label="Search" type="button">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+
+        <button class="lux-icon-btn" aria-label="Notifications" type="button">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0018 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main row -->
+  <div class="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6">
+    <div class="flex items-center justify-between gap-3 py-3">
+      <!-- Logo -->
+      <a href="/" class="lux-logo hover:opacity-90 transition-opacity">
+        <div class="lux-logo-mark" aria-hidden="true"></div>
+        <div class="lux-logo-type">
+          <span class="lux-logo-lux">LUX</span>
+          <span class="lux-logo-expose">EXPOSÉ</span>
+        </div>
+      </a>
+
+      <!-- Desktop menu -->
+      <div class="hidden lg:flex items-center justify-center flex-1">
+        <div class="flex items-center gap-1">
+          <div class="lux-dd group">
+            <a href="/cities" class="lux-nav-link">Cities<span class="lux-caret">▾</span></a>
+            <div class="lux-dd-panel">
+              <a class="lux-dd-item" href="/boston">
+                <div class="lux-dd-title">Boston</div>
+                <div class="lux-dd-desc">Historic luxury & modern elegance</div>
+              </a>
+              <a class="lux-dd-item" href="/miami">
+                <div class="lux-dd-title">Miami</div>
+                <div class="lux-dd-desc">Tropical glamour & Art Deco energy</div>
+              </a>
+              <a class="lux-dd-item" href="/new-york">
+                <div class="lux-dd-title">New York</div>
+                <div class="lux-dd-desc">The ultimate urban luxury destination</div>
+              </a>
+            </div>
+          </div>
+
+          <a href="/editorial" class="lux-nav-link">Editorial</a>
+          <a href="/experiences" class="lux-nav-link">Experiences</a>
+          <a href="/community" class="lux-nav-link">Community</a>
+
+          <div class="lux-dd group">
+            <a href="/partners" class="lux-nav-link">Partners<span class="lux-caret">▾</span></a>
+            <div class="lux-dd-panel">
+              <a class="lux-dd-item" href="/advertise">
+                <div class="lux-dd-title">Advertise</div>
+                <div class="lux-dd-desc">Premium brand partnerships</div>
+              </a>
+              <a class="lux-dd-item" href="/influencer-program">
+                <div class="lux-dd-title">Influencer Program</div>
+                <div class="lux-dd-desc">Join our creator network</div>
+              </a>
+            </div>
+          </div>
+
+          <div class="lux-dd group">
+            <a href="/members" class="lux-nav-link">Members<span class="lux-caret">▾</span></a>
+            <div class="lux-dd-panel">
+              <a class="lux-dd-item" href="/members/private-network">
+                <div class="lux-dd-title">Private Network</div>
+                <div class="lux-dd-desc">Exclusive membership benefits</div>
+              </a>
+              <a class="lux-dd-item" href="/concierge">
+                <div class="lux-dd-title">Concierge</div>
+                <div class="lux-dd-desc">Luxury specialist services</div>
+              </a>
+              <a class="lux-dd-item" href="/verification">
+                <div class="lux-dd-title">Verification</div>
+                <div class="lux-dd-desc">Join verified member network</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right actions (desktop) -->
+      <div class="hidden md:flex items-center gap-2">
+        <a href="/signin" class="lux-btn-secondary">Sign In</a>
+        <a href="/concierge" class="lux-btn-primary">Contact Concierge</a>
+      </div>
+
+      <!-- Mobile buttons -->
+      <div class="flex md:hidden items-center gap-2">
+        <button class="lux-icon-btn" aria-label="Search" type="button">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+
+        <button id="mobileMenuBtn" class="lux-icon-btn" aria-label="Open menu" aria-expanded="false" type="button">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu panel -->
+  <div id="mobileMenu" class="lg:hidden border-t border-white/10 hidden">
+    <div class="mx-auto w-full max-w-7xl px-4 py-4 space-y-3">
+      <a href="/concierge" class="lux-mobile-primary">Contact Concierge</a>
+      <a href="/signin" class="lux-mobile-secondary">Sign In</a>
+
+      <a href="/editorial" class="lux-mobile-link" data-close-mobile>Editorial</a>
+      <a href="/experiences" class="lux-mobile-link" data-close-mobile>Experiences</a>
+      <a href="/community" class="lux-mobile-link" data-close-mobile>Community</a>
+
+      <div class="lux-acc">
+        <button class="lux-acc-btn" type="button" aria-expanded="false" data-acc="cities">
+          Cities <span class="lux-acc-caret">▼</span>
+        </button>
+        <div class="lux-acc-panel" data-panel="cities" aria-hidden="true">
+          <div class="space-y-2">
+            <a href="/boston" class="lux-mobile-link" data-close-mobile>Boston</a>
+            <a href="/miami" class="lux-mobile-link" data-close-mobile>Miami</a>
+            <a href="/new-york" class="lux-mobile-link" data-close-mobile>New York</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="lux-acc">
+        <button class="lux-acc-btn" type="button" aria-expanded="false" data-acc="partners">
+          Partners <span class="lux-acc-caret">▼</span>
+        </button>
+        <div class="lux-acc-panel" data-panel="partners" aria-hidden="true">
+          <div class="space-y-2">
+            <a href="/advertise" class="lux-mobile-link" data-close-mobile>Advertise</a>
+            <a href="/influencer-program" class="lux-mobile-link" data-close-mobile>Influencer Program</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="lux-acc">
+        <button class="lux-acc-btn" type="button" aria-expanded="false" data-acc="members">
+          Members <span class="lux-acc-caret">▼</span>
+        </button>
+        <div class="lux-acc-panel" data-panel="members" aria-hidden="true">
+          <div class="space-y-2">
+            <a href="/members/private-network" class="lux-mobile-link" data-close-mobile>Private Network</a>
+            <a href="/concierge" class="lux-mobile-link" data-close-mobile>Concierge</a>
+            <a href="/verification" class="lux-mobile-link" data-close-mobile>Verification</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const btn = document.getElementById("mobileMenuBtn");
+  const menu = document.getElementById("mobileMenu");
+
+  function closeMobileMenu() {
+    if (!btn || !menu) return;
+    btn.setAttribute("aria-expanded", "false");
+    menu.classList.add("hidden");
+    closeAllAccordions();
+  }
+
+  function openMobileMenu() {
+    if (!btn || !menu) return;
+    btn.setAttribute("aria-expanded", "true");
+    menu.classList.remove("hidden");
+  }
+
+  function toggleMobileMenu() {
+    if (!btn || !menu) return;
+    const isOpen = btn.getAttribute("aria-expanded") === "true";
+    if (isOpen) closeMobileMenu();
+    else openMobileMenu();
+  }
+
+  function closeAllAccordions(exceptKey) {
+    document.querySelectorAll("[data-acc]").forEach((b) => {
+      const key = b.getAttribute("data-acc");
+      if (exceptKey && key === exceptKey) return;
+
+      const panel = document.querySelector(`[data-panel="${key}"]`);
+      b.setAttribute("aria-expanded", "false");
+
+      if (panel) {
+        panel.classList.remove("is-open");
+        panel.style.maxHeight = "0px";
+        panel.setAttribute("aria-hidden", "true");
+      }
+    });
+  }
+
+  function toggleAccordion(key) {
+    const button = document.querySelector(`[data-acc="${key}"]`);
+    const panel = document.querySelector(`[data-panel="${key}"]`);
+    if (!button || !panel) return;
+
+    const isOpen = button.getAttribute("aria-expanded") === "true";
+
+    // close others first
+    closeAllAccordions(key);
+
+    if (isOpen) {
+      button.setAttribute("aria-expanded", "false");
+      panel.classList.remove("is-open");
+      panel.style.maxHeight = "0px";
+      panel.setAttribute("aria-hidden", "true");
+    } else {
+      button.setAttribute("aria-expanded", "true");
+      panel.classList.add("is-open");
+      panel.setAttribute("aria-hidden", "false");
+      // animate to content height
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    }
+  }
+
+  // Menu button
+  if (btn) btn.addEventListener("click", toggleMobileMenu);
+
+  // Close on any link tap
+  document.querySelectorAll("[data-close-mobile]").forEach((a) => {
+    a.addEventListener("click", closeMobileMenu);
+  });
+
+  // Accordion buttons
+  document.querySelectorAll("[data-acc]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const key = b.getAttribute("data-acc");
+      toggleAccordion(key);
+    });
+  });
+
+  // Close on outside click (when menu open)
+  document.addEventListener("click", (e) => {
+    if (!btn || !menu) return;
+    const isOpen = btn.getAttribute("aria-expanded") === "true";
+    if (!isOpen) return;
+
+    const target = e.target;
+    const clickedInside = menu.contains(target) || btn.contains(target);
+    if (!clickedInside) closeMobileMenu();
+  });
+
+  // Close on ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMobileMenu();
+  });
+
+  // If user rotates / resizes, recalc open panel height
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".lux-acc-panel.is-open").forEach((panel) => {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    });
+  });
+
+  // Init: ensure all panels collapsed
+  closeAllAccordions();
+</script>
