@@ -9,3 +9,31 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
+
+/**
+ * Fetch all cities from the locations table
+ */
+export async function getAllCities() {
+  try {
+    const { data, error } = await supabase
+      .from('locations')
+      .select('id, name, slug, description, display_order')
+      .order('display_order', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching cities:', error)
+      return []
+    }
+
+    return (data || []).map((location: any) => ({
+      id: location.id,
+      name: location.name,
+      slug: location.slug,
+      description: location.description || '',
+      display_order: location.display_order || 0,
+    }))
+  } catch (error) {
+    console.error('Error in getAllCities:', error)
+    return []
+  }
+}
