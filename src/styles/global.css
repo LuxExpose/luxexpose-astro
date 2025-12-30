@@ -8,7 +8,7 @@
 @layer base {
   :root {
     /* Core Colors - Dark Mode */
-    --background: 30 5% 15%;
+    --background: 30 5% 20%;
     --foreground: 0 0% 98%;
     --card: 30 5% 12%;
     --card-foreground: 0 0% 98%;
@@ -109,7 +109,7 @@
   }
 
   body {
-    background: hsl(var(--background));
+    background-color: hsl(var(--background)) !important;
     color: hsl(var(--foreground));
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
   }
