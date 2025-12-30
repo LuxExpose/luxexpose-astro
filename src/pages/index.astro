@@ -14,18 +14,46 @@ let rest: any[] = [];
 
 try {
   // Fetch featured articles for hero slider (5 articles)
+  // Try with categories relationship first
   const featuredResponse = await fetch(
     `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,published_at,featured_video_url,categories(name)&status=eq.published&order=published_at.desc&limit=5`,
     {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
       },
     }
   );
   
   if (featuredResponse.ok) {
-    featuredArticles = await featuredResponse.json();
+    const data = await featuredResponse.json();
+    featuredArticles = Array.isArray(data) ? data : [];
+    console.log(`[index.astro] Fetched ${featuredArticles.length} featured articles for slider`);
+    
+    // If no articles, try without categories relationship
+    if (featuredArticles.length === 0) {
+      console.log('[index.astro] No articles with categories, trying without relationship...');
+      const fallbackResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,published_at,featured_video_url&status=eq.published&order=published_at.desc&limit=5`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (fallbackResponse.ok) {
+        featuredArticles = await fallbackResponse.json();
+        console.log(`[index.astro] Fallback: Fetched ${featuredArticles.length} articles`);
+      }
+    }
+  } else {
+    console.error('[index.astro] Featured articles fetch failed:', featuredResponse.status, featuredResponse.statusText);
+    const errorText = await featuredResponse.text();
+    console.error('[index.astro] Error details:', errorText);
   }
 
   // Fetch additional articles for editorial grid
@@ -75,7 +103,8 @@ const canonicalUrl = `${SITE_URL}/`;
   <Navbar />
 
   <div class="relative bg-glass-option-9 overflow-hidden min-h-screen">
-    <HeroSlider articles={featuredArticles} />
+    <!-- Let HeroSlider fetch articles automatically if none provided -->
+    <HeroSlider articles={featuredArticles.length > 0 ? featuredArticles : undefined} fetchArticles={featuredArticles.length === 0} />
     <EditorialGrid articles={rest} />
   </div>
 

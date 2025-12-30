@@ -21,18 +21,19 @@ interface Props {
   limit?: number;
 }
 
-const { articles: providedArticles = [], fetchArticles = false, limit = 5 } = Astro.props;
+const { articles: providedArticles, fetchArticles = false, limit = 5 } = Astro.props;
 
 // Fetch articles if none provided or if fetchArticles is true
 const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuzthqxfippv.supabase.co';
 const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
 
-let articles: Article[] = providedArticles;
+let articles: Article[] = providedArticles || [];
 
 // Fetch articles if needed
 if (fetchArticles || articles.length === 0) {
   try {
-    const response = await fetch(
+    // Try with categories relationship first
+    let response = await fetch(
       `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,published_at,featured_video_url,categories(name)&status=eq.published&order=published_at.desc&limit=${limit}`,
       {
         headers: {
@@ -45,12 +46,35 @@ if (fetchArticles || articles.length === 0) {
     
     if (response.ok) {
       const fetchedArticles = await response.json();
-      if (fetchedArticles.length > 0) {
+      if (Array.isArray(fetchedArticles) && fetchedArticles.length > 0) {
         articles = fetchedArticles;
         console.log(`[HeroSlider] Fetched ${articles.length} featured articles for slider`);
+      } else {
+        // Try without categories relationship if first query returns empty
+        console.log('[HeroSlider] No articles with categories, trying without relationship...');
+        response = await fetch(
+          `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,published_at,featured_video_url&status=eq.published&order=published_at.desc&limit=${limit}`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        
+        if (response.ok) {
+          const fallbackArticles = await response.json();
+          if (Array.isArray(fallbackArticles) && fallbackArticles.length > 0) {
+            articles = fallbackArticles;
+            console.log(`[HeroSlider] Fallback: Fetched ${articles.length} articles`);
+          }
+        }
       }
     } else {
+      const errorText = await response.text();
       console.error('[HeroSlider] Failed to fetch articles:', response.status, response.statusText);
+      console.error('[HeroSlider] Error details:', errorText);
     }
   } catch (error) {
     console.error('[HeroSlider] Error fetching featured articles:', error);
