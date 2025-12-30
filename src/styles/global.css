@@ -8,7 +8,7 @@
 @layer base {
   :root {
     /* Core Colors - Dark Mode */
-    --background: 30 5% 10%;
+    --background: 30 5% 15%;
     --foreground: 0 0% 98%;
     --card: 30 5% 12%;
     --card-foreground: 0 0% 98%;
