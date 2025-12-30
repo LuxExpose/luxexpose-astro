@@ -20,18 +20,30 @@ function getPageUrl(page: number): string {
 }
 
 // Build pages array in frontmatter to avoid Fragment issues
-const pages: Array<number | 'ellipsis'> = [];
-for (let i = 1; i <= totalPages; i++) {
-  if (
-    i === 1 ||
-    i === totalPages ||
-    (i >= currentPage - 2 && i <= currentPage + 2)
-  ) {
-    pages.push(i);
-  } else if (i === currentPage - 3 || i === currentPage + 3) {
-    pages.push('ellipsis');
+function buildPagesArray(current: number, total: number): Array<number | 'ellipsis'> {
+  const result: Array<number | 'ellipsis'> = [];
+  let prevPage = 0;
+  
+  for (let pageNum = 1; pageNum <= total; pageNum++) {
+    if (
+      pageNum === 1 ||
+      pageNum === total ||
+      (pageNum >= current - 2 && pageNum <= current + 2)
+    ) {
+      result.push(pageNum);
+      prevPage = pageNum;
+    } else if (pageNum === current - 3 || pageNum === current + 3) {
+      if (prevPage !== pageNum - 1) {
+        result.push('ellipsis');
+      }
+      prevPage = pageNum;
+    }
   }
+  
+  return result;
 }
+
+const pages = buildPagesArray(currentPage, totalPages);
 ---
 
 {totalPages > 1 && (
