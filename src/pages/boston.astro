@@ -35,6 +35,16 @@ const SITE_URL = "https://luxexpose.com";
 const SUPABASE_URL = "https://ppmdgygupuzthqxfippv.supabase.co";
 const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4";
 
+// Fetch featured directory listings
+import { fetchFeaturedDirectoryListings } from "../lib/queries/directory";
+let featuredListings = [];
+try {
+  featuredListings = await fetchFeaturedDirectoryListings(citySlug, 6);
+} catch (error) {
+  console.error("Error fetching featured directory listings:", error);
+  featuredListings = [];
+}
+
 const citySlug = "boston";
 const city = getCityConfig(citySlug);
 if (!city) {
@@ -458,7 +468,7 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
     <LocalLuxuryDirectory
       citySlug={citySlug}
       cityDisplayName={city.name}
-      listings={[]}
+      listings={featuredListings}
       isLoading={false}
     />
 

@@ -88,8 +88,12 @@ const { citySlug, cityDisplayName, listings, isLoading = false } = Astro.props;
           </div>
         ))
       ) : listings.length > 0 ? (
-        listings.slice(0, 6).map((listing) => (
-          <a href={`/${citySlug}/directory/${listing.slug}`} class="directory-card-link">
+        listings.slice(0, 6).map((listing) => {
+          // Link to React app's directory detail page
+          const reactAppUrl = import.meta.env.PUBLIC_REACT_APP_URL || 'https://luxexpose.com';
+          const directoryUrl = `${reactAppUrl}/${citySlug}/directory/${listing.slug}`;
+          return (
+          <a href={directoryUrl} class="directory-card-link" target="_self">
             <article class="directory-card group">
               <!-- Image Area -->
               <div class="card-image-wrapper relative aspect-[4/3] overflow-hidden">
@@ -214,7 +218,8 @@ const { citySlug, cityDisplayName, listings, isLoading = false } = Astro.props;
               </div>
             </article>
           </a>
-        ))
+          );
+        })
       ) : (
         <div class="col-span-full text-center py-12">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted-foreground mx-auto mb-4">
@@ -238,6 +243,8 @@ const { citySlug, cityDisplayName, listings, isLoading = false } = Astro.props;
           <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
         </svg>
       </a>
+        );
+      })()}
     </div>
   </div>
 </section>
