@@ -345,11 +345,12 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
           })) : undefined}
         />
 
-        <!-- Hero Tagline Section - Database first, static fallback, then copywriting data -->
+        <!-- Hero Tagline Section - Static copywriting first (correct text), then database fallback -->
         {(() => {
           const cityCopy = getCityCopy(citySlug);
-          const tagline = copy?.hero_tagline || copy?.heroTagline || cityCopy?.heroTagline || `Experience Luxury in ${city.name}`;
-          const subtext = copy?.hero_subtext || copy?.heroSubtext || cityCopy?.heroSubtext || city.description;
+          // Use static copywriting first to ensure correct text, then database as fallback
+          const tagline = cityCopy?.heroTagline || copy?.hero_tagline || copy?.heroTagline || `Experience Luxury in ${city.name}`;
+          const subtext = cityCopy?.heroSubtext || copy?.hero_subtext || copy?.heroSubtext || city.description;
           return tagline && subtext ? (
             <CityHeroTagline heroTagline={tagline} heroSubtext={subtext} />
           ) : null;
