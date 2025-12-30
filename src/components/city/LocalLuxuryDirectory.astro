@@ -1,0 +1,503 @@
+---
+// src/components/city/LocalLuxuryDirectory.astro
+
+interface DirectoryListing {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  price_range: string;
+  featured_image: string;
+  short_description?: string;
+  description?: string;
+  neighborhood?: string;
+  address: string;
+  rating_average: number;
+  review_count: number;
+  view_count?: number;
+  is_featured: boolean;
+  is_verified: boolean;
+  features?: string[];
+  phone?: string;
+  website?: string;
+}
+
+interface Props {
+  citySlug: string;
+  cityDisplayName: string;
+  listings: DirectoryListing[];
+  isLoading?: boolean;
+}
+
+const { citySlug, cityDisplayName, listings, isLoading = false } = Astro.props;
+---
+
+<section class="local-directory-section py-16 md:py-24">
+  <div class="container mx-auto px-4">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <span class="directory-overline text-primary text-sm font-medium tracking-widest uppercase mb-4 block">
+        Local Luxury Directory
+      </span>
+      <h2 class="directory-title font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+        The Finest in {cityDisplayName}
+      </h2>
+      <p class="directory-subtitle text-muted-foreground max-w-2xl mx-auto">
+        Discover our curated selection of the city's most distinguished establishments—
+        from Michelin-starred dining to exclusive boutiques and world-class hotels.
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center justify-end gap-4 mb-8">
+      <div class="tabs-list" role="tablist">
+        <button 
+          class="tabs-trigger active" 
+          data-view="grid" 
+          role="tab" 
+          aria-selected="true"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
+          </svg>
+          Grid
+        </button>
+        <button 
+          class="tabs-trigger" 
+          data-view="map" 
+          role="tab" 
+          aria-selected="false"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 7 6-3 6 3 6-3v17l-6 3-6-3-6 3V7z"/><path d="M9 4v17"/><path d="M15 7v17"/>
+          </svg>
+          Map
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div id="directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {isLoading ? (
+        [...Array(6)].map((_, i) => (
+          <div class="animate-pulse">
+            <div class="aspect-[4/3] bg-muted rounded-lg mb-4"></div>
+            <div class="h-4 bg-muted rounded w-3/4 mb-2"></div>
+            <div class="h-3 bg-muted rounded w-1/2"></div>
+          </div>
+        ))
+      ) : listings.length > 0 ? (
+        listings.slice(0, 6).map((listing) => (
+          <a href={`/${citySlug}/directory/${listing.slug}`} class="directory-card-link">
+            <article class="directory-card group">
+              <!-- Image Area -->
+              <div class="card-image-wrapper relative aspect-[4/3] overflow-hidden">
+                <img
+                  src={listing.featured_image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}
+                  alt={listing.name}
+                  class="card-image w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div class="card-gradient absolute inset-0"></div>
+                
+                <!-- Top Left Badges -->
+                <div class="absolute top-3 left-3 flex gap-2">
+                  <span class="badge badge-secondary">
+                    {listing.category}
+                  </span>
+                  <span class="badge badge-outline">
+                    {listing.price_range || '$$$'}
+                  </span>
+                </div>
+
+                <!-- Top Right Badges -->
+                {(listing.is_featured || listing.is_verified) && (
+                  <div class="absolute top-3 right-3 flex flex-col gap-1">
+                    {listing.is_verified && (
+                      <span class="badge badge-verified">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>
+                        </svg>
+                        Verified
+                      </span>
+                    )}
+                    {listing.is_featured && (
+                      <span class="badge badge-featured">Featured</span>
+                    )}
+                  </div>
+                )}
+
+                <!-- Bottom Info Overlay -->
+                <div class="card-info-overlay absolute bottom-0 left-0 right-0 p-4">
+                  <h3 class="card-title">{listing.name}</h3>
+                  <div class="card-rating flex items-center gap-3 mt-2">
+                    {listing.rating_average > 0 && (
+                      <div class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        <span class="rating-value text-white font-medium text-sm">
+                          {listing.rating_average.toFixed(1)}
+                        </span>
+                        {listing.review_count > 0 && (
+                          <span class="review-count text-white/70 text-xs">
+                            ({listing.review_count})
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {listing.view_count && listing.view_count > 0 && (
+                      <div class="view-count flex items-center gap-1 text-white/70">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <span class="text-xs">{listing.view_count}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Content -->
+              <div class="card-content p-4 space-y-3">
+                <p class="card-description text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                  {listing.short_description || listing.description}
+                </p>
+
+                <div class="card-location flex items-start gap-2 text-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary mt-0.5 flex-shrink-0">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <span class="text-muted-foreground line-clamp-1">
+                    {listing.neighborhood ? `${listing.neighborhood} · ` : ''}{listing.address}
+                  </span>
+                </div>
+
+                {listing.features && listing.features.length > 0 && (
+                  <div class="feature-badges flex flex-wrap gap-1.5">
+                    {listing.features.slice(0, 3).map((feature) => (
+                      <span class="feature-badge">{feature}</span>
+                    ))}
+                    {listing.features.length > 3 && (
+                      <span class="feature-badge">+{listing.features.length - 3}</span>
+                    )}
+                  </div>
+                )}
+
+                <div class="card-actions flex items-center gap-2 pt-2">
+                  {listing.phone && (
+                    <button 
+                      class="action-button flex-1 h-9"
+                      data-phone={listing.phone}
+                      onclick="event.preventDefault(); event.stopPropagation(); window.open(`tel:${this.dataset.phone}`, '_self');"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      Call
+                    </button>
+                  )}
+                  {listing.website && (
+                    <button 
+                      class="action-button flex-1 h-9"
+                      data-website={listing.website}
+                      onclick="event.preventDefault(); event.stopPropagation(); window.open(this.dataset.website, '_blank');"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>
+                      </svg>
+                      Website
+                    </button>
+                  )}
+                </div>
+              </div>
+            </article>
+          </a>
+        ))
+      ) : (
+        <div class="col-span-full text-center py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted-foreground mx-auto mb-4">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <p class="text-muted-foreground">No featured listings yet.</p>
+        </div>
+      )}
+    </div>
+
+    <!-- Map View (hidden by default) -->
+    <div id="directory-map" class="hidden h-[500px] rounded-lg overflow-hidden">
+      <!-- Map implementation here -->
+    </div>
+
+    <!-- View All Button -->
+    <div class="text-center mt-10">
+      <a href={`/${citySlug}/directory`} class="view-all-button">
+        View All in Directory
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Color Variables */
+  :root {
+    --primary: 43 35% 48%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --card: 0 0% 8%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
+    --accent: 43 35% 48%;
+  }
+
+  /* Typography */
+  .directory-overline {
+    font-family: 'Inter', sans-serif;
+    color: hsl(var(--primary));
+  }
+  
+  .directory-title {
+    font-family: 'Cormorant Garamond', serif;
+    color: hsl(var(--foreground));
+  }
+  
+  .directory-subtitle {
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Tabs */
+  .tabs-list {
+    display: flex;
+    height: 40px;
+    align-items: center;
+    border-radius: 6px;
+    background: hsl(var(--muted));
+    padding: 4px;
+  }
+
+  .tabs-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 150ms;
+  }
+
+  .tabs-trigger.active,
+  .tabs-trigger[aria-selected="true"] {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Directory Card */
+  .directory-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+  }
+
+  .directory-card {
+    overflow: hidden;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 8px;
+    height: 100%;
+    transition: all 300ms ease;
+  }
+
+  .directory-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    transform: translateY(-4px);
+  }
+
+  /* Card Image */
+  .card-image {
+    transition: transform 700ms ease-out;
+  }
+
+  .directory-card:hover .card-image {
+    transform: scale(1.1);
+  }
+
+  .card-gradient {
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.7) 0%,
+      rgba(0,0,0,0.2) 50%,
+      transparent 100%
+    );
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 2px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .badge-secondary {
+    background: hsl(var(--background) / 0.95);
+    color: hsl(var(--foreground));
+    border: 1px solid transparent;
+  }
+
+  .badge-outline {
+    background: hsl(var(--background) / 0.95);
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--primary) / 0.3);
+  }
+
+  .badge-verified {
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+    border: 1px solid transparent;
+  }
+
+  .badge-featured {
+    background: hsl(var(--primary) / 0.9);
+    color: hsl(var(--primary-foreground));
+    border: 1px solid transparent;
+  }
+
+  /* Card Title */
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  /* Feature Badges */
+  .feature-badge {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    background: hsl(var(--muted) / 0.5);
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    padding: 2px 10px;
+    color: hsl(var(--foreground));
+  }
+
+  /* Action Buttons */
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid hsl(var(--input));
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 150ms;
+  }
+
+  .action-button:hover {
+    background: hsl(var(--accent) / 0.5);
+  }
+
+  /* View All Button */
+  .view-all-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 32px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: hsl(var(--primary-foreground));
+    background: hsl(var(--primary));
+    border-radius: 4px;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 500ms ease;
+  }
+
+  .view-all-button:hover {
+    background: hsl(var(--primary) / 0.85);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
+
+<script is:inline>
+  // View Toggle Logic
+  (function() {
+    document.querySelectorAll('.tabs-trigger').forEach(function(button) {
+      button.addEventListener('click', function() {
+        const view = button.dataset.view;
+        
+        // Update active states
+        document.querySelectorAll('.tabs-trigger').forEach(function(btn) {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        });
+        button.classList.add('active');
+        button.setAttribute('aria-selected', 'true');
+        
+        // Toggle views
+        const grid = document.getElementById('directory-grid');
+        const map = document.getElementById('directory-map');
+        
+        if (view === 'grid') {
+          if (grid) grid.classList.remove('hidden');
+          if (map) map.classList.add('hidden');
+        } else {
+          if (grid) grid.classList.add('hidden');
+          if (map) map.classList.remove('hidden');
+        }
+      });
+    });
+  })();
+</script>
+
