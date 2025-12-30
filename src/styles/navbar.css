@@ -44,6 +44,8 @@
   border-bottom: 1px solid hsl(var(--border));
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
+  /* Ensure navbar stays above all content */
+  isolation: isolate;
 }
 
 .navbar.scrolled {

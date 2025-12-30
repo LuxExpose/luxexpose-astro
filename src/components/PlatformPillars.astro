@@ -85,6 +85,8 @@ const iconPaths: Record<string, string> = {
   .platform-pillars {
     width: 100%;
     padding: 2rem 0;     /* py-8 */
+    position: relative;
+    z-index: 1; /* Ensure it's below navbar (z-index: 9999) */
   }
 
   @media (min-width: 768px) {
