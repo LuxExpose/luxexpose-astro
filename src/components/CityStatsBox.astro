@@ -27,80 +27,60 @@ const iconPaths = {
 };
 ---
 
-<div class={`stats-section ${className}`}>
-  <div class="container">
+<section class={`stats-section ${className}`}>
+  <div class="container mx-auto px-4">
     <div 
-      class="stats-container glass-card-dark"
+      class="stats-container glass-card-dark rounded-3xl p-8 md:p-12 relative overflow-hidden"
       data-scroll-reveal
     >
       <!-- Background accent orb -->
-      <div class="background-orb"></div>
+      <div class="absolute top-0 right-0 w-96 h-96 bg-boston-gold/5 rounded-full blur-3xl -z-10 animate-pulse-glow"></div>
       
       <!-- Header -->
-      <div class="header-group">
-        <h2 class="stats-title">
+      <div class="text-center mb-12">
+        <h2 class="stats-title font-serif text-3xl md:text-4xl font-bold mb-3">
           {explorationHeadline || `${cityName} by the Numbers`}
         </h2>
-        {explorationSubtext && (
-          <p class="stats-subtitle">
-            {explorationSubtext}
-          </p>
-        )}
+        <p class="stats-subtitle text-lg">
+          {explorationSubtext || "A glimpse into the city's luxury landscape"}
+        </p>
       </div>
 
       <!-- Stats Grid -->
-      {stats.length > 0 && (
-        <div class="stats-grid">
-          {stats.map((stat) => (
-            <div class="stat-card glass-card-subtle group">
-              <!-- Icon Container -->
-              <div class="icon-container glass-card-dark glass-border-gold">
-                {iconPaths[stat.icon] ? (
-                  <svg 
-                    class="icon" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    stroke-width="2" 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round"
-                    set:html={iconPaths[stat.icon]}
-                  />
-                ) : (
-                  <svg 
-                    class="icon" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    stroke-width="2" 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="12"/>
-                    <line x1="12" y1="16" x2="12.01" y2="16"/>
-                  </svg>
-                )}
-              </div>
-              
-              <!-- Value -->
-              <div class="stat-value">
-                {stat.value}
-              </div>
-              
-              <!-- Label -->
-              <div class="stat-label">
-                {stat.label}
-              </div>
-              
-              <!-- Description -->
-              <div class="stat-description">
-                {stat.description}
-              </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {stats.map((stat) => (
+          <div class="stat-card glass-card-subtle rounded-2xl p-6 text-center group">
+            <!-- Icon Container -->
+            <div class="icon-container inline-flex items-center justify-center w-16 h-16 rounded-full glass-card-dark glass-border-gold mb-4 group-hover:scale-110 transition-transform duration-300">
+              <svg 
+                class="w-8 h-8 text-boston-gold" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
+                set:html={iconPaths[stat.icon] || '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
+              />
             </div>
-          ))}
-        </div>
-      )}
+            
+            <!-- Value -->
+            <div class="stat-value font-serif text-3xl font-bold mb-2">
+              {stat.value}
+            </div>
+            
+            <!-- Label -->
+            <div class="stat-label text-sm font-semibold text-boston-gold mb-2">
+              {stat.label}
+            </div>
+            
+            <!-- Description -->
+            <div class="stat-description text-xs leading-relaxed">
+              {stat.description}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 </section>
@@ -296,20 +276,76 @@ const iconPaths = {
 
   /* Scroll Reveal Animation */
   .stats-container {
-    opacity: 1; /* Start visible, JS will handle animation */
-    transform: scale(1);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  }
-
-  /* Only hide if JS is loaded and element hasn't been revealed yet */
-  .stats-container.js-loaded:not(.is-visible) {
     opacity: 0;
     transform: scale(0.95);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   }
 
   .stats-container.is-visible {
     opacity: 1;
     transform: scale(1);
+  }
+  
+  /* Tailwind utility classes */
+  .rounded-3xl {
+    border-radius: 1.5rem; /* 24px */
+  }
+  
+  .rounded-2xl {
+    border-radius: 1rem; /* 16px */
+  }
+  
+  .w-96 {
+    width: 24rem; /* 384px */
+  }
+  
+  .h-96 {
+    height: 24rem; /* 384px */
+  }
+  
+  .w-16 {
+    width: 4rem; /* 64px */
+  }
+  
+  .h-16 {
+    height: 4rem; /* 64px */
+  }
+  
+  .w-8 {
+    width: 2rem; /* 32px */
+  }
+  
+  .h-8 {
+    height: 2rem; /* 32px */
+  }
+  
+  .bg-boston-gold\/5 {
+    background-color: hsla(43, 74%, 52%, 0.05);
+  }
+  
+  .text-boston-gold {
+    color: hsl(43 74% 52%); /* #d4a522 */
+  }
+  
+  .blur-3xl {
+    filter: blur(64px);
+    -webkit-filter: blur(64px);
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+  
+  .group-hover\:scale-110:hover {
+    transform: scale(1.1);
+  }
+  
+  .transition-transform {
+    transition-property: transform;
+  }
+  
+  .duration-300 {
+    transition-duration: 300ms;
   }
 </style>
 
@@ -318,38 +354,28 @@ const iconPaths = {
   (function() {
     if (typeof window === 'undefined') return;
     
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
     // Wait for DOM to be ready
+    function initScrollReveal() {
+      document.querySelectorAll('[data-scroll-reveal]').forEach((el) => {
+        observer.observe(el);
+      });
+    }
+    
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initScrollReveal);
     } else {
       initScrollReveal();
-    }
-    
-    function initScrollReveal() {
-      // Mark as JS loaded
-      const elements = document.querySelectorAll('[data-scroll-reveal]');
-      elements.forEach((el) => {
-        el.classList.add('js-loaded');
-        el.style.opacity = '0';
-        el.style.transform = 'scale(0.95)';
-      });
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-visible');
-              entry.target.style.opacity = '1';
-              entry.target.style.transform = 'scale(1)';
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
-      
-      elements.forEach((el) => {
-        observer.observe(el);
-      });
     }
   })();
 </script>
