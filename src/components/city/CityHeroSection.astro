@@ -1,0 +1,371 @@
+---
+// src/components/city/CityHeroSection.astro
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuzthqxfippv.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
+
+interface Props {
+  city: 'boston' | 'miami' | 'nyc' | 'doha';
+  cityId: string;
+  categoryId?: string | null;
+  articles?: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    excerpt: string | null;
+    featured_image: string | null;
+    featured_video_url: string | null;
+    published_at: string | null;
+    categories: {
+      name: string;
+      slug: string;
+    } | null;
+  }>;
+}
+
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  featured_image: string | null;
+  featured_video_url: string | null;
+  published_at: string | null;
+  categories: {
+    name: string;
+    slug: string;
+  } | null;
+}
+
+const { city, cityId, categoryId, articles: providedArticles } = Astro.props;
+
+// Fetch featured articles if not provided
+let articles: Article[] = [];
+
+if (providedArticles && providedArticles.length > 0) {
+  articles = providedArticles;
+} else {
+  try {
+    // Build query URL
+    let queryUrl = `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,featured_video_url,published_at,categories(name,slug)&status=eq.published&location_id=eq.${cityId}&featured_in_city=eq.true&order=published_at.desc&limit=5`;
+    
+    if (categoryId) {
+      queryUrl += `&category_id=eq.${categoryId}`;
+    }
+    
+    const response = await fetch(queryUrl, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+    
+    if (response.ok) {
+      articles = await response.json();
+    }
+    
+    // Fallback: if no featured articles, get latest 5
+    if (!articles || articles.length === 0) {
+      let fallbackUrl = `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,featured_video_url,published_at,categories(name,slug)&status=eq.published&location_id=eq.${cityId}&order=published_at.desc&limit=5`;
+      
+      if (categoryId) {
+        fallbackUrl += `&category_id=eq.${categoryId}`;
+      }
+      
+      const fallbackResponse = await fetch(fallbackUrl, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      });
+      
+      if (fallbackResponse.ok) {
+        articles = await fallbackResponse.json() || [];
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching hero articles:', error);
+    articles = [];
+  }
+}
+
+// City-specific gradient overlay colors
+const cityOverlays = {
+  boston: 'from-boston-burgundy/5',
+  miami: 'from-miami-coral/5',
+  nyc: 'from-nyc-navy/5',
+  doha: 'from-doha-maroon/5',
+};
+
+const overlayClass = cityOverlays[city];
+---
+
+<div class="hero-carousel relative h-[70vh] md:h-[80vh] overflow-hidden">
+  <!-- City-specific gradient overlay -->
+  <div class={`absolute inset-0 bg-gradient-to-b ${overlayClass} via-transparent to-transparent pointer-events-none z-10`}></div>
+  
+  <!-- Article Slides -->
+  {articles.length > 0 ? (
+    articles.map((article, index) => (
+      <div 
+        class:list={[
+          "hero-slide absolute inset-0 transition-opacity duration-1000",
+          index === 0 ? "opacity-100" : "opacity-0"
+        ]}
+        data-index={index}
+      >
+        <!-- Background Image -->
+        <img
+          src={article.featured_image || `https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1920&q=80`}
+          alt={article.title}
+          class="w-full h-full object-cover"
+          loading={index === 0 ? 'eager' : 'lazy'}
+        />
+        
+        <!-- Left gradient for text readability -->
+        <div class="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent"></div>
+        
+        <!-- Bottom gradient for text readability -->
+        <div class="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent"></div>
+      </div>
+    ))
+  ) : (
+    <!-- Fallback slide if no articles -->
+    <div class="hero-slide absolute inset-0 opacity-100">
+      <img
+        src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1920&q=80"
+        alt="Lux Exposé"
+        class="w-full h-full object-cover"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent"></div>
+    </div>
+  )}
+  
+  <!-- Hero Content -->
+  <div class="relative h-full container mx-auto px-4 sm:px-6 flex items-end pb-12 sm:pb-16 z-20">
+    <div class="hero-content max-w-3xl animate-fade-in">
+      <!-- Category Badge -->
+      {articles.length > 0 && (
+        <div class="mb-3 sm:mb-4">
+          <span 
+            class="hero-category inline-block px-3 sm:px-4 py-1 bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wider"
+            data-category-index="0"
+          >
+            {articles[0]?.categories?.name || 'Uncategorized'}
+          </span>
+        </div>
+      )}
+      
+      <!-- Article Title -->
+      <h2 
+        class="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mb-6 sm:mb-8 leading-loose text-white"
+        style="letter-spacing: 0.02em;"
+        data-title-index="0"
+      >
+        {articles.length > 0 ? (articles[0]?.title || 'Featured Article') : 'Lux Exposé'}
+      </h2>
+      
+      <!-- Meta Info -->
+      {articles.length > 0 && articles[0]?.published_at && (
+        <div class="hero-meta flex items-center gap-4 sm:gap-6 text-sm sm:text-base text-white/80 mb-8 sm:mb-10 font-light">
+          <span>Lux Exposé</span>
+          <span>•</span>
+          <span class="hero-date" data-date-index="0">
+            {articles[0].published_at 
+              ? new Date(articles[0].published_at).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                }) 
+              : ''}
+          </span>
+        </div>
+      )}
+      
+      <!-- CTA Button -->
+      {articles.length > 0 && articles[0]?.slug && (
+        <a 
+          href={`/${articles[0].slug}`}
+          class="hero-cta inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-light uppercase text-base px-8 py-4 transition-colors"
+          style="letter-spacing: 0.05em;"
+          data-slug-index="0"
+        >
+          Read Article
+        </a>
+      )}
+    </div>
+  </div>
+  
+  <!-- Navigation Arrows -->
+  {articles.length > 1 && (
+    <>
+      <button
+        id="hero-prev"
+        class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full z-30 hero-nav-btn"
+        aria-label="Previous slide"
+      >
+        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      
+      <button
+        id="hero-next"
+        class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full z-30 hero-nav-btn"
+        aria-label="Next slide"
+      >
+        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </>
+  )}
+  
+  <!-- Dot Indicators -->
+  {articles.length > 1 && (
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+      {articles.map((_, index) => (
+        <button
+          class:list={[
+            "hero-dot w-2 h-2 rounded-full transition-all",
+            index === 0 ? "bg-primary w-8" : "bg-white/50"
+          ]}
+          data-dot-index={index}
+          aria-label={`Go to slide ${index + 1}`}
+        />
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  /* Navigation button glassmorphism */
+  .hero-nav-btn {
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.5s ease;
+  }
+  
+  .hero-nav-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(218, 165, 32, 0.3); /* luxury-gold */
+  }
+  
+  /* Fade in animation */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Dot indicator hover */
+  .hero-dot:hover:not(.bg-primary) {
+    background: rgba(255, 255, 255, 0.75);
+  }
+</style>
+
+<script define:vars={{ articles }}>
+  // Hero carousel JavaScript
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots = document.querySelectorAll('.hero-dot');
+  const prevBtn = document.getElementById('hero-prev');
+  const nextBtn = document.getElementById('hero-next');
+  const categoryEl = document.querySelector('.hero-category');
+  const titleEl = document.querySelector('.hero-title');
+  const dateEl = document.querySelector('.hero-date');
+  const ctaEl = document.querySelector('.hero-cta');
+  
+  let currentIndex = 0;
+  const totalSlides = slides.length;
+  let autoPlayTimer;
+  
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+  
+  function goToSlide(index) {
+    if (totalSlides === 0) return;
+    
+    // Update slides opacity
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('opacity-100', i === index);
+      slide.classList.toggle('opacity-0', i !== index);
+    });
+    
+    // Update dots
+    dots.forEach((dot, i) => {
+      if (i === index) {
+        dot.classList.add('bg-primary', 'w-8');
+        dot.classList.remove('bg-white/50');
+      } else {
+        dot.classList.remove('bg-primary', 'w-8');
+        dot.classList.add('bg-white/50');
+      }
+    });
+    
+    // Update content
+    const article = articles[index];
+    if (article) {
+      if (categoryEl) categoryEl.textContent = article.categories?.name || 'Uncategorized';
+      if (titleEl) titleEl.textContent = article.title || 'Featured Article';
+      if (dateEl) dateEl.textContent = formatDate(article.published_at);
+      if (ctaEl) {
+        ctaEl.href = `/${article.slug || ''}`;
+        ctaEl.style.display = article.slug ? 'inline-block' : 'none';
+      }
+    }
+    
+    currentIndex = index;
+    resetAutoPlay();
+  }
+  
+  function goToPrevious() {
+    if (totalSlides === 0) return;
+    const newIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+    goToSlide(newIndex);
+  }
+  
+  function goToNext() {
+    if (totalSlides === 0) return;
+    const newIndex = (currentIndex + 1) % totalSlides;
+    goToSlide(newIndex);
+  }
+  
+  function resetAutoPlay() {
+    clearInterval(autoPlayTimer);
+    if (totalSlides > 1) {
+      autoPlayTimer = setInterval(goToNext, 10000); // 10 second rotation
+    }
+  }
+  
+  // Event listeners
+  if (prevBtn) prevBtn.addEventListener('click', goToPrevious);
+  if (nextBtn) nextBtn.addEventListener('click', goToNext);
+  
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => goToSlide(index));
+  });
+  
+  // Start autoplay
+  if (totalSlides > 1) {
+    autoPlayTimer = setInterval(goToNext, 10000);
+  }
+</script>
+

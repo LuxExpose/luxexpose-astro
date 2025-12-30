@@ -2,8 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 import CityNavbar from "../components/city/CityNavbar.astro";
 import ArticleGrid from "../components/ArticleGrid.astro";
-import BostonHero from "../components/BostonHero.astro";
-import HeroTagline from "../components/HeroTagline.astro";
+import CityAmbience from "../components/city/CityAmbience.astro";
+import CityHeroSection from "../components/city/CityHeroSection.astro";
+import CityHeroTagline from "../components/city/CityHeroTagline.astro";
+import { getCityCopy } from "../data/cityCopywriting";
 import CityStatsBox from "../components/CityStatsBox.astro";
 import CityMap from "../components/CityMap.astro";
 import SearchFilters from "../components/SearchFilters.astro";
@@ -317,17 +319,38 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
     activeCategorySlug={categorySlug !== 'all' ? categorySlug : undefined}
   />
 
-  <div class={`relative bg-gradient-subtle min-h-screen ${city.themeClass || ''}`}>
-    <!-- Hero Section -->
-    <BostonHero articles={featuredArticles || []} />
+      <div class={`relative bg-gradient-subtle min-h-screen ${city.themeClass || ''}`}>
+        <!-- City Ambience Background -->
+        <CityAmbience city={citySlug} />
+        
+        <!-- Hero Section -->
+        <CityHeroSection 
+          city={citySlug} 
+          cityId={articleLocationId || ''}
+          articles={featuredArticles.length > 0 ? featuredArticles.map(art => ({
+            id: art.id,
+            title: art.title,
+            slug: art.slug,
+            excerpt: art.excerpt || null,
+            featured_image: art.featured_image || null,
+            featured_video_url: art.featured_video_url || null,
+            published_at: art.published_at || null,
+            categories: art.categories ? {
+              name: art.categories.name || '',
+              slug: art.categories.slug || ''
+            } : null
+          })) : undefined}
+        />
 
-    <!-- Hero Tagline Section - Database first, static fallback -->
-    {(copy?.hero_tagline || copy?.heroTagline) && (
-      <HeroTagline
-        tagline={copy.hero_tagline || copy.heroTagline || `Experience Luxury in ${city.name}`}
-        subtext={copy.hero_subtext || copy.heroSubtext || city.description}
-      />
-    )}
+        <!-- Hero Tagline Section - Database first, static fallback, then copywriting data -->
+        {(() => {
+          const cityCopy = getCityCopy(citySlug);
+          const tagline = copy?.hero_tagline || copy?.heroTagline || cityCopy?.heroTagline || `Experience Luxury in ${city.name}`;
+          const subtext = copy?.hero_subtext || copy?.heroSubtext || cityCopy?.heroSubtext || city.description;
+          return tagline && subtext ? (
+            <CityHeroTagline heroTagline={tagline} heroSubtext={subtext} />
+          ) : null;
+        })()}
 
     <!-- Stats Box (if stats exist) - Database first, static fallback -->
     {stats.length > 0 && (

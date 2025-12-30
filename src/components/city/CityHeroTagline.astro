@@ -1,0 +1,24 @@
+---
+// src/components/city/CityHeroTagline.astro
+interface Props {
+  heroTagline: string;
+  heroSubtext: string;
+}
+
+const { heroTagline, heroSubtext } = Astro.props;
+---
+
+<div class="container mx-auto px-4 -mt-8 mb-4 relative z-20">
+  <div class="text-center">
+    <!-- Main Tagline -->
+    <h2 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-foreground">
+      {heroTagline}
+    </h2>
+    
+    <!-- Subtext Badge -->
+    <p class="text-sm text-muted-foreground inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/50 backdrop-blur-sm border border-border/50">
+      {heroSubtext}
+    </p>
+  </div>
+</div>
+

@@ -47,12 +47,27 @@
     --subtle-gray: 0 0% 40%;
 
     /* City Accent Colors - Boston Palette */
-    --boston-burgundy: 345 79% 31%;
-    --boston-navy: 222 50% 13%;
-    --boston-gold: 43 74% 52%;
-    --boston-forest: 145 40% 25%;
-    --boston-cream: 45 60% 92%;
-    --boston-accent: 345 79% 42%;  /* HSL: hsl(345, 79%, 42%) = #c1254b */
+    --boston-burgundy: 345 79% 31%;      /* #8b1538 - Deep wine red */
+    --boston-navy: 222 50% 13%;          /* #101d2e - Dark navy blue */
+    --boston-gold: 43 74% 52%;           /* #d4a84b - Old money gold */
+    --boston-forest: 145 40% 25%;        /* #265a3a - Harvard green */
+    --boston-cream: 45 60% 92%;          /* #f5eed8 - Warm cream */
+    --boston-accent: 345 79% 42%;        /* #c1254b - Brighter burgundy for accents */
+    
+    /* Miami Color Palette */
+    --miami-turquoise: 180 60% 50%;
+    --miami-coral: 16 85% 60%;
+    --miami-sunset: 30 100% 65%;
+    
+    /* NYC Color Palette */
+    --nyc-navy: 220 40% 15%;
+    --nyc-gold: 45 80% 55%;
+    --nyc-steel: 210 15% 50%;
+    
+    /* Doha Color Palette */
+    --doha-maroon: 350 70% 30%;
+    --doha-gold: 40 85% 50%;
+    --doha-sand: 35 50% 80%;
     --boston-accent: 345 79% 42%;
     --miami-turquoise: 174 70% 56%;
     --miami-accent: 174 85% 45%;
