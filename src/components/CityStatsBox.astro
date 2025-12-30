@@ -56,44 +56,50 @@ const iconPaths = {
         </p>
       </div>
 
-      <!-- Stats Grid -->
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {stats.map((stat) => (
-          <div class="glass-card-subtle rounded-2xl p-6 text-center group transition-all duration-300 hover:border-opacity-30"
-               style={`border-color: hsl(var(--${citySlug}-gold) / 0.2);`}>
-            <!-- Icon container -->
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full glass-card-dark mb-4 group-hover:scale-110 transition-transform"
-                 style={`border: 0.5px solid hsl(var(--${citySlug}-gold) / 0.3);`}>
-              <svg 
-                width="32" 
-                height="32" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2" 
-                stroke-linecap="round" 
-                stroke-linejoin="round"
-                class={goldColorClass}
-                set:html={iconPaths[stat.icon] || '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
-              />
+      <!-- Stats Grid - 5 cards top row, 1 card bottom row -->
+      <div class="stats-grid-layout">
+        {stats.map((stat, index) => {
+          const isFirstRow = index < 5;
+          const isSecondRow = index === 5;
+          return (
+            <div 
+              class={`stat-card ${isFirstRow ? 'stat-card-first-row' : 'stat-card-second-row'}`}
+              style={`border-color: hsl(var(--${citySlug}-gold) / 0.2);`}
+            >
+              <!-- Icon container -->
+              <div class="stat-icon-container"
+                   style={`border: 0.5px solid hsl(var(--${citySlug}-gold) / 0.3);`}>
+                <svg 
+                  width="32" 
+                  height="32" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"
+                  class={goldColorClass}
+                  set:html={iconPaths[stat.icon] || '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
+                />
+              </div>
+              
+              <!-- Value - Golden and bold -->
+              <div class="stat-value" style={`color: hsl(var(--${citySlug}-gold));`}>
+                {stat.value}
+              </div>
+              
+              <!-- Label - Golden -->
+              <div class={`stat-label ${goldColorClass}`}>
+                {stat.label}
+              </div>
+              
+              <!-- Description - White -->
+              <div class="stat-description" style="color: hsl(0 0% 98%);">
+                {stat.description}
+              </div>
             </div>
-            
-            <!-- Value -->
-            <div class="text-3xl font-bold font-serif mb-2" style="color: hsl(0 0% 98%);">
-              {stat.value}
-            </div>
-            
-            <!-- Label -->
-            <div class={`text-sm font-semibold mb-2 ${goldColorClass}`}>
-              {stat.label}
-            </div>
-            
-            <!-- Description -->
-            <div class="text-xs leading-relaxed" style="color: hsl(0 0% 60%);">
-              {stat.description}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   </div>
@@ -157,29 +163,91 @@ const iconPaths = {
 
   /* Typography - handled by inline styles and Tailwind classes */
 
-  /* Stats Grid */
-  .stats-grid {
+  /* Stats Grid Layout - 5 cards top row, 1 card bottom row */
+  .stats-grid-layout {
     display: grid;
     gap: 1.5rem; /* gap-6 = 24px */
     grid-template-columns: 1fr; /* Mobile: 1 column */
   }
 
   @media (min-width: 768px) {
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr); /* md: 2 columns */
+    .stats-grid-layout {
+      grid-template-columns: repeat(5, 1fr); /* 5 columns for top row */
+      grid-template-rows: auto auto; /* 2 rows */
     }
   }
 
-  @media (min-width: 1024px) {
-    .stats-grid {
-      grid-template-columns: repeat(3, 1fr); /* lg: 3 columns */
+  /* Stat Card */
+  .stat-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1rem; /* rounded-2xl = 16px */
+    padding: 1.5rem; /* p-6 = 24px */
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    border-color: hsl(var(--boston-gold) / 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* First row cards - 5 columns */
+  @media (min-width: 768px) {
+    .stat-card-first-row {
+      grid-column: span 1;
+    }
+    
+    /* Second row card - spans first column only, aligned left */
+    .stat-card-second-row {
+      grid-column: 1;
+      grid-row: 2;
     }
   }
 
-  @media (min-width: 1280px) {
-    .stats-grid {
-      grid-template-columns: repeat(5, 1fr); /* xl: 5 columns */
-    }
+  /* Icon Container */
+  .stat-icon-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem; /* w-16 = 64px */
+    height: 4rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 1rem; /* mb-4 = 16px */
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover .stat-icon-container {
+    transform: scale(1.1);
+  }
+
+  /* Stat Value - Golden, bold, large */
+  .stat-value {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.875rem; /* text-3xl = 30px */
+    font-weight: 700; /* bold */
+    line-height: 1.2;
+    margin-bottom: 0.5rem; /* mb-2 = 8px */
+  }
+
+  /* Stat Label - Golden, semibold */
+  .stat-label {
+    font-size: 0.875rem; /* text-sm = 14px */
+    font-weight: 600; /* semibold */
+    margin-bottom: 0.5rem; /* mb-2 = 8px */
+  }
+
+  /* Stat Description - White, smaller */
+  .stat-description {
+    font-size: 0.75rem; /* text-xs = 12px */
+    line-height: 1.625; /* leading-relaxed */
+    font-weight: 400;
   }
 
   /* Stat card hover effects handled by inline styles and Tailwind */
