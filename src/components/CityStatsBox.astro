@@ -9,13 +9,22 @@ interface CityStat {
 
 interface Props {
   cityName: string;
+  citySlug?: string;  // 'boston' | 'miami' | 'nyc' | 'doha'
   stats: CityStat[];
   explorationHeadline?: string;
   explorationSubtext?: string;
   className?: string;
 }
 
-const { cityName, stats, explorationHeadline, explorationSubtext, className = "" } = Astro.props;
+const { cityName, citySlug = 'boston', stats, explorationHeadline, explorationSubtext, className = "" } = Astro.props;
+
+// City-specific gold color class
+const goldColorClass = {
+  boston: 'text-boston-gold',
+  miami: 'text-miami-turquoise',
+  nyc: 'text-nyc-gold',
+  doha: 'text-doha-gold'
+}[citySlug] || 'text-luxury-gold';
 
 // Icon SVG paths (Lucide icons)
 const iconPaths = {
@@ -34,14 +43,17 @@ const iconPaths = {
       data-scroll-reveal
     >
       <!-- Background accent orb -->
-      <div class="absolute top-0 right-0 w-96 h-96 bg-boston-gold/5 rounded-full blur-3xl -z-10 animate-pulse-glow"></div>
+      <div 
+        class="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl -z-10 animate-pulse-glow"
+        style={`background: hsl(var(--${citySlug}-gold) / 0.05);`}
+      ></div>
       
       <!-- Header -->
       <div class="text-center mb-12">
-        <h2 class="stats-title font-serif text-3xl md:text-4xl font-bold mb-3">
+        <h2 class="font-serif text-3xl md:text-4xl font-bold mb-3" style="color: hsl(0 0% 98%);">
           {explorationHeadline || `${cityName} by the Numbers`}
         </h2>
-        <p class="stats-subtitle text-lg">
+        <p class="text-lg" style="color: hsl(0 0% 60%);">
           {explorationSubtext || "A glimpse into the city's luxury landscape"}
         </p>
       </div>
@@ -49,33 +61,37 @@ const iconPaths = {
       <!-- Stats Grid -->
       <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {stats.map((stat) => (
-          <div class="stat-card glass-card-subtle rounded-2xl p-6 text-center group">
-            <!-- Icon Container -->
-            <div class="icon-container inline-flex items-center justify-center w-16 h-16 rounded-full glass-card-dark glass-border-gold mb-4 group-hover:scale-110 transition-transform duration-300">
+          <div class="glass-card-subtle rounded-2xl p-6 text-center group transition-all duration-300 hover:border-opacity-30"
+               style={`border-color: hsl(var(--${citySlug}-gold) / 0.2);`}>
+            <!-- Icon container -->
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full glass-card-dark mb-4 group-hover:scale-110 transition-transform"
+                 style={`border: 0.5px solid hsl(var(--${citySlug}-gold) / 0.3);`}>
               <svg 
-                class="w-8 h-8 text-boston-gold" 
+                width="32" 
+                height="32" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 
                 stroke-width="2" 
                 stroke-linecap="round" 
                 stroke-linejoin="round"
+                class={goldColorClass}
                 set:html={iconPaths[stat.icon] || '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
               />
             </div>
             
             <!-- Value -->
-            <div class="stat-value font-serif text-3xl font-bold mb-2">
+            <div class="text-3xl font-bold font-serif mb-2" style="color: hsl(0 0% 98%);">
               {stat.value}
             </div>
             
             <!-- Label -->
-            <div class="stat-label text-sm font-semibold text-boston-gold mb-2">
+            <div class={`text-sm font-semibold mb-2 ${goldColorClass}`}>
               {stat.label}
             </div>
             
             <!-- Description -->
-            <div class="stat-description text-xs leading-relaxed">
+            <div class="text-xs leading-relaxed" style="color: hsl(0 0% 60%);">
               {stat.description}
             </div>
           </div>
@@ -141,29 +157,7 @@ const iconPaths = {
     margin-bottom: 3rem; /* mb-12 = 48px */
   }
 
-  .stats-title {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 700;
-    font-size: 1.875rem; /* text-3xl = 30px */
-    line-height: 1.2;
-    color: hsl(0 0% 98%); /* --foreground #fafafa */
-    margin-bottom: 0.75rem; /* mb-3 = 12px */
-  }
-
-  @media (min-width: 768px) {
-    .stats-title {
-      font-size: 2.25rem; /* md:text-4xl = 36px */
-    }
-  }
-
-  .stats-subtitle {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 400;
-    font-size: 1.125rem; /* text-lg = 18px */
-    line-height: 1.5;
-    color: hsl(0 0% 60%); /* --muted-foreground #999999 */
-    margin: 0;
-  }
+  /* Typography - handled by inline styles and Tailwind classes */
 
   /* Stats Grid */
   .stats-grid {
@@ -190,78 +184,25 @@ const iconPaths = {
     }
   }
 
-  /* Individual Stat Card */
-  .stat-card {
-    border-radius: 1rem; /* rounded-2xl = 16px */
-    padding: 1.5rem; /* p-6 = 24px */
-    text-align: center;
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    transition: all 0.3s ease;
-  }
+  /* Stat card hover effects handled by inline styles and Tailwind */
 
-  .stat-card:hover {
-    border-color: rgba(212, 165, 34, 0.3); /* Boston gold on hover */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Icon Container */
-  .icon-container {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 4rem; /* w-16 = 64px */
-    height: 4rem;
-    border-radius: 50%;
-    margin-bottom: 1rem; /* mb-4 = 16px */
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 0.5px solid rgba(212, 165, 34, 0.15); /* Boston gold with opacity */
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-    transition: transform 0.3s ease;
-  }
-
-  .stat-card:hover .icon-container {
-    transform: scale(1.1);
-  }
-
-  .icon {
-    width: 2rem; /* w-8 = 32px */
-    height: 2rem;
-    color: hsl(43 74% 52%); /* --boston-gold #d4a522 */
-  }
+  /* Hover effects handled by Tailwind classes */
 
   /* Stat Value */
-  .stat-value {
+  /* City gold colors */
+  .text-boston-gold { color: hsl(43 74% 52%); }
+  .text-miami-turquoise { color: hsl(174 70% 56%); }
+  .text-nyc-gold { color: hsl(51 100% 50%); }
+  .text-doha-gold { color: hsl(43 85% 55%); }
+  .text-luxury-gold { color: hsl(43 35% 48%); }
+  
+  /* Typography */
+  .font-serif {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 700;
-    font-size: 1.875rem; /* text-3xl = 30px */
-    line-height: 1.2;
-    color: hsl(0 0% 98%); /* --foreground #fafafa */
-    margin-bottom: 0.5rem; /* mb-2 = 8px */
   }
-
-  /* Stat Label */
-  .stat-label {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 600; /* font-semibold */
-    font-size: 0.875rem; /* text-sm = 14px */
-    line-height: 1.4;
-    color: hsl(43 74% 52%); /* --boston-gold #d4a522 */
-    margin-bottom: 0.5rem; /* mb-2 = 8px */
-  }
-
-  /* Stat Description */
-  .stat-description {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 400;
-    font-size: 0.75rem; /* text-xs = 12px */
-    line-height: 1.6; /* leading-relaxed */
-    color: hsl(0 0% 60%); /* --muted-foreground #999999 */
-    margin: 0;
+  
+  .leading-relaxed {
+    line-height: 1.625; /* relaxed = 1.625 */
   }
 
   /* Pulse Glow Animation */
@@ -274,99 +215,37 @@ const iconPaths = {
     }
   }
 
-  /* Scroll Reveal Animation */
-  .stats-container {
+  /* Scroll reveal */
+  [data-scroll-reveal] {
     opacity: 0;
     transform: scale(0.95);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   }
-
-  .stats-container.is-visible {
+  
+  [data-scroll-reveal].is-visible {
     opacity: 1;
     transform: scale(1);
-  }
-  
-  /* Tailwind utility classes */
-  .rounded-3xl {
-    border-radius: 1.5rem; /* 24px */
-  }
-  
-  .rounded-2xl {
-    border-radius: 1rem; /* 16px */
-  }
-  
-  .w-96 {
-    width: 24rem; /* 384px */
-  }
-  
-  .h-96 {
-    height: 24rem; /* 384px */
-  }
-  
-  .w-16 {
-    width: 4rem; /* 64px */
-  }
-  
-  .h-16 {
-    height: 4rem; /* 64px */
-  }
-  
-  .w-8 {
-    width: 2rem; /* 32px */
-  }
-  
-  .h-8 {
-    height: 2rem; /* 32px */
-  }
-  
-  .bg-boston-gold\/5 {
-    background-color: hsla(43, 74%, 52%, 0.05);
-  }
-  
-  .text-boston-gold {
-    color: hsl(43 74% 52%); /* #d4a522 */
-  }
-  
-  .blur-3xl {
-    filter: blur(64px);
-    -webkit-filter: blur(64px);
-  }
-  
-  .animate-pulse-glow {
-    animation: pulse-glow 4s ease-in-out infinite;
-  }
-  
-  .group-hover\:scale-110:hover {
-    transform: scale(1.1);
-  }
-  
-  .transition-transform {
-    transition-property: transform;
-  }
-  
-  .duration-300 {
-    transition-duration: 300ms;
   }
 </style>
 
 <script is:inline>
-  // Scroll reveal observer
+  // Intersection Observer for scroll reveal
   (function() {
     if (typeof window === 'undefined') return;
     
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-    
-    // Wait for DOM to be ready
     function initScrollReveal() {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
       document.querySelectorAll('[data-scroll-reveal]').forEach((el) => {
         observer.observe(el);
       });
