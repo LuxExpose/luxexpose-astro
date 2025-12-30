@@ -7,15 +7,30 @@
    ========================================= */
 @layer base {
   :root {
-    --background: 0 0% 3%;
+    --background: 30 5% 10%;
     --foreground: 0 0% 98%;
-    --border: 0 0% 14%;
+    --border: 0 0% 15%;
     --radius: 0.75rem;
+
+    /* Primary Colors */
+    --primary: 43 35% 48%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
 
     /* Luxury Gold */
     --luxury-gold: 45 100% 51%;
     --luxury-gold-light: 45 100% 70%;
     --luxury-gold-dark: 45 100% 35%;
+
+    /* City Accents */
+    --boston-accent: 345 79% 42%;
+    --miami-accent: 174 85% 45%;
+    --nyc-accent: 210 100% 40%;
+    --doha-accent: 350 79% 38%;
+
+    /* Fonts */
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
   }
 
   html,
