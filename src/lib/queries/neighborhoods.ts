@@ -54,18 +54,23 @@ export async function getCityNeighborhoods(citySlug: string): Promise<Neighborho
       return []
     }
 
-    const neighborhoods = (data || []).map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      slug: item.slug,
-      description: item.description || '',
-      image_url: item.image_url || '',
-      hero_image_url: item.hero_image_url || '',
-      gallery_images: Array.isArray(item.gallery_images) ? item.gallery_images : [],
-      stats: item.stats || null,
-      display_order: item.display_order || 0,
-      location_id: item.location_id || '',
-    }))
+    const neighborhoods = (data || []).map((item: any) => {
+      // Use image_url, fallback to hero_image_url if image_url is empty
+      const imageUrl = item.image_url || item.hero_image_url || '';
+      
+      return {
+        id: item.id,
+        name: item.name,
+        slug: item.slug,
+        description: item.description || '',
+        image_url: imageUrl,
+        hero_image_url: item.hero_image_url || '',
+        gallery_images: Array.isArray(item.gallery_images) ? item.gallery_images : [],
+        stats: item.stats || null,
+        display_order: item.display_order || 0,
+        location_id: item.location_id || '',
+      };
+    })
 
     // Debug: Log neighborhoods with image URLs
     if (import.meta.env.DEV) {
