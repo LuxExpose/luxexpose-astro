@@ -31,3 +31,59 @@ export const cities: City[] = [
     path: '/doha',
   },
 ];
+
+// Fallback city data structure
+interface CityData {
+  neighborhoods?: Array<{ name: string; slug: string; description?: string; image?: string }>;
+  stats?: Array<{ icon: string; label: string; value: string; description?: string }>;
+}
+
+// Static fallback data for cities
+const cityDataMap: Record<string, CityData> = {
+  boston: {
+    neighborhoods: [],
+    stats: [],
+  },
+  miami: {
+    neighborhoods: [],
+    stats: [],
+  },
+  nyc: {
+    neighborhoods: [],
+    stats: [],
+  },
+  doha: {
+    neighborhoods: [],
+    stats: [],
+  },
+};
+
+// Fallback location IDs (these should match your database)
+const cityLocationIds: Record<string, string> = {
+  boston: '',
+  miami: '',
+  nyc: '',
+  doha: '',
+};
+
+// Map locations for each city (empty by default, should be populated from database)
+export const cityMapLocations: Record<string, Array<{ lat: number; lng: number; name: string }>> = {
+  boston: [],
+  miami: [],
+  nyc: [],
+  doha: [],
+};
+
+/**
+ * Get static fallback city data
+ */
+export function getCityData(slug: string): CityData | null {
+  return cityDataMap[slug] || null;
+}
+
+/**
+ * Get fallback location ID for a city slug
+ */
+export function getCityLocationId(slug: string): string | null {
+  return cityLocationIds[slug] || null;
+}
