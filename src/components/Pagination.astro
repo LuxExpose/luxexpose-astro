@@ -32,12 +32,26 @@ function getPageUrl(page: number): string {
     )}
 
     <div class="flex gap-2">
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-        if (
-          page === 1 ||
-          page === totalPages ||
-          (page >= currentPage - 2 && page <= currentPage + 2)
-        ) {
+      {(() => {
+        const pages: Array<number | 'ellipsis'> = [];
+        
+        for (let page = 1; page <= totalPages; page++) {
+          if (
+            page === 1 ||
+            page === totalPages ||
+            (page >= currentPage - 2 && page <= currentPage + 2)
+          ) {
+            pages.push(page);
+          } else if (page === currentPage - 3 || page === currentPage + 3) {
+            pages.push('ellipsis');
+          }
+        }
+        
+        return pages.map((item) => {
+          if (item === 'ellipsis') {
+            return <span class="px-2 text-white/50">...</span>;
+          }
+          const page = item as number;
           return (
             <a
               href={getPageUrl(page)}
@@ -50,11 +64,8 @@ function getPageUrl(page: number): string {
               {page}
             </a>
           );
-        } else if (page === currentPage - 3 || page === currentPage + 3) {
-          return <span class="px-2 text-white/50">...</span>;
-        }
-        return null;
-      })}
+        });
+      })()}
     </div>
 
     {currentPage < totalPages && (
