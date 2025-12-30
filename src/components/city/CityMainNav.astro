@@ -493,23 +493,24 @@ const cityAccentVar = `var(--${config.accent})`;
   
   .dropdown-header {
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.75rem;
   }
   
   .dropdown-title {
-    font-family: var(--font-serif);
+    font-family: 'Cormorant Garamond', serif;
     font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: hsl(var(--primary));
+    letter-spacing: 0.05em;
+    color: var(--primary);
     margin-bottom: 0.25rem;
     margin: 0 0 0.25rem 0;
   }
   
   .dropdown-subtitle {
     font-size: 0.75rem;
-    color: hsl(var(--muted-foreground));
+    color: var(--muted-foreground);
     margin: 0;
   }
   
