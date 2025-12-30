@@ -1,4 +1,6 @@
 ---
+import { getYouTubeVideoId, getYouTubeEmbedUrl } from '../utils/youtube';
+
 // Props interface
 interface Article {
   id: string;
@@ -19,22 +21,38 @@ interface Props {
 
 const { articles = [] } = Astro.props;
 
-// Normalize article data
-const normalizedArticles = articles.map(article => ({
-  id: article.id,
-  title: article.title,
-  category: article.categories?.name || "Editorial",
-  image: article.featured_image || "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1920&q=80",
-  slug: article.slug,
-  date: article.published_at 
-    ? new Date(article.published_at).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }) 
-    : "",
-  videoUrl: article.featured_video_url,
-}));
+// Normalize article data with YouTube support
+const normalizedArticles = articles.map(article => {
+  const videoUrl = article.featured_video_url;
+  const videoId = videoUrl ? getYouTubeVideoId(videoUrl) : null;
+  const embedData = videoId ? getYouTubeEmbedUrl(videoUrl, {
+    autoplay: 1,
+    mute: 1,
+    loop: 1,
+    controls: 0,
+    modestbranding: 1,
+    rel: 0,
+    playsinline: 1,
+  }) : null;
+
+  return {
+    id: article.id,
+    title: article.title,
+    category: article.categories?.name || "Editorial",
+    image: article.featured_image || "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1920&q=80",
+    slug: article.slug,
+    date: article.published_at 
+      ? new Date(article.published_at).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }) 
+      : "",
+    videoUrl: videoUrl,
+    hasVideo: !!embedData,
+    embedData: embedData,
+  };
+});
 
 const hasArticles = normalizedArticles.length > 0;
 ---
@@ -56,19 +74,37 @@ const hasArticles = normalizedArticles.length > 0;
         aria-label={`${index + 1} of ${normalizedArticles.length}: ${article.title}`}
         aria-hidden={index !== 0 ? "true" : "false"}
       >
-        <!-- Background Image -->
-        <div class="absolute inset-0">
-          <img
-            src={article.image}
-            alt={article.title}
-            class="w-full h-full object-cover"
-            loading={index === 0 ? "eager" : "lazy"}
-            decoding={index === 0 ? "sync" : "async"}
-          />
-          <!-- Gradient Overlays -->
-          <div class="absolute inset-0 bg-gradient-to-r from-[hsl(var(--background)_/_0.8)] via-transparent to-transparent"></div>
-          <div class="absolute inset-0 bg-gradient-to-t from-[hsl(var(--background)_/_0.6)] via-transparent to-transparent"></div>
-        </div>
+        <!-- Background (Video or Image) -->
+        {article.hasVideo && article.embedData ? (
+          <!-- YouTube Video Background -->
+          <div class="slide-video-bg absolute inset-0">
+            <iframe
+              src={article.embedData.embedUrl}
+              title={article.title}
+              class="video-iframe"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              loading={index === 0 ? "eager" : "lazy"}
+            />
+            <!-- Gradient Overlays -->
+            <div class="overlay-horizontal absolute inset-0"></div>
+            <div class="overlay-vertical absolute inset-0"></div>
+          </div>
+        ) : (
+          <!-- Image Background -->
+          <div class="slide-image-bg absolute inset-0">
+            <img
+              src={article.image}
+              alt={article.title}
+              class="w-full h-full object-cover"
+              loading={index === 0 ? "eager" : "lazy"}
+              decoding={index === 0 ? "sync" : "async"}
+            />
+            <!-- Gradient Overlays -->
+            <div class="overlay-horizontal absolute inset-0"></div>
+            <div class="overlay-vertical absolute inset-0"></div>
+          </div>
+        )}
 
         <!-- Content -->
         <div class="relative h-full container mx-auto px-4 sm:px-6 flex items-end pb-12 sm:pb-16">
@@ -164,30 +200,87 @@ const hasArticles = normalizedArticles.length > 0;
 <style>
   /* Slide transitions */
   .slide {
+    position: absolute;
+    inset: 0;
     opacity: 0;
+    z-index: 0;
     pointer-events: none;
-    transition: opacity 1s ease;
+    transition: opacity 1s ease-in-out, z-index 0s linear 1s;
   }
 
   .slide.active {
     opacity: 1;
+    z-index: 1;
     pointer-events: auto;
+    transition: opacity 1s ease-in-out, z-index 0s linear 0s;
   }
 
   /* Content animation on active */
   .slide.active .slide-content {
-    animation: fade-in 0.6s ease-out;
+    animation: fade-in 0.6s ease-out 0.3s forwards;
+    opacity: 0;
   }
 
   @keyframes fade-in {
-    0% {
+    from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(20px);
     }
-    100% {
+    to {
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Video Background Container */
+  .slide-video-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  /* YouTube iFrame Sizing (maintains 16:9 aspect ratio, covers container) */
+  .video-iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* Cover calculation: ensures video covers viewport */
+    width: 177.77vh; /* 16:9 ratio = 100vh * (16/9) = 177.77vh */
+    height: 56.25vw; /* 16:9 ratio = 100vw * (9/16) = 56.25vw */
+    min-width: 100%;
+    min-height: 100%;
+    
+    border: none;
+    pointer-events: none; /* Prevent interaction with video */
+  }
+
+  /* Gradient Overlays for Readability */
+  .overlay-horizontal {
+    background: linear-gradient(
+      to right,
+      hsl(var(--background) / 0.8) 0%,
+      transparent 50%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  .overlay-vertical {
+    background: linear-gradient(
+      to top,
+      hsl(var(--background) / 0.6) 0%,
+      transparent 40%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Image Background */
+  .slide-image-bg {
+    position: absolute;
+    inset: 0;
   }
 
   /* Luxury letter spacing */
@@ -209,10 +302,11 @@ const hasArticles = normalizedArticles.length > 0;
   /* Respect reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .slide {
-      transition: none;
+      transition: opacity 0.3s ease;
     }
     .slide.active .slide-content {
       animation: none;
+      opacity: 1;
     }
     .progress-bar {
       display: none;
@@ -243,16 +337,28 @@ const hasArticles = normalizedArticles.length > 0;
     }
 
     private init() {
+      // Only initialize if we have more than one slide
+      if (this.slides.length <= 1) return;
+
       // Arrow navigation
       const prevBtn = this.container.querySelector('[data-action="prev"]');
       const nextBtn = this.container.querySelector('[data-action="next"]');
 
-      prevBtn?.addEventListener('click', () => this.goToPrevious());
-      nextBtn?.addEventListener('click', () => this.goToNext());
+      prevBtn?.addEventListener('click', () => {
+        this.goToPrevious();
+        this.resetAutoPlay();
+      });
+      nextBtn?.addEventListener('click', () => {
+        this.goToNext();
+        this.resetAutoPlay();
+      });
 
       // Dot navigation
       this.dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => this.goToSlide(index));
+        dot.addEventListener('click', () => {
+          this.goToSlide(index);
+          this.resetAutoPlay();
+        });
       });
 
       // Keyboard navigation
@@ -281,12 +387,20 @@ const hasArticles = normalizedArticles.length > 0;
     }
 
     private goToSlide(index: number) {
+      if (index < 0 || index >= this.slides.length) return;
+      if (index === this.currentIndex) return;
+
       // Remove active from current slide
       this.slides[this.currentIndex].classList.remove('active');
       this.slides[this.currentIndex].setAttribute('aria-hidden', 'true');
-      this.dots[this.currentIndex].classList.remove('active', 'w-8', 'bg-[hsl(var(--primary))]');
-      this.dots[this.currentIndex].classList.add('bg-[hsl(var(--muted-foreground)_/_0.5)]');
-      this.dots[this.currentIndex].setAttribute('aria-current', 'false');
+      
+      // Update dots
+      const currentDot = this.dots[this.currentIndex];
+      if (currentDot) {
+        currentDot.classList.remove('active', 'w-8', 'bg-[hsl(var(--primary))]');
+        currentDot.classList.add('bg-[hsl(var(--muted-foreground)_/_0.5)]');
+        currentDot.setAttribute('aria-current', 'false');
+      }
 
       // Set new index
       this.currentIndex = index;
@@ -294,16 +408,17 @@ const hasArticles = normalizedArticles.length > 0;
       // Add active to new slide
       this.slides[this.currentIndex].classList.add('active');
       this.slides[this.currentIndex].setAttribute('aria-hidden', 'false');
-      this.dots[this.currentIndex].classList.add('active', 'w-8', 'bg-[hsl(var(--primary))]');
-      this.dots[this.currentIndex].classList.remove('bg-[hsl(var(--muted-foreground)_/_0.5)]');
-      this.dots[this.currentIndex].setAttribute('aria-current', 'true');
+      
+      // Update dots
+      const newDot = this.dots[this.currentIndex];
+      if (newDot) {
+        newDot.classList.add('active', 'w-8', 'bg-[hsl(var(--primary))]');
+        newDot.classList.remove('bg-[hsl(var(--muted-foreground)_/_0.5)]');
+        newDot.setAttribute('aria-current', 'true');
+      }
 
       // Reset progress bar
       this.resetProgressBar();
-
-      // Restart autoplay
-      this.pauseAutoPlay();
-      this.startAutoPlay();
     }
 
     private goToNext() {
@@ -317,12 +432,20 @@ const hasArticles = normalizedArticles.length > 0;
     }
 
     private handleKeydown(e: KeyboardEvent) {
+      // Only handle if slider is focused or container is in viewport
+      if (!this.container.contains(document.activeElement) && 
+          !this.container.matches(':hover')) {
+        return;
+      }
+
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         this.goToPrevious();
+        this.resetAutoPlay();
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         this.goToNext();
+        this.resetAutoPlay();
       }
     }
 
@@ -352,11 +475,12 @@ const hasArticles = normalizedArticles.length > 0;
           // Swipe right - go previous
           this.goToPrevious();
         }
+        this.resetAutoPlay();
       }
     }
 
     private startAutoPlay() {
-      if (this.isReducedMotion) return;
+      if (this.isReducedMotion || this.slides.length <= 1) return;
       
       this.pauseAutoPlay();
       
@@ -378,6 +502,13 @@ const hasArticles = normalizedArticles.length > 0;
       this.resetProgressBar();
     }
 
+    private resetAutoPlay() {
+      this.pauseAutoPlay();
+      if (!this.isReducedMotion && this.slides.length > 1) {
+        this.startAutoPlay();
+      }
+    }
+
     private resetProgressBar() {
       if (this.progressBar) {
         this.progressBar.classList.remove('animating');
@@ -385,6 +516,11 @@ const hasArticles = normalizedArticles.length > 0;
         void this.progressBar.offsetWidth;
         this.progressBar.classList.add('animating');
       }
+    }
+
+    // Cleanup method
+    public destroy() {
+      this.pauseAutoPlay();
     }
   }
 

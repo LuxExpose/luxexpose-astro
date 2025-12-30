@@ -1,0 +1,192 @@
+---
+/**
+ * VideoModal Component
+ * Modal dialog for playing YouTube videos in a fullscreen overlay
+ */
+---
+
+<div id="video-modal" class="video-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="video-modal-title">
+  <div class="video-modal-backdrop"></div>
+  <div class="video-modal-content">
+    <button class="video-modal-close" aria-label="Close video">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18"/>
+        <path d="m6 6 12 12"/>
+      </svg>
+    </button>
+    <div class="video-container">
+      <iframe id="video-iframe" src="" title="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Video Modal Styles */
+  .video-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .video-modal[aria-hidden="false"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .video-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .video-modal-content {
+    position: relative;
+    width: 90vw;
+    max-width: 1200px;
+    background: black;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--primary) / 0.2);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  }
+
+  .video-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 9999px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .video-modal-close:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+  }
+
+  .video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  }
+
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  @media (max-width: 640px) {
+    .video-modal-content {
+      width: 95vw;
+      border-radius: 0.25rem;
+    }
+
+    .video-modal-close {
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+</style>
+
+<script lang="ts">
+  import { getYouTubeEmbedUrl } from '../utils/youtube';
+
+  class VideoModal {
+    private modal: HTMLElement;
+    private iframe: HTMLIFrameElement;
+    private closeBtn: HTMLElement;
+    private backdrop: HTMLElement;
+
+    constructor() {
+      this.modal = document.getElementById('video-modal')!;
+      this.iframe = document.getElementById('video-iframe') as HTMLIFrameElement;
+      this.closeBtn = this.modal.querySelector('.video-modal-close')!;
+      this.backdrop = this.modal.querySelector('.video-modal-backdrop')!;
+      
+      this.bindEvents();
+    }
+    
+    bindEvents() {
+      this.closeBtn.addEventListener('click', () => this.close());
+      this.backdrop.addEventListener('click', () => this.close());
+      
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.modal.getAttribute('aria-hidden') === 'false') {
+          this.close();
+        }
+      });
+    }
+    
+    open(videoUrl: string, title: string = '') {
+      const embedData = getYouTubeEmbedUrl(videoUrl, { autoplay: 1 });
+      if (!embedData) {
+        console.error('Invalid YouTube URL:', videoUrl);
+        return;
+      }
+      
+      this.iframe.src = embedData.embedUrl;
+      this.iframe.title = title || 'Video';
+      this.modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    close() {
+      this.modal.setAttribute('aria-hidden', 'true');
+      this.iframe.src = ''; // Stop video
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Initialize and export for global use
+  let videoModalInstance: VideoModal | null = null;
+
+  function getVideoModal(): VideoModal {
+    if (!videoModalInstance) {
+      videoModalInstance = new VideoModal();
+    }
+    return videoModalInstance;
+  }
+
+  // Initialize on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    getVideoModal();
+  });
+
+  // Also handle Astro's view transitions
+  document.addEventListener('astro:page-load', () => {
+    if (!videoModalInstance) {
+      getVideoModal();
+    }
+  });
+
+  // Export to window for global access
+  if (typeof window !== 'undefined') {
+    (window as any).openVideoModal = (url: string, title?: string) => {
+      getVideoModal().open(url, title);
+    };
+  }
+</script>
+
