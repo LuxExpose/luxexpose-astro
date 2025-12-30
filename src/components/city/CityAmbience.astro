@@ -40,11 +40,10 @@ const style = ambienceStyles[city];
 <!-- Floating ambient orb -->
 <div 
   class:list={[
-    "fixed w-[600px] h-[600px] rounded-full opacity-30 animate-float pointer-events-none -z-10",
+    "fixed w-[600px] h-[600px] rounded-full blur-3xl opacity-30 animate-float pointer-events-none -z-10",
     `bg-gradient-to-br ${style.primary}`,
     style.position
   ]}
-  class={city === 'boston' ? 'blur-3xl' : 'blur-3xl'}
   aria-hidden="true"
 ></div>
 
