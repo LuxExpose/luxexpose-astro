@@ -13,8 +13,14 @@ const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuz
 const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
 const SITE_URL = "https://luxexpose.com";
 
+// Pagination setup
+const page = Astro.url.searchParams.get('page') ? parseInt(Astro.url.searchParams.get('page')!) : 1;
+const articlesPerPage = 33;
+const offset = (page - 1) * articlesPerPage;
+
 let featuredArticles: any[] = [];
-let rest: any[] = [];
+let editorialArticles: any[] = [];
+let totalPages = 1;
 
 try {
   // Fetch featured articles for hero slider (5 articles)
@@ -60,24 +66,76 @@ try {
     console.error('[index.astro] Error details:', errorText);
   }
 
-  // Fetch additional articles for editorial grid
-  const restResponse = await fetch(
-    `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,published_at,categories(name)&status=eq.published&order=published_at.desc&limit=25&offset=5`,
+  // Get total count of non-featured articles for pagination
+  const countResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/articles?status=eq.published&featured=eq.false&select=id`,
     {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'count=exact'
+      }
+    }
+  );
+  
+  let totalArticles = 0;
+  if (countResponse.ok) {
+    const contentRange = countResponse.headers.get('content-range');
+    if (contentRange) {
+      const match = contentRange.match(/\/(\d+)/);
+      if (match) {
+        totalArticles = parseInt(match[1], 10);
+      }
+    }
+    totalPages = Math.ceil(totalArticles / articlesPerPage);
+  }
+
+  // Fetch editorial articles (non-featured, with pagination)
+  // Try with categories relationship first
+  let editorialResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/articles?status=eq.published&featured=eq.false&select=id,title,slug,featured_image,excerpt,published_at,created_at,categories(name)&order=published_at.desc&offset=${offset}&limit=${articlesPerPage}`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
       },
     }
   );
   
-  if (restResponse.ok) {
-    rest = await restResponse.json();
+  if (editorialResponse.ok) {
+    const data = await editorialResponse.json();
+    editorialArticles = Array.isArray(data) ? data : [];
+    console.log(`[index.astro] Fetched ${editorialArticles.length} editorial articles (page ${page})`);
+    
+    // If no articles with categories, try without relationship
+    if (editorialArticles.length === 0) {
+      console.log('[index.astro] No editorial articles with categories, trying without relationship...');
+      editorialResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/articles?status=eq.published&featured=eq.false&select=id,title,slug,featured_image,excerpt,published_at,created_at&order=published_at.desc&offset=${offset}&limit=${articlesPerPage}`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (editorialResponse.ok) {
+        editorialArticles = await editorialResponse.json();
+        console.log(`[index.astro] Fallback: Fetched ${editorialArticles.length} editorial articles`);
+      }
+    }
+  } else {
+    console.error('[index.astro] Editorial articles fetch failed:', editorialResponse.status, editorialResponse.statusText);
+    const errorText = await editorialResponse.text();
+    console.error('[index.astro] Error details:', errorText);
   }
 } catch (error) {
   console.error('Failed to fetch articles:', error);
   featuredArticles = [];
-  rest = [];
+  editorialArticles = [];
 }
 
 const homeTitle = "Lux Exposé — Luxury Editorial, Travel, Autos, Real Estate";
@@ -116,7 +174,7 @@ const canonicalUrl = `${SITE_URL}/`;
         <FeaturedBrandsMarquee />
         <LuxuryQuotes />
         <BeyondTheEditorial />
-        <EditorialGrid articles={rest} />
+        <EditorialGrid articles={editorialArticles} currentPage={page} totalPages={totalPages} />
   </div>
 
   <Footer />

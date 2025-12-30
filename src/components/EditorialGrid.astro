@@ -1,110 +1,595 @@
 ---
 interface Article {
+  id: string;
   title: string;
   slug: string;
-  excerpt?: string;
-  published_at?: string;
-  featured_image?: string;
-  categories?: { name?: string; slug?: string } | null;
+  featured_image: string | null;
+  excerpt: string | null;
+  published_at: string | null;
+  created_at: string;
+  categories: {
+    name: string;
+  } | null;
 }
 
 interface Props {
-  articles?: Article[];
+  articles: Article[];
+  currentPage: number;
+  totalPages: number;
 }
 
-const { articles = [] } = Astro.props;
+const { articles, currentPage, totalPages } = Astro.props;
 
-function formatDate(value: string | undefined): string {
-  if (!value) return "";
+// Pagination logic - show first, last, current, and adjacent pages
+function getVisiblePages(current: number, total: number): (number | 'ellipsis')[] {
+  const pages: (number | 'ellipsis')[] = [];
+  
+  if (total <= 1) {
+    return [1];
+  }
+  
+  // Always show first page
+  pages.push(1);
+  
+  // Determine if we need ellipsis at start
+  const showEllipsisStart = current > 3;
+  if (showEllipsisStart) {
+    pages.push('ellipsis');
+  }
+  
+  // Show pages around current page
+  const startPage = Math.max(2, current - 1);
+  const endPage = Math.min(total - 1, current + 1);
+  
+  for (let i = startPage; i <= endPage; i++) {
+    if (i !== 1 && i !== total) {
+      pages.push(i);
+    }
+  }
+  
+  // Determine if we need ellipsis at end
+  const showEllipsisEnd = current < total - 2;
+  if (showEllipsisEnd) {
+    pages.push('ellipsis');
+  }
+  
+  // Always show last page if more than 1 page
+  if (total > 1 && !pages.includes(total)) {
+    pages.push(total);
+  }
+  
+  return pages;
+}
+
+const visiblePages = getVisiblePages(currentPage, totalPages);
+
+function formatDate(dateString: string): string {
   try {
-    const d = new Date(value);
-    return d.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   } catch {
-    return value || "";
+    return dateString;
   }
 }
 
-const hasArticles = articles && articles.length > 0;
+function getPageUrl(page: number): string {
+  if (page === 1) {
+    return '?';
+  }
+  return `?page=${page}`;
+}
 ---
 
-<section id="latest-articles" class="container max-w-7xl mx-auto px-6 py-16 md:py-20">
-  <div class="mb-12 text-center">
-    <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl text-white tracking-wide mb-4">
-      Editorial
-    </h2>
-
-    <p class="text-white/70 text-base md:text-lg max-w-3xl mx-auto mb-6">
-      From horological masterpieces and automotive icons to exceptional real estate and world-class experiences
+<section id="latest-articles" class="editorial-section">
+  <!-- Section Header -->
+  <div class="editorial-header">
+    <h2 class="editorial-title">Editorial</h2>
+    <p class="editorial-subtitle">
+      From horological masterpieces and automotive icons to exceptional real estate 
+      and world-class experiences — explore the finest in luxury living
     </p>
-
-    <!-- Divider line (must NOT be self-closing) -->
-    <div
-      class="mx-auto h-px w-32 bg-gradient-to-r from-transparent via-[hsl(var(--luxury-gold))] to-transparent opacity-60"
-    ></div>
+    <div class="editorial-divider"></div>
   </div>
-
-  {hasArticles ? (
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-      {articles.map((article) => {
-        const href = article.slug?.startsWith("/") ? article.slug : `/${article.slug}`;
-        const categoryName = article.categories?.name || "";
-
-        return (
-          <a
-            href={href}
-            class="group block overflow-hidden rounded-xl border border-white/10 glass-card-dark lux-hover-lift"
-          >
-            <div class="relative w-full aspect-[16/9] overflow-hidden bg-black/60">
-              {article.featured_image ? (
-                <img
-                  src={article.featured_image}
-                  alt={article.title}
-                  loading="lazy"
-                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                />
-              ) : (
-                <div class="h-full w-full bg-white/5 border-b border-white/10"></div>
-              )}
-
-              {categoryName && (
-                <div class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm border border-white/20">
-                  <span class="text-xs uppercase tracking-wider text-white/90 font-medium">
-                    {categoryName}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div class="p-6">
-              {article.published_at && (
-                <p class="mb-3 text-xs uppercase tracking-[0.2em] text-white/45">
-                  {formatDate(article.published_at)}
-                </p>
-              )}
-
-              <h3 class="font-serif text-xl md:text-2xl leading-tight text-white mb-3 transition-colors duration-300 group-hover:text-[hsl(var(--luxury-gold))]">
-                {article.title}
-              </h3>
-
-              {article.excerpt ? (
-                <p
-                  class="text-white/70 text-sm leading-relaxed overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]"
-                >
-                  {article.excerpt}
-                </p>
-              ) : null}
-            </div>
-          </a>
-        );
-      })}
+  
+  <!-- Article Grid -->
+  {articles.length === 0 ? (
+    <div class="empty-state">
+      <p>No articles published yet. Check back soon!</p>
     </div>
   ) : (
-    <div class="rounded-xl border border-white/10 bg-black/40 p-12 text-center">
-      <p class="text-white/60 text-lg">No articles found.</p>
-    </div>
+    <>
+      <div class="editorial-grid">
+        {articles.map((article, index) => (
+          <article 
+            class="article-card" 
+            style={`animation-delay: ${Math.min(index * 0.05, 0.5)}s`}
+          >
+            <a href={`/${article.slug}`} class="article-link">
+              <!-- Image Container -->
+              <div class="article-image-wrapper">
+                <img 
+                  src={article.featured_image || 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80'}
+                  alt={article.title}
+                  class="article-image"
+                  loading="lazy"
+                  width="800"
+                  height="500"
+                />
+                <div class="article-image-overlay"></div>
+              </div>
+              
+              <!-- Content -->
+              <div class="article-content">
+                <div class="article-category-wrapper">
+                  <span class="article-category">
+                    {article.categories?.name || 'Uncategorized'}
+                  </span>
+                  <div class="category-underline"></div>
+                </div>
+                
+                <h3 class="article-title">{article.title}</h3>
+                
+                {article.excerpt && (
+                  <p class="article-excerpt">{article.excerpt}</p>
+                )}
+                
+                <div class="article-meta">
+                  <svg class="calendar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <time datetime={article.published_at || article.created_at}>
+                    {formatDate(article.published_at || article.created_at)}
+                  </time>
+                </div>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+      
+      <!-- Pagination -->
+      {totalPages > 1 && (
+        <nav class="pagination" aria-label="Article pagination">
+          <a 
+            href={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
+            class:list={['pagination-btn', 'pagination-prev', { disabled: currentPage === 1 }]}
+            aria-disabled={currentPage === 1 ? 'true' : undefined}
+          >
+            <svg class="pagination-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </a>
+          
+          <div class="pagination-pages">
+            {visiblePages.map((pageNum, index) => (
+              pageNum === 'ellipsis' ? (
+                <span class="pagination-ellipsis" key={`ellipsis-${index}`}>...</span>
+              ) : (
+                <a 
+                  href={getPageUrl(pageNum as number)}
+                  class:list={['pagination-page', { active: currentPage === pageNum }]}
+                  aria-current={currentPage === pageNum ? 'page' : undefined}
+                  key={pageNum}
+                >
+                  {pageNum}
+                </a>
+              )
+            ))}
+          </div>
+          
+          <a 
+            href={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
+            class:list={['pagination-btn', 'pagination-next', { disabled: currentPage === totalPages }]}
+            aria-disabled={currentPage === totalPages ? 'true' : undefined}
+          >
+            <svg class="pagination-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        </nav>
+      )}
+    </>
   )}
 </section>
+
+<style>
+  /* ========================================
+     EDITORIAL SECTION
+     ======================================== */
+  .editorial-section {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 3rem 1rem;
+  }
+
+  /* Header */
+  .editorial-header {
+    margin-bottom: 4rem;
+    text-align: center;
+  }
+
+  .editorial-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: white;
+    letter-spacing: 0.1em;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .editorial-title {
+      font-size: 3rem;
+    }
+  }
+
+  .editorial-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 300;
+    max-width: 48rem;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  @media (min-width: 768px) {
+    .editorial-subtitle {
+      font-size: 1.25rem;
+    }
+  }
+
+  .editorial-divider {
+    width: 6rem;
+    height: 4px;
+    background: linear-gradient(to right, #DAA520, transparent);
+    margin: 1.5rem auto 0;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.125rem;
+  }
+
+  /* ========================================
+     ARTICLE GRID
+     ======================================== */
+  .editorial-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .editorial-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* ========================================
+     ARTICLE CARD
+     ======================================== */
+  .article-card {
+    opacity: 0;
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .article-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+    transition: transform 0.5s ease;
+  }
+
+  .article-link:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Image */
+  .article-image-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.5s ease;
+  }
+
+  .article-link:hover .article-image-wrapper {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 30px rgba(218, 165, 32, 0.15);
+  }
+
+  .article-image {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .article-link:hover .article-image {
+    transform: scale(1.05);
+  }
+
+  .article-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .article-link:hover .article-image-overlay {
+    opacity: 1;
+  }
+
+  /* Content */
+  .article-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  @media (min-width: 768px) {
+    .article-content {
+      gap: 1.25rem;
+    }
+  }
+
+  /* Category */
+  .article-category-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .article-category {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #DAA520;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    transition: color 0.3s ease;
+  }
+
+  .article-link:hover .article-category {
+    color: rgba(218, 165, 32, 0.8);
+  }
+
+  .category-underline {
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(to right, rgba(218, 165, 32, 0.6), transparent);
+  }
+
+  /* Title */
+  .article-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.125rem;
+    font-weight: 200;
+    color: white;
+    line-height: 1.6;
+    transition: color 0.5s ease;
+  }
+
+  @media (min-width: 640px) {
+    .article-title {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .article-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  .article-link:hover .article-title {
+    color: #DAA520;
+  }
+
+  /* Featured variant */
+  .article-card.featured .article-title {
+    font-size: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .article-card.featured .article-title {
+      font-size: 1.875rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .article-card.featured .article-title {
+      font-size: 2.25rem;
+    }
+  }
+
+  /* Excerpt */
+  .article-excerpt {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  /* Meta */
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: auto;
+  }
+
+  .calendar-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* ========================================
+     PAGINATION
+     ======================================== */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
+  }
+
+  .pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.375rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(218, 165, 32, 0.2);
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .pagination-btn:hover:not(.disabled) {
+    background: rgba(218, 165, 32, 0.1);
+    border-color: rgba(218, 165, 32, 0.4);
+  }
+
+  .pagination-btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  .pagination-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .pagination-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.5rem;
+    border-radius: 0.375rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(218, 165, 32, 0.2);
+    color: white;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .pagination-page:hover {
+    background: rgba(218, 165, 32, 0.1);
+    border-color: rgba(218, 165, 32, 0.4);
+  }
+
+  .pagination-page.active {
+    background: #DAA520;
+    border-color: #DAA520;
+    color: black;
+    font-weight: 500;
+  }
+
+  .pagination-ellipsis {
+    padding: 0 0.5rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* ========================================
+     LIGHT THEME
+     ======================================== */
+  .light .editorial-title {
+    color: #1a1a1a;
+  }
+  
+  .light .editorial-subtitle {
+    color: rgba(0, 0, 0, 0.7);
+  }
+  
+  .light .article-content {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  .light .article-title {
+    color: #1a1a1a;
+  }
+  
+  .light .article-excerpt {
+    color: rgba(0, 0, 0, 0.7);
+  }
+  
+  .light .article-meta {
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  .light .pagination-btn,
+  .light .pagination-page {
+    background: rgba(255, 255, 255, 0.8);
+    color: #1a1a1a;
+  }
+  
+  .light .pagination-ellipsis {
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .article-card {
+      animation: none;
+      opacity: 1;
+    }
+    
+    .article-link {
+      transition: none;
+    }
+    
+    .article-image {
+      transition: none;
+    }
+  }
+</style>
