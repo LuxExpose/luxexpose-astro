@@ -288,7 +288,9 @@
       cloudLayers.forEach((layer) => {
         const speed = parseFloat(layer.getAttribute('data-parallax-speed') || '0');
         const translateY = scrollY * speed;
-        (layer as HTMLElement).style.transform = `translateY(${translateY}px)`;
+        if (layer instanceof HTMLElement) {
+          layer.style.transform = `translateY(${translateY}px)`;
+        }
       });
     }
     

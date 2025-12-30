@@ -57,7 +57,9 @@ const { city, categories, activeCategorySlug } = Astro.props;
       const spacer = document.querySelector('.city-navbar-spacer');
       if (navbar && spacer) {
         const height = navbar.offsetHeight;
-        (spacer as HTMLElement).style.height = `${height}px`;
+        if (spacer instanceof HTMLElement) {
+          spacer.style.height = `${height}px`;
+        }
       }
     }
     

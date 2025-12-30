@@ -442,7 +442,8 @@ try {
 
   // Close dropdowns when clicking outside
   document.addEventListener('click', (e) => {
-    if (!(e.target as Element).closest('.nav-item')) {
+    const target = e.target;
+    if (target && !target.closest('.nav-item')) {
       navItems.forEach(item => {
         item.classList.remove('open');
         item.querySelector('.nav-trigger')?.setAttribute('aria-expanded', 'false');
@@ -462,13 +463,13 @@ try {
     if (isOpen) {
       mobileMenu?.classList.remove('open');
       mobileMenuToggle.setAttribute('aria-expanded', 'false');
-      if (menuIcon) (menuIcon as HTMLElement).style.display = 'block';
-      if (closeIcon) (closeIcon as HTMLElement).style.display = 'none';
+      if (menuIcon && menuIcon instanceof HTMLElement) menuIcon.style.display = 'block';
+      if (closeIcon && closeIcon instanceof HTMLElement) closeIcon.style.display = 'none';
     } else {
       mobileMenu?.classList.add('open');
       mobileMenuToggle.setAttribute('aria-expanded', 'true');
-      if (menuIcon) (menuIcon as HTMLElement).style.display = 'none';
-      if (closeIcon) (closeIcon as HTMLElement).style.display = 'block';
+      if (menuIcon && menuIcon instanceof HTMLElement) menuIcon.style.display = 'none';
+      if (closeIcon && closeIcon instanceof HTMLElement) closeIcon.style.display = 'block';
     }
   });
 
@@ -494,18 +495,22 @@ try {
   });
 
   // Theme Toggle
-  function updateThemeIcons(isDark: boolean) {
+  function updateThemeIcons(isDark) {
     const sunIcons = document.querySelectorAll('.sun-icon');
     const moonIcons = document.querySelectorAll('.moon-icon');
     const themeText = document.querySelector('.theme-text');
     
     sunIcons.forEach(icon => {
-      (icon as HTMLElement).style.display = isDark ? 'block' : 'none';
+      if (icon instanceof HTMLElement) {
+        icon.style.display = isDark ? 'block' : 'none';
+      }
     });
     moonIcons.forEach(icon => {
-      (icon as HTMLElement).style.display = isDark ? 'none' : 'block';
+      if (icon instanceof HTMLElement) {
+        icon.style.display = isDark ? 'none' : 'block';
+      }
     });
-    if (themeText) {
+    if (themeText && themeText instanceof HTMLElement) {
       themeText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
     }
   }
@@ -540,9 +545,9 @@ try {
   function updateNavbarSpacer() {
     const navbar = document.getElementById('navbar');
     const spacer = document.querySelector('.navbar-spacer');
-    if (navbar && spacer) {
+    if (navbar && spacer && spacer instanceof HTMLElement) {
       const height = navbar.offsetHeight;
-      (spacer as HTMLElement).style.height = `${height}px`;
+      spacer.style.height = `${height}px`;
     }
   }
 

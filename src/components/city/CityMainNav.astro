@@ -786,7 +786,8 @@ const cityAccentVar = `var(--${config.accent})`;
   
   // Close dropdowns on outside click
   document.addEventListener('click', (e) => {
-    if (!(e.target as Element).closest('.nav-dropdown')) {
+    const target = e.target;
+    if (target && !target.closest('.nav-dropdown')) {
       document.querySelectorAll('.nav-dropdown').forEach(d => {
         d.classList.remove('open');
         d.querySelector('[data-dropdown-trigger]')?.setAttribute('aria-expanded', 'false');
