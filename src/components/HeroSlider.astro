@@ -235,9 +235,9 @@ const hasArticles = normalizedArticles.length > 0;
       ))}
     </div>
 
-    <!-- Progress Bar (Optional - luxury touch) -->
+      <!-- Progress Bar (Optional - luxury touch) -->
     <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-[hsl(var(--border)_/_0.2)]">
-      <div class="progress-bar h-full bg-[hsl(var(--primary))] w-0 transition-all ease-linear" style="transition-duration: 10000ms;"></div>
+      <div class="progress-bar h-full bg-[hsl(var(--primary))]"></div>
     </div>
   </div>
 ) : (
@@ -357,6 +357,11 @@ const hasArticles = normalizedArticles.length > 0;
   }
 
   /* Progress bar animation */
+  .progress-bar {
+    width: 0%;
+    transition: width linear;
+  }
+
   .progress-bar.animating {
     width: 100%;
   }
@@ -624,15 +629,35 @@ const hasArticles = normalizedArticles.length > 0;
     }
 
     startAutoPlay() {
-      if (this.isReducedMotion || this.slides.length <= 1) return;
+      if (this.isReducedMotion || this.slides.length <= 1) {
+        return;
+      }
       
-      this.pauseAutoPlay();
+      // Clear any existing interval first
+      if (this.autoPlayInterval) {
+        clearInterval(this.autoPlayInterval);
+        this.autoPlayInterval = null;
+      }
       
-      // Start progress bar animation
+      // Reset and start progress bar animation
       if (this.progressBar) {
-        this.progressBar.classList.add('animating');
+        // Remove animating class and reset width
+        this.progressBar.classList.remove('animating');
+        this.progressBar.style.width = '0%';
+        this.progressBar.style.transitionDuration = this.AUTO_PLAY_DELAY + 'ms';
+        
+        // Force reflow to ensure reset is applied
+        void this.progressBar.offsetWidth;
+        
+        // Start animation after a tiny delay to ensure CSS transition works
+        setTimeout(() => {
+          if (this.progressBar) {
+            this.progressBar.classList.add('animating');
+          }
+        }, 50);
       }
 
+      // Start the interval
       this.autoPlayInterval = setInterval(() => {
         this.goToNext();
       }, this.AUTO_PLAY_DELAY);
@@ -655,15 +680,22 @@ const hasArticles = normalizedArticles.length > 0;
 
     resetProgressBar() {
       if (this.progressBar) {
+        // Remove animating class and reset width
         this.progressBar.classList.remove('animating');
-        // Force reflow
+        this.progressBar.style.width = '0%';
+        // Force reflow to ensure the reset is applied
         void this.progressBar.offsetWidth;
-        this.progressBar.classList.add('animating');
+        // Re-add animating class to restart animation after a brief delay
+        setTimeout(() => {
+          if (this.progressBar && this.autoPlayInterval) {
+            this.progressBar.classList.add('animating');
+          }
+        }, 50);
       }
     }
 
     // Cleanup method
-    public destroy() {
+    destroy() {
       this.pauseAutoPlay();
     }
   }
