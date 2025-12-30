@@ -1,30 +1,44 @@
 ---
-// src/components/Navbar.astro
-import '../styles/navbar.css';
 import { cities } from '../data/cities';
 
-// Fetch categories from Supabase at build time
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuzthqxfippv.supabase.co';
-const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
+// Fetch categories at build time from Supabase
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-let categories: Array<{ id: string; name: string; slug: string; article_count: number }> = [];
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  article_count: number;
+}
+
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  featured_image: string | null;
+}
+
+let categories: Category[] = [];
+let latestExperiences: Article[] = [];
+let latestArticles: Article[] = [];
 
 try {
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/categories?select=id,name,slug,articles!inner(id)&articles.status=eq.published&order=name`,
+  // Fetch categories with article counts
+  const catResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/categories?select=id,name,slug,articles!inner(id)&articles.status=eq.published&order=name`,
     {
       headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       },
     }
   );
   
-  if (response.ok) {
-    const data = await response.json();
+  if (catResponse.ok) {
+    const catData = await catResponse.json();
     const categoryMap = new Map();
-    
-    data.forEach((cat: any) => {
+    catData.forEach((cat: any) => {
       if (!categoryMap.has(cat.id)) {
         categoryMap.set(cat.id, {
           id: cat.id,
@@ -37,11 +51,40 @@ try {
         categoryMap.get(cat.id).article_count++;
       }
     });
-    
-    categories = Array.from(categoryMap.values()).filter((cat) => cat.article_count > 0);
+    categories = Array.from(categoryMap.values()).filter(cat => cat.article_count > 0);
+  }
+
+  // Fetch latest experiences
+  const expResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/experiences?select=id,title,slug,featured_image&status=eq.published&order=created_at.desc&limit=4`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  
+  if (expResponse.ok) {
+    latestExperiences = await expResponse.json();
+  }
+
+  // Fetch latest articles for Editorial
+  const artResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,featured_image&status=eq.published&order=published_at.desc&limit=8`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  
+  if (artResponse.ok) {
+    latestArticles = await artResponse.json();
   }
 } catch (error) {
-  console.error('Failed to fetch categories:', error);
+  console.error('Error fetching navbar data:', error);
 }
 ---
 
@@ -49,32 +92,18 @@ try {
   <!-- Top Utility Bar -->
   <div class="utility-bar">
     <div class="nav-container">
-      <div class="utility-bar-content">
+      <div class="utility-bar-inner">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <!-- Theme Toggle -->
           <button class="utility-btn" id="theme-toggle" aria-label="Toggle theme">
-            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-        </button>
-
-          <!-- Search Button -->
-          <button class="utility-btn" id="search-btn" aria-label="Search" onclick="window.location.href='/search'">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        </button>
-
-          <!-- Messages Icon -->
-          <a href="/messages" class="utility-btn relative" aria-label="Messages">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <!-- Unread badge (hidden for now - show when count > 0) -->
-            <!-- <span class="notification-badge pulse">3</span> -->
-          </a>
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg class="moon-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
           
-          <!-- Notifications Bell -->
-          <button class="utility-btn relative" aria-label="Notifications" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <!-- Unread badge (hidden for now - show when count > 0) -->
-            <!-- <span class="notification-badge destructive">5</span> -->
-        </button>
+          <!-- Search -->
+          <button class="utility-btn" id="search-btn" aria-label="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -82,7 +111,7 @@ try {
 
   <!-- Main Navigation -->
   <div class="nav-container">
-    <div class="main-nav">
+    <div class="main-nav-row">
       <!-- Logo -->
       <a href="/" class="logo-link">
         <img src="/images/lux-logo.png" alt="Lux Exposé Logo" class="logo-image" />
@@ -95,19 +124,17 @@ try {
       <!-- Desktop Navigation -->
       <nav class="desktop-nav" aria-label="Main navigation">
         <ul class="nav-list">
-          <!-- Cities Dropdown -->
+          <!-- CITIES Dropdown -->
           <li class="nav-item" data-dropdown="cities">
-            <button class="nav-trigger" aria-expanded="false">
+            <button class="nav-trigger" aria-expanded="false" aria-haspopup="true">
               CITIES
-              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
+              <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-            <div class="nav-dropdown dropdown-cities">
-              <div class="glass-card-menu rounded-xl p-6 w-[400px]">
-                <div class="grid grid-cols-1 gap-4">
+            <div class="dropdown-wrapper">
+              <div class="glass-card-menu dropdown-cities">
+                <div class="dropdown-grid-1">
                   {cities.map((city) => (
-                    <a href={city.path} class="dropdown-item group">
+                    <a href={city.path} class="dropdown-item">
                       <h3 class="dropdown-item-title">{city.name}</h3>
                       <p class="dropdown-item-desc">{city.description}</p>
                     </a>
@@ -117,18 +144,16 @@ try {
             </div>
           </li>
 
-          <!-- Experiences Dropdown -->
+          <!-- EXPERIENCES Dropdown -->
           <li class="nav-item" data-dropdown="experiences">
-            <button class="nav-trigger" aria-expanded="false">
+            <button class="nav-trigger" aria-expanded="false" aria-haspopup="true">
               EXPERIENCES
-              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
+              <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-            <div class="nav-dropdown dropdown-editorial">
-              <div class="glass-card-menu rounded-xl p-6 w-[900px]">
+            <div class="dropdown-wrapper">
+              <div class="glass-card-menu dropdown-experiences">
                 <!-- Quick Links -->
-                <div class="mb-4 pb-4 border-b border-border flex gap-3">
+                <div class="quick-links">
                   <a href="/experiences/yachts" class="quick-link-btn">
                     <span>⚓</span>
                     Yacht Charters
@@ -136,86 +161,120 @@ try {
                   <a href="/for-you" class="quick-link-btn">
                     <span>✨</span>
                     Discover
-              </a>
-            </div>
-                <!-- Experience Grid (placeholder - would show featured experiences) -->
-                <div class="grid grid-cols-4 gap-6">
-                  <a href="/experiences" class="dropdown-card group block">
-                    <div class="dropdown-image-card">
-                      <div class="w-full h-full bg-muted"></div>
-                      <div class="dropdown-image-overlay"></div>
-          </div>
-                    <h3 class="dropdown-card-title">All Experiences</h3>
-              </a>
-            </div>
-          </div>
+                  </a>
+                </div>
+                <!-- Articles Grid -->
+                <div class="dropdown-grid-4">
+                  {latestExperiences.length > 0 ? latestExperiences.slice(0, 4).map((item) => (
+                    <a href={`/experience/${item.slug}`} class="dropdown-article">
+                      <div class="dropdown-article-image">
+                        {item.featured_image ? (
+                          <img src={item.featured_image} alt={item.title} loading="lazy" />
+                        ) : (
+                          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: hsl(var(--muted-foreground)); font-size: 0.75rem;">No image</div>
+                        )}
+                        <div class="dropdown-article-overlay"></div>
+                      </div>
+                      <h3 class="dropdown-article-title">{item.title}</h3>
+                    </a>
+                  )) : (
+                    <a href="/experiences" class="dropdown-article">
+                      <div class="dropdown-article-image">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: hsl(var(--muted-foreground)); font-size: 0.75rem;">View All</div>
+                        <div class="dropdown-article-overlay"></div>
+                      </div>
+                      <h3 class="dropdown-article-title">All Experiences</h3>
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           </li>
 
-          <!-- Editorial -->
-          <li class="nav-item">
-            <a href="/editorial" class="nav-link">EDITORIAL</a>
+          <!-- EDITORIAL Dropdown -->
+          <li class="nav-item" data-dropdown="editorial">
+            <button class="nav-trigger" aria-expanded="false" aria-haspopup="true">
+              EDITORIAL
+              <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="dropdown-wrapper">
+              <div class="glass-card-menu dropdown-editorial">
+                <div class="dropdown-grid-4">
+                  {latestArticles.length > 0 ? latestArticles.slice(0, 4).map((item) => (
+                    <a href={`/${item.slug}`} class="dropdown-article">
+                      <div class="dropdown-article-image">
+                        {item.featured_image ? (
+                          <img src={item.featured_image} alt={item.title} loading="lazy" />
+                        ) : (
+                          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: hsl(var(--muted-foreground)); font-size: 0.75rem;">No image</div>
+                        )}
+                        <div class="dropdown-article-overlay"></div>
+                      </div>
+                      <h3 class="dropdown-article-title">{item.title}</h3>
+                    </a>
+                  )) : (
+                    <a href="/editorial" class="dropdown-article">
+                      <div class="dropdown-article-image">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: hsl(var(--muted-foreground)); font-size: 0.75rem;">View All</div>
+                        <div class="dropdown-article-overlay"></div>
+                      </div>
+                      <h3 class="dropdown-article-title">All Editorial</h3>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
           </li>
 
-          <!-- Categories Dropdown -->
+          <!-- CATEGORIES Dropdown -->
           {categories.length > 0 && (
             <li class="nav-item" data-dropdown="categories">
-              <button class="nav-trigger" aria-expanded="false">
+              <button class="nav-trigger" aria-expanded="false" aria-haspopup="true">
                 CATEGORIES
-                <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m6 9 6 6 6-6"/>
-                </svg>
+                <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
-              <div class="nav-dropdown dropdown-categories">
-                <div class="glass-card-menu rounded-xl p-6 w-[400px] max-h-[70vh] overflow-y-auto">
-                  <div class="categories-grid">
+              <div class="dropdown-wrapper">
+                <div class="glass-card-menu dropdown-categories">
+                  <div class="dropdown-grid-2">
                     {categories.map((cat) => (
                       <a href={`/category/${cat.slug}`} class="category-item">
                         <div class="category-item-name">{cat.name}</div>
                         <div class="category-item-count">{cat.article_count} articles</div>
                       </a>
                     ))}
-          </div>
-        </div>
-      </div>
+                  </div>
+                </div>
+              </div>
             </li>
           )}
 
-          <!-- Community -->
+          <!-- COMMUNITY Link -->
           <li class="nav-item">
             <a href="/community-info" class="nav-link">COMMUNITY</a>
           </li>
         </ul>
       </nav>
 
-      <!-- Right Actions (Desktop) -->
+      <!-- Right Actions - Desktop -->
       <div class="right-actions">
-        <!-- Concierge Button -->
         <a href="/concierge" class="btn-luxury">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           <span class="btn-text">Concierge</span>
         </a>
-        
-        <!-- Sign In (placeholder) -->
-        <a href="/auth" class="user-menu-trigger">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Sign In
-        </a>
+        <a href="/auth" class="sign-in-link">Sign In</a>
       </div>
 
       <!-- Mobile Actions -->
       <div class="mobile-actions">
         <a href="/concierge" class="btn-luxury">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         </a>
-        
-        <button class="utility-btn" id="mobile-search-btn" aria-label="Search" onclick="window.location.href='/search'">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <button class="utility-btn" id="mobile-search-btn" aria-label="Search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
-
-        <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
-          <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-          <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+          <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg class="close-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
     </div>
@@ -223,74 +282,96 @@ try {
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
       <!-- Mobile Search -->
-      <button class="mobile-search-btn" id="mobile-search-trigger" onclick="window.location.href='/search'">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <span>Search site</span>
-      </button>
+      <div style="padding: 0 1rem;">
+        <button class="mobile-search-btn" id="mobile-search-trigger">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Search site</span>
+        </button>
+      </div>
 
       <!-- Quick Links -->
       <div class="mobile-quick-links">
-        <a href="/concierge" class="mobile-quick-link primary">Contact Concierge</a>
-  </div>
-
-      <!-- Cities Section -->
-      <div class="mobile-accordion">
-        <button class="mobile-accordion-trigger" data-accordion="mobile-cities">
-          CITIES
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <div class="mobile-accordion-content" id="mobile-cities" style="display: none;">
-          {cities.map((city) => (
-            <a href={city.path} style="display: block; padding: 0.5rem 0; font-size: 0.875rem; color: hsl(var(--foreground)); text-decoration: none;">
-              {city.name}
-            </a>
-          ))}
-        </div>
+        <a href="/concierge" class="mobile-quick-link">Contact Concierge</a>
       </div>
 
-      <!-- Experiences -->
-      <a href="/experiences" class="mobile-nav-link">EXPERIENCES</a>
-
-      <!-- Editorial -->
-      <a href="/editorial" class="mobile-nav-link">EDITORIAL</a>
-
-      <!-- Categories Section -->
-      {categories.length > 0 && (
-        <div class="mobile-accordion">
-          <button class="mobile-accordion-trigger" data-accordion="mobile-categories">
-            CATEGORIES
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-          <div class="mobile-accordion-content" id="mobile-categories" style="display: none;">
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
-              {categories.map((cat) => (
-                <a href={`/category/${cat.slug}`} style="display: block; padding: 0.5rem 0.75rem; border-radius: 0.375rem; background: hsl(var(--muted)); font-size: 0.875rem; text-decoration: none;">
-                  <div style="font-weight: 500; color: hsl(var(--foreground));">{cat.name}</div>
-                  <div style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">{cat.article_count} articles</div>
-                </a>
-              ))}
-            </div>
+      <div style="padding: 0 1rem;">
+        <!-- Cities Accordion -->
+        <div class="mobile-accordion" data-accordion="cities">
+          <button class="mobile-accordion-trigger">
+            <span>CITIES</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="mobile-accordion-content">
+            {cities.map((city) => (
+              <a href={city.path} class="mobile-menu-item">{city.name}</a>
+            ))}
           </div>
         </div>
-      )}
 
-      <!-- Community -->
-      <a href="/community-info" class="mobile-nav-link">COMMUNITY</a>
+        <!-- Experiences Accordion -->
+        <div class="mobile-accordion" data-accordion="experiences">
+          <button class="mobile-accordion-trigger">
+            <span>EXPERIENCES</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="mobile-accordion-content">
+            <a href="/experiences" class="mobile-menu-item">All Experiences</a>
+            <a href="/experiences/yachts" class="mobile-menu-item">Yacht Charters</a>
+            <a href="/for-you" class="mobile-menu-item">Discover</a>
+          </div>
+        </div>
 
-      <!-- Theme Toggle -->
-      <div class="mobile-theme-section">
-        <button class="mobile-theme-btn" id="mobile-theme-toggle">
-          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-          <span class="theme-text">Light Mode</span>
-        </button>
+        <!-- Editorial Accordion -->
+        <div class="mobile-accordion" data-accordion="editorial">
+          <button class="mobile-accordion-trigger">
+            <span>EDITORIAL</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="mobile-accordion-content">
+            <a href="/editorial" class="mobile-menu-item">View All Editorial</a>
+          </div>
+        </div>
+
+        <!-- Categories Accordion -->
+        {categories.length > 0 && (
+          <div class="mobile-accordion" data-accordion="categories">
+            <button class="mobile-accordion-trigger">
+              <span>CATEGORIES</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="mobile-accordion-content">
+              <div class="mobile-category-grid">
+                {categories.map((cat) => (
+                  <a href={`/category/${cat.slug}`} class="mobile-category-item">
+                    <div class="mobile-category-name">{cat.name}</div>
+                    <div class="mobile-category-count">{cat.article_count} articles</div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <!-- Community Link -->
+        <a href="/community-info" class="mobile-menu-item" style="display: flex; align-items: center; height: 3rem; padding: 0.75rem 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid hsl(var(--border));">
+          COMMUNITY
+        </a>
+
+        <!-- Theme Toggle -->
+        <div class="mobile-theme-section">
+          <button class="mobile-theme-btn" id="mobile-theme-toggle">
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg class="moon-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span class="theme-text">Light Mode</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </nav>
 
-<script is:inline>
-  // Scroll detection
+<script>
+  // Scroll Detection
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 20) {
@@ -298,154 +379,146 @@ try {
     } else {
       navbar?.classList.remove('scrolled');
     }
-  }, { passive: true });
+  });
 
-  // Mobile menu toggle
+  // Desktop Dropdown Functionality
+  const navItems = document.querySelectorAll('.nav-item[data-dropdown]');
+  
+  navItems.forEach(item => {
+    const trigger = item.querySelector('.nav-trigger');
+    
+    // Mouse enter - open dropdown
+    item.addEventListener('mouseenter', () => {
+      // Close other dropdowns
+      navItems.forEach(other => {
+        if (other !== item) {
+          other.classList.remove('open');
+          other.querySelector('.nav-trigger')?.setAttribute('aria-expanded', 'false');
+        }
+      });
+      // Open this dropdown
+      item.classList.add('open');
+      trigger?.setAttribute('aria-expanded', 'true');
+    });
+    
+    // Mouse leave - close dropdown
+    item.addEventListener('mouseleave', () => {
+      item.classList.remove('open');
+      trigger?.setAttribute('aria-expanded', 'false');
+    });
+    
+    // Click toggle (for accessibility)
+    trigger?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isOpen = item.classList.contains('open');
+      
+      // Close all dropdowns
+      navItems.forEach(other => {
+        other.classList.remove('open');
+        other.querySelector('.nav-trigger')?.setAttribute('aria-expanded', 'false');
+      });
+      
+      // Toggle this one
+      if (!isOpen) {
+        item.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!(e.target as Element).closest('.nav-item')) {
+      navItems.forEach(item => {
+        item.classList.remove('open');
+        item.querySelector('.nav-trigger')?.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+
+  // Mobile Menu Toggle
   const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
   const mobileMenu = document.getElementById('mobile-menu');
-  const menuIcon = mobileMenuToggle?.querySelector('.menu-icon') as HTMLElement;
-  const closeIcon = mobileMenuToggle?.querySelector('.close-icon') as HTMLElement;
-
-  mobileMenuToggle?.addEventListener('click', () => {
-    const isOpen = mobileMenu?.classList.toggle('open');
-    if (menuIcon && closeIcon) {
-      menuIcon.style.display = isOpen ? 'none' : 'block';
-      closeIcon.style.display = isOpen ? 'block' : 'none';
-    }
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-  });
-
-  // Dropdown functionality (hover on desktop, click for accessibility)
-  document.querySelectorAll('.nav-item[data-dropdown]').forEach((item) => {
-    const trigger = item.querySelector('.nav-trigger') as HTMLElement;
-    const dropdown = item.querySelector('.nav-dropdown') as HTMLElement;
-    
-    if (!trigger || !dropdown) return;
-
-    // Show on hover (desktop)
-    item.addEventListener('mouseenter', () => {
-      trigger.setAttribute('aria-expanded', 'true');
-      dropdown.classList.add('open');
-    });
-    
-    item.addEventListener('mouseleave', () => {
-      trigger.setAttribute('aria-expanded', 'false');
-      dropdown.classList.remove('open');
-    });
-    
-    // Toggle on click (for accessibility and mobile)
-    trigger.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const isOpen = trigger.getAttribute('aria-expanded') === 'true';
-      
-      // Close other dropdowns
-      document.querySelectorAll('.nav-item[data-dropdown]').forEach((otherItem) => {
-        if (otherItem !== item) {
-          const otherTrigger = otherItem.querySelector('.nav-trigger') as HTMLElement;
-          const otherDropdown = otherItem.querySelector('.nav-dropdown') as HTMLElement;
-          if (otherTrigger && otherDropdown) {
-            otherTrigger.setAttribute('aria-expanded', 'false');
-            otherDropdown.classList.remove('open');
-          }
-        }
-      });
-      
-      trigger.setAttribute('aria-expanded', !isOpen ? 'true' : 'false');
-      dropdown.classList.toggle('open', !isOpen);
-    });
-  });
-
-  // Close dropdowns on outside click
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    if (!target.closest('.nav-item[data-dropdown]')) {
-      document.querySelectorAll('.nav-item[data-dropdown]').forEach((item) => {
-        const trigger = item.querySelector('.nav-trigger') as HTMLElement;
-        const dropdown = item.querySelector('.nav-dropdown') as HTMLElement;
-        if (trigger && dropdown) {
-          trigger.setAttribute('aria-expanded', 'false');
-          dropdown.classList.remove('open');
-        }
-      });
-    }
-  });
-
-  // Accordion toggles
-  const accordionTriggers = document.querySelectorAll('[data-accordion]');
-  accordionTriggers.forEach((trigger) => {
-    trigger.addEventListener('click', () => {
-      const accordionId = (trigger as HTMLElement).dataset.accordion;
-      const content = document.getElementById(accordionId || '');
-      if (!content) return;
-      
-      const isOpen = content.style.display === 'block';
-      
-      content.style.display = isOpen ? 'none' : 'block';
-      trigger.setAttribute('data-state', isOpen ? 'closed' : 'open');
-    });
-  });
-
-  // Theme toggle
-  const themeToggle = document.getElementById('theme-toggle');
-  const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+  const menuIcon = mobileMenuToggle?.querySelector('.menu-icon');
+  const closeIcon = mobileMenuToggle?.querySelector('.close-icon');
   
-  const updateThemeIcons = () => {
-    const isDark = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
-    document.querySelectorAll('.sun-icon').forEach((icon) => {
+  mobileMenuToggle?.addEventListener('click', () => {
+    const isOpen = mobileMenu?.classList.contains('open');
+    
+    if (isOpen) {
+      mobileMenu?.classList.remove('open');
+      mobileMenuToggle.setAttribute('aria-expanded', 'false');
+      if (menuIcon) (menuIcon as HTMLElement).style.display = 'block';
+      if (closeIcon) (closeIcon as HTMLElement).style.display = 'none';
+    } else {
+      mobileMenu?.classList.add('open');
+      mobileMenuToggle.setAttribute('aria-expanded', 'true');
+      if (menuIcon) (menuIcon as HTMLElement).style.display = 'none';
+      if (closeIcon) (closeIcon as HTMLElement).style.display = 'block';
+    }
+  });
+
+  // Mobile Accordion
+  const accordions = document.querySelectorAll('.mobile-accordion');
+  
+  accordions.forEach(accordion => {
+    const trigger = accordion.querySelector('.mobile-accordion-trigger');
+    
+    trigger?.addEventListener('click', () => {
+      const isOpen = accordion.classList.contains('open');
+      
+      // Close all other accordions
+      accordions.forEach(other => {
+        other.classList.remove('open');
+      });
+      
+      // Toggle this one
+      if (!isOpen) {
+        accordion.classList.add('open');
+      }
+    });
+  });
+
+  // Theme Toggle
+  function updateThemeIcons(isDark: boolean) {
+    const sunIcons = document.querySelectorAll('.sun-icon');
+    const moonIcons = document.querySelectorAll('.moon-icon');
+    const themeText = document.querySelector('.theme-text');
+    
+    sunIcons.forEach(icon => {
       (icon as HTMLElement).style.display = isDark ? 'block' : 'none';
     });
-    document.querySelectorAll('.moon-icon').forEach((icon) => {
+    moonIcons.forEach(icon => {
       (icon as HTMLElement).style.display = isDark ? 'none' : 'block';
     });
-    document.querySelectorAll('.theme-text').forEach((text) => {
-      text.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-    });
-  };
-
-  const toggleTheme = () => {
-    const isDark = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+    if (themeText) {
+      themeText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
     }
-    updateThemeIcons();
-  };
+  }
 
-  themeToggle?.addEventListener('click', toggleTheme);
-  mobileThemeToggle?.addEventListener('click', toggleTheme);
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.classList.contains('dark');
+    
+    if (isDark) {
+      html.classList.remove('dark');
+      html.classList.add('light');
+      localStorage.setItem('theme', 'light');
+      updateThemeIcons(false);
+    } else {
+      html.classList.remove('light');
+      html.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      updateThemeIcons(true);
+    }
+  }
 
-  // Initialize theme
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+  document.getElementById('mobile-theme-toggle')?.addEventListener('click', toggleTheme);
+
+  // Initialize theme on load
   const savedTheme = localStorage.getItem('theme') || 'dark';
-  if (savedTheme === 'light') {
-    document.documentElement.classList.add('light');
-  } else {
-    document.documentElement.classList.add('dark');
-  }
-  updateThemeIcons();
+  const html = document.documentElement;
+  html.classList.add(savedTheme);
+  updateThemeIcons(savedTheme === 'dark');
 </script>
-
-<style>
-  .nav-item {
-    position: relative;
-    list-style: none;
-  }
-  
-  /* Ensure proper z-index hierarchy */
-  .navbar {
-    z-index: 50;
-  }
-  
-  .nav-dropdown {
-    z-index: 50;
-  }
-  
-  .glass-card-menu {
-    z-index: 50;
-  }
-</style>
