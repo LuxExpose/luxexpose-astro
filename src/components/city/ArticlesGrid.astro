@@ -1,0 +1,154 @@
+---
+// src/components/city/ArticlesGrid.astro
+import ArticleCard from './ArticleCard.astro';
+
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  featured_image: string;
+  published_at: string;
+  created_at?: string;
+  categories?: { name: string };
+}
+
+interface Props {
+  articles: Article[];
+  loading?: boolean;
+}
+
+const { articles, loading = false } = Astro.props;
+
+// Format date helper
+function formatDate(dateString: string): string {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+---
+
+<div class="container max-w-7xl mx-auto px-4 pb-12">
+  <div class="flex flex-col lg:flex-row gap-12">
+    
+    <!-- Main Content Column (70%) -->
+    <div class="flex-1 lg:w-[70%]">
+      
+      {loading ? (
+        <!-- Loading Skeleton -->
+        <div class="space-y-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div class="space-y-4">
+              <div class="h-48 w-full rounded-xl bg-muted animate-pulse"></div>
+              <div class="h-6 w-3/4 bg-muted animate-pulse rounded"></div>
+              <div class="h-4 w-full bg-muted animate-pulse rounded"></div>
+            </div>
+          ))}
+        </div>
+      ) : articles.length > 0 ? (
+        <!-- Articles Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {articles.map((article, index) => (
+            <div 
+              class="animate-fade-in" 
+              style={`animation-delay: ${Math.min(index * 0.05, 0.5)}s`}
+            >
+              <ArticleCard
+                id={article.id}
+                title={article.title}
+                slug={article.slug}
+                excerpt={article.excerpt || ''}
+                image={article.featured_image || '/placeholder.svg'}
+                date={formatDate(article.published_at || article.created_at || '')}
+                category={article.categories?.name || 'Uncategorized'}
+                showExcerpt={true}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <!-- Empty State -->
+        <div class="text-center py-12 animate-fade-in">
+          <div class="inline-block p-8 rounded-2xl bg-muted/30 backdrop-blur">
+            <p class="text-muted-foreground mb-4">
+              No content available yet. Check back soon!
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <!-- Right Sidebar (30%) -->
+    <aside class="lg:w-[30%] lg:sticky lg:top-24 lg:self-start space-y-8">
+      <!-- Sidebar content -->
+      <slot name="sidebar" />
+    </aside>
+  </div>
+</div>
+
+<style>
+  /* Fade-in animation */
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out both;
+  }
+  
+  /* Muted background */
+  .bg-muted {
+    background-color: hsl(0 0% 12%);
+  }
+  
+  .bg-muted\/30 {
+    background-color: hsl(0 0% 12% / 0.3);
+  }
+  
+  .text-muted-foreground {
+    color: hsl(0 0% 60%);
+  }
+  
+  /* Container max width */
+  .max-w-7xl {
+    max-width: 1280px;
+  }
+  
+  /* Gap utilities */
+  .gap-12 {
+    gap: 3rem; /* 48px */
+  }
+  
+  .gap-8 {
+    gap: 2rem; /* 32px */
+  }
+  
+  /* Sticky positioning */
+  .lg\:sticky {
+    position: sticky;
+  }
+  
+  .lg\:top-24 {
+    top: 6rem; /* 96px */
+  }
+  
+  /* Width utilities */
+  .lg\:w-\[70\%\] {
+    width: 70%;
+  }
+  
+  .lg\:w-\[30\%\] {
+    width: 30%;
+  }
+</style>
+

@@ -1,0 +1,126 @@
+---
+// src/components/city/ArticleCard.astro
+interface Props {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  image: string;
+  date: string;
+  excerpt?: string;
+  featured?: boolean;
+  showExcerpt?: boolean;
+}
+
+const { id, title, slug, category, image, date, excerpt, featured = false, showExcerpt = false } = Astro.props;
+---
+
+<a href={`/${slug}`} class="group block h-full">
+  <article class="h-full flex flex-col overflow-hidden transition-all duration-500 group-hover:translate-y-[-2px]">
+    
+    <!-- Image Container -->
+    <div class="relative overflow-hidden rounded-lg shadow-sm group-hover:shadow-elegant transition-all duration-500">
+      <div class="aspect-[16/10] relative overflow-hidden">
+        <img
+          src={image}
+          alt={title}
+          loading="lazy"
+          decoding="async"
+          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      </div>
+      
+      <!-- Hover Gradient Overlay -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      <!-- Bookmark Button (top-right) -->
+      <div class="absolute top-2 right-2 z-10">
+        <button class="bookmark-btn bg-background/80 backdrop-blur-sm hover:bg-background rounded-full p-2 transition-colors" aria-label="Bookmark article">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="flex-1 flex flex-col space-y-4 md:space-y-5 mt-6 p-6 rounded-lg bg-black/40 backdrop-blur-sm">
+      
+      <!-- Category Badge -->
+      <div class="flex flex-col gap-3">
+        <span class="text-xs font-semibold text-primary uppercase tracking-[0.2em] transition-colors group-hover:text-primary/80">
+          {category}
+        </span>
+        <div class="w-12 h-[1px] bg-gradient-to-r from-primary/60 to-transparent"></div>
+      </div>
+
+      <!-- Title -->
+      <h3 class:list={[
+        "font-extralight leading-relaxed text-white transition-colors duration-500 group-hover:text-primary",
+        featured ? "text-2xl sm:text-3xl md:text-4xl" : "text-lg sm:text-xl md:text-2xl"
+      ]}>
+        {title}
+      </h3>
+
+      <!-- Excerpt (optional) -->
+      {showExcerpt && excerpt && (
+        <p class="text-white/90 text-sm line-clamp-2 flex-1">{excerpt}</p>
+      )}
+
+      <!-- Date -->
+      <div class="flex items-center gap-2 text-xs text-white/70 mt-auto">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke-width="2"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke-width="2"/>
+          <line x1="3" y1="10" x2="21" y2="10" stroke-width="2"/>
+        </svg>
+        <time>{date}</time>
+      </div>
+    </div>
+  </article>
+</a>
+
+<style>
+  /* Shadow definitions */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+  
+  .shadow-elegant {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Line clamp for excerpt */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Category badge - golden */
+  .category-badge {
+    color: hsl(43 35% 48%);
+    letter-spacing: 0.2em;
+  }
+  
+  .group:hover .category-badge {
+    color: hsl(43 35% 48% / 0.8);
+  }
+  
+  /* Category underline - gradient */
+  .category-underline {
+    background: linear-gradient(to right, hsl(43 35% 48% / 0.6), transparent);
+  }
+  
+  /* Background color */
+  .bg-background\/80 {
+    background-color: hsl(var(--background) / 0.8);
+  }
+  
+  .hover\:bg-background:hover {
+    background-color: hsl(var(--background));
+  }
+</style>
+

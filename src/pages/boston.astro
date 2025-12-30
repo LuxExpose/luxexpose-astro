@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import CityNavbar from "../components/city/CityNavbar.astro";
-import ArticleGrid from "../components/ArticleGrid.astro";
+import ArticlesGrid from "../components/city/ArticlesGrid.astro";
 import CityAmbience from "../components/city/CityAmbience.astro";
 import CityHeroSection from "../components/city/CityHeroSection.astro";
 import CityHeroTagline from "../components/city/CityHeroTagline.astro";
@@ -390,134 +390,39 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
       citySlug={citySlug}
     />
 
-    <!-- Main Content Section -->
-    <section class="main-content-section">
-      <div class="content-layout">
-        <!-- Articles Column (70%) -->
-        <main class="main-content-column">
-          {articles.length > 0 ? (
-            <>
-              <ArticleGrid articles={articles} />
-              {Math.ceil(totalArticles / ARTICLES_PER_PAGE) > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={Math.ceil(totalArticles / ARTICLES_PER_PAGE)}
-                  baseUrl="/boston"
-                  queryParams={url.search}
-                />
-              )}
-            </>
-          ) : (
-            <div class="text-center py-12">
-              <p class="text-white/60 text-lg">
-                No articles found. Try adjusting your filters.
-              </p>
-            </div>
-          )}
-        </main>
-
-        <!-- Sidebar Column (30%) -->
-        <aside class="sidebar-column">
-          <div class="sidebar-sticky">
-            <GlobalTrendingWidget
-              articles={trendingArticles.map((art) => ({
-                id: art.id,
-                title: art.title,
-                slug: art.slug,
-                featured_image: art.featured_image,
-                categories: art.categories
-                  ? { name: art.categories.name, slug: art.categories.slug }
-                  : undefined,
-                locations: art.locations
-                  ? { name: art.locations.name, slug: art.locations.slug }
-                  : undefined,
-              }))}
-            />
-            <ExperiencesSidebar experiences={experiences} />
-          </div>
-        </aside>
+    <!-- Main Content Section - Articles Grid -->
+    <ArticlesGrid articles={articles}>
+      <div slot="sidebar">
+        <GlobalTrendingWidget
+          articles={trendingArticles.map((art) => ({
+            id: art.id,
+            title: art.title,
+            slug: art.slug,
+            featured_image: art.featured_image,
+            categories: art.categories
+              ? { name: art.categories.name, slug: art.categories.slug }
+              : undefined,
+            locations: art.locations
+              ? { name: art.locations.name, slug: art.locations.slug }
+              : undefined,
+          }))}
+        />
+        <ExperiencesSidebar experiences={experiences} />
       </div>
-    </section>
+    </ArticlesGrid>
 
-    <style>
-      /* Main content section container */
-      .main-content-section {
-        width: 100%;
-        max-width: 80rem;
-        margin: 0 auto;
-        padding: 0 1rem 3rem;
-      }
+    <!-- Pagination -->
+    {articles.length > 0 && Math.ceil(totalArticles / ARTICLES_PER_PAGE) > 1 && (
+      <div class="container max-w-7xl mx-auto px-4 pb-12">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalArticles / ARTICLES_PER_PAGE)}
+          baseUrl="/boston"
+          queryParams={url.search}
+        />
+      </div>
+    )}
 
-      /* Flex layout for main + sidebar */
-      .content-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      @media (min-width: 1024px) {
-        .content-layout {
-          flex-direction: row;
-          gap: 2rem;
-        }
-      }
-
-      /* Main content column - 70% on desktop */
-      .main-content-column {
-        flex: 1;
-        min-width: 0; /* Prevents flex overflow issues */
-      }
-
-      @media (min-width: 1024px) {
-        .main-content-column {
-          width: 70%;
-          flex: none; /* Fixed width, not flexible */
-        }
-      }
-
-      /* Sidebar column - 30% on desktop */
-      .sidebar-column {
-        width: 100%;
-      }
-
-      @media (min-width: 1024px) {
-        .sidebar-column {
-          width: 30%;
-          flex-shrink: 0; /* Don't shrink below 30% */
-        }
-      }
-
-      /* THE STICKY MAGIC */
-      .sidebar-sticky {
-        position: sticky;
-        top: 6rem; /* 96px - accounts for navbar height */
-        height: fit-content; /* Only as tall as its content */
-        max-height: calc(100vh - 8rem); /* Prevent exceeding viewport */
-        overflow-y: auto; /* Scroll if content is too long */
-
-        /* Custom scrollbar styling */
-        scrollbar-width: thin;
-        scrollbar-color: rgba(218, 165, 32, 0.3) transparent;
-      }
-
-      .sidebar-sticky::-webkit-scrollbar {
-        width: 4px;
-      }
-
-      .sidebar-sticky::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      .sidebar-sticky::-webkit-scrollbar-thumb {
-        background-color: rgba(218, 165, 32, 0.3);
-        border-radius: 4px;
-      }
-
-      /* Gap between sidebar widgets */
-      .sidebar-sticky > :global(* + *) {
-        margin-top: 1.5rem; /* 24px gap between widgets */
-      }
-    </style>
 
     <!-- Additional Content Sections -->
     <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
