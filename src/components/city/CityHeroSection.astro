@@ -251,7 +251,7 @@ const overlayClass = cityOverlays[city];
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 20; /* Must be higher than slides */
+    z-index: 30; /* Must be higher than slides and content */
     
     /* Visibility */
     padding: 0.75rem;
@@ -270,6 +270,7 @@ const overlayClass = cityOverlays[city];
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: auto;
   }
 
   .nav-arrow svg {
@@ -319,9 +320,14 @@ const overlayClass = cityOverlays[city];
     }
   }
 
-  /* Hide arrows if only one slide */
+  /* Hide arrows if only one slide - but only if truly only one */
   .hero-carousel:has(.hero-slide:only-child) .nav-arrow {
     display: none;
+  }
+  
+  /* Ensure arrows are visible when there are multiple slides */
+  .hero-carousel:has(.hero-slide:nth-child(2)) .nav-arrow {
+    display: flex !important;
   }
   
   /* Fade in animation */
