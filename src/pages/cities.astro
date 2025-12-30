@@ -6,7 +6,7 @@
  */
 
 import Layout from "../layouts/Layout.astro";
-import Header from "../components/Header.astro";
+import Navbar from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { getAllCities } from "../lib/supabase";
 import { getCityConfig } from "../utils/cityConfig";
@@ -67,7 +67,7 @@ const citiesSchema = {
     <script type="application/ld+json" set:html={JSON.stringify(citiesSchema)} />
   </Fragment>
 
-  <Header />
+  <Navbar />
 
   <main class="min-h-screen bg-background">
     <!-- Hero Section -->
