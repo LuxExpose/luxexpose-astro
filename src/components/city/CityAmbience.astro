@@ -44,7 +44,7 @@ const style = ambienceStyles[city];
     `bg-gradient-to-br ${style.primary}`,
     style.position
   ]}
-  style={city === 'boston' ? 'filter: blur(48px);' : 'filter: blur(64px);'}
+  class={city === 'boston' ? 'blur-3xl' : 'blur-3xl'}
   aria-hidden="true"
 ></div>
 
