@@ -12,7 +12,7 @@ import ExperiencesSidebar from "../components/ExperiencesSidebar.astro";
 import Pagination from "../components/Pagination.astro";
 import NeighborhoodExplorer from "../components/NeighborhoodExplorer.astro";
 import { getCityConfig } from "../utils/cityConfig";
-import { fetchCategories } from "../utils/categories";
+import { fetchAllCategories } from "../utils/categories";
 import { fetchLocationIdBySlug, fetchLocationBySlug } from "../utils/locations";
 import { fetchCompleteCityData } from "../utils/cities/fetchCityData";
 import {
@@ -118,8 +118,8 @@ const categorySlug = url.searchParams.get('category') || 'all';
 const currentPage = parseInt(url.searchParams.get('page') || '1');
 const ARTICLES_PER_PAGE = 12;
 
-// Fetch categories
-const categoriesData = await fetchCategories();
+// Fetch ALL categories (for navbar, show all regardless of article count)
+const categoriesData = await fetchAllCategories();
 const categories = categoriesData.map((cat) => ({
   slug: cat.slug,
   name: cat.name,

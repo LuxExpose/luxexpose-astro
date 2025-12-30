@@ -57,3 +57,35 @@ export async function fetchCategories(): Promise<Category[]> {
     return [];
   }
 }
+
+/**
+ * Fetch ALL categories (for navbar display, regardless of article count)
+ */
+export async function fetchAllCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/categories?select=id,name,slug&order=name`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Failed to fetch all categories:', response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    return data.map((cat: any) => ({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+    }));
+  } catch (error) {
+    console.error('Error fetching all categories:', error);
+    return [];
+  }
+}
