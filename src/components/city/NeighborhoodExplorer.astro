@@ -54,7 +54,6 @@ const reactAppUrl = import.meta.env.PUBLIC_REACT_APP_URL || 'https://luxexpose.c
                 alt={neighborhood.name}
                 class="card-image"
                 loading="lazy"
-                onerror="this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'"
               />
               <div class="card-gradient"></div>
             </div>
@@ -249,4 +248,20 @@ const reactAppUrl = import.meta.env.PUBLIC_REACT_APP_URL || 'https://luxexpose.c
     border-color: hsl(43 35% 48% / 0.2); /* --luxury-gold at 20% opacity */
   }
 </style>
+
+<script>
+  // Handle image loading errors with fallback
+  document.addEventListener('DOMContentLoaded', () => {
+    const images = document.querySelectorAll('.card-image');
+    const fallbackImage = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800';
+    
+    images.forEach((img) => {
+      img.addEventListener('error', function() {
+        if (this.src !== fallbackImage) {
+          this.src = fallbackImage;
+        }
+      });
+    });
+  });
+</script>
 
