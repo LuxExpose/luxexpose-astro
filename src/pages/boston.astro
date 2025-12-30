@@ -498,14 +498,10 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
     </section>
 
     <!-- Neighborhoods Section -->
-    {neighborhoods && neighborhoods.length > 0 && (
-      <NeighborhoodExplorer
-        citySlug={citySlug}
-        neighborhoods={neighborhoods}
-        title="Explore the Neighborhoods"
-        subtitle="Discover the unique character and luxury offerings of each distinctive area"
-      />
-    )}
+    <NeighborhoodExplorer
+      citySlug={citySlug}
+      cityDisplayName={city.name}
+    />
 
     <!-- Experience Callout -->
     {(copy?.experience_callout || copy?.experienceCallout) && (
