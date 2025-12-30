@@ -237,12 +237,16 @@ const { citySlug, cityDisplayName, listings, isLoading = false } = Astro.props;
 
     <!-- View All Button -->
     <div class="text-center mt-10">
-      <a href={`/${citySlug}/directory`} class="view-all-button">
-        View All in Directory
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-        </svg>
-      </a>
+      {(() => {
+        const reactAppUrl = import.meta.env.PUBLIC_REACT_APP_URL || 'https://luxexpose.com';
+        const directoryUrl = `${reactAppUrl}/${citySlug}/directory`;
+        return (
+          <a href={directoryUrl} class="view-all-button" target="_self">
+            View All in Directory
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+            </svg>
+          </a>
         );
       })()}
     </div>
