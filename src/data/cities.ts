@@ -32,6 +32,24 @@ export const cities: City[] = [
   },
 ];
 
+// Category order for sorting in city navbars
+export const categoryOrder = [
+  'automotive',
+  'aviation',
+  'beauty',
+  'events',
+  'experiences',
+  'fashion',
+  'hotels-resorts',
+  'lifestyle',
+  'people',
+  'real-estate',
+  'restaurants-venues'
+];
+
+// Featured categories shown directly in nav (rest go in "MORE" dropdown)
+export const featuredCategorySlugs = ['automotive', 'real-estate', 'restaurants-venues'];
+
 // Fallback city data structure
 interface CityData {
   neighborhoods?: Array<{ name: string; slug: string; description?: string; image?: string }>;

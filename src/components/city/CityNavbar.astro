@@ -1,0 +1,52 @@
+---
+// src/components/city/CityNavbar.astro
+import CityUtilityBar from './CityUtilityBar.astro';
+import CityMainNav from './CityMainNav.astro';
+
+interface Props {
+  city: 'boston' | 'miami' | 'nyc' | 'doha';
+  categories: Array<{ name: string; slug: string; path: string }>;
+  activeCategorySlug?: string;
+}
+
+const { city, categories, activeCategorySlug } = Astro.props;
+---
+
+<nav class="city-navbar">
+  <CityUtilityBar city={city} />
+  <CityMainNav 
+    city={city} 
+    categories={categories} 
+    activeCategorySlug={activeCategorySlug}
+  >
+    <slot name="user-menu" slot="user-menu" />
+  </CityMainNav>
+</nav>
+
+<style>
+  .city-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border));
+    transition: box-shadow 0.5s ease;
+  }
+  
+  .city-navbar.scrolled {
+    box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08);
+  }
+</style>
+
+<script>
+  const navbar = document.querySelector('.city-navbar');
+  
+  if (navbar) {
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+  }
+</script>
+

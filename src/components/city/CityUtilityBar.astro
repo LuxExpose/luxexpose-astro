@@ -1,0 +1,236 @@
+---
+// src/components/city/CityUtilityBar.astro
+interface Props {
+  city: 'boston' | 'miami' | 'nyc' | 'doha';
+  mainSiteUrl?: string;
+}
+
+const { city, mainSiteUrl = '/' } = Astro.props;
+
+// City display names
+const cityNames = {
+  boston: 'Boston',
+  miami: 'Miami',
+  nyc: 'New York',
+  doha: 'Doha'
+};
+---
+
+<div class="utility-bar">
+  <div class="utility-container">
+    <div class="utility-content">
+      <!-- Left: Back to Main Site -->
+      <a href={mainSiteUrl} class="back-link group">
+        <svg class="back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Visit Lux Exposé</span>
+      </a>
+      
+      <!-- Right: Utility Actions -->
+      <div class="utility-actions">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="utility-btn" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="icon-moon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        
+        <!-- Search Button -->
+        <button id="search-trigger" class="utility-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        
+        <!-- Notifications Bell (optional - for authenticated users) -->
+        <button id="notifications-btn" class="utility-btn notifications-btn" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notification-dot"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .utility-bar {
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    display: none; /* Hidden on mobile */
+  }
+  
+  @media (min-width: 768px) {
+    .utility-bar {
+      display: block;
+    }
+  }
+  
+  .utility-container {
+    width: 100%;
+    max-width: 80rem; /* 1280px */
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem; /* py-3 px-6 */
+  }
+  
+  .utility-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.875rem; /* text-sm */
+  }
+  
+  /* Back Link */
+  .back-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .back-link:hover {
+    color: hsl(var(--foreground));
+  }
+  
+  .back-icon {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.3s ease;
+  }
+  
+  .back-link:hover .back-icon {
+    transform: translateX(-4px);
+  }
+  
+  /* Utility Actions */
+  .utility-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .utility-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0.375rem;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .utility-btn:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--muted) / 0.5);
+  }
+  
+  .utility-btn svg {
+    width: 1.125rem; /* 18px */
+    height: 1.125rem;
+  }
+  
+  /* Theme Toggle Icons */
+  .icon-sun,
+  .icon-moon {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  /* Dark mode: show sun, hide moon */
+  :global(.dark) .icon-sun {
+    display: block;
+  }
+  
+  :global(.dark) .icon-moon {
+    display: none;
+  }
+  
+  /* Light mode: hide sun, show moon */
+  :global(:not(.dark)) .icon-sun {
+    display: none;
+  }
+  
+  :global(:not(.dark)) .icon-moon {
+    display: block;
+  }
+  
+  /* Notifications */
+  .notifications-btn {
+    position: relative;
+  }
+  
+  .notification-dot {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: hsl(var(--destructive));
+    border-radius: 50%;
+    display: none; /* Show via JS when notifications exist */
+  }
+  
+  .notification-dot.active {
+    display: block;
+  }
+</style>
+
+<script>
+  // Theme Toggle Logic
+  const themeToggle = document.getElementById('theme-toggle');
+  const iconSun = themeToggle?.querySelector('.icon-sun');
+  const iconMoon = themeToggle?.querySelector('.icon-moon');
+  
+  function updateThemeIcons() {
+    const isDark = document.documentElement.classList.contains('dark');
+    if (iconSun && iconMoon) {
+      iconSun.classList.toggle('hidden', !isDark);
+      iconMoon.classList.toggle('hidden', isDark);
+    }
+  }
+  
+  themeToggle?.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    document.documentElement.classList.toggle('dark', !isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    updateThemeIcons();
+  });
+  
+  // Initialize theme from localStorage
+  const savedTheme = localStorage.getItem('theme') || 
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+  updateThemeIcons();
+  
+  // Search Trigger - dispatches custom event for search dialog
+  const searchTrigger = document.getElementById('search-trigger');
+  searchTrigger?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('open-search-dialog'));
+  });
+</script>
+

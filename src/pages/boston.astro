@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import CityNavbar from "../components/city/CityNavbar.astro";
 import ArticleGrid from "../components/ArticleGrid.astro";
 import BostonHero from "../components/BostonHero.astro";
 import HeroTagline from "../components/HeroTagline.astro";
@@ -122,6 +123,13 @@ const categoriesData = await fetchCategories();
 const categories = categoriesData.map((cat) => ({
   slug: cat.slug,
   name: cat.name,
+}));
+
+// Prepare categories for city navbar (with paths)
+const categoryLinks = categories.map((cat) => ({
+  name: cat.name,
+  slug: cat.slug,
+  path: `/boston/category/${cat.slug}`,
 }));
 
 // Fetch regular articles (filtered by location_id, search, category)
@@ -301,6 +309,13 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
   {allSchemas.map((schema) => (
     <script slot="head" type="application/ld+json" set:html={JSON.stringify(schema)} />
   ))}
+
+  <!-- City Navbar -->
+  <CityNavbar 
+    city="boston" 
+    categories={categoryLinks}
+    activeCategorySlug={categorySlug !== 'all' ? categorySlug : undefined}
+  />
 
   <div class={`relative bg-gradient-subtle min-h-screen ${city.themeClass || ''}`}>
     <!-- Hero Section -->
