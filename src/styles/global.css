@@ -7,29 +7,40 @@
    ========================================= */
 @layer base {
   :root {
+    /* Core colors */
     --background: 30 5% 10%;
     --foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --radius: 0.75rem;
-
-    /* Primary Colors */
     --primary: 43 35% 48%;
+    --primary-foreground: 0 0% 98%;
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
+    --border: 0 0% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --radius: 0.75rem;
 
     /* Luxury Gold */
     --luxury-gold: 45 100% 51%;
     --luxury-gold-light: 45 100% 70%;
     --luxury-gold-dark: 45 100% 35%;
 
-    /* City Accents */
+    /* City accents */
+    --boston-burgundy: 345 79% 31%;
+    --boston-gold: 43 74% 52%;
     --boston-accent: 345 79% 42%;
+    
+    --miami-turquoise: 174 70% 56%;
     --miami-accent: 174 85% 45%;
+    
+    --nyc-gold: 51 100% 50%;
     --nyc-accent: 210 100% 40%;
+    
+    --doha-maroon: 350 79% 28%;
+    --doha-gold: 43 85% 55%;
     --doha-accent: 350 79% 38%;
 
     /* Fonts */
-    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
   }
 
