@@ -374,13 +374,19 @@ const cityAccentVar = `var(--${config.accent})`;
   .desktop-nav {
     display: none;
     align-items: center;
-    gap: 1rem;
+    gap: 1rem; /* gap-4 */
   }
   
   @media (min-width: 1024px) {
     .desktop-nav {
       display: flex;
-      gap: 1.5rem;
+      gap: 1.5rem; /* gap-6 */
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .desktop-nav {
+      gap: 1.5rem; /* xl:gap-6 */
     }
   }
   
@@ -507,40 +513,40 @@ const cityAccentVar = `var(--${config.accent})`;
     margin: 0;
   }
   
-  /* Network Links */
-  .network-link {
+  /* Network Links (City Links) */
+  .city-link {
     display: block;
     padding: 0.75rem;
     border-radius: 0.5rem;
     text-decoration: none;
-    transition: background 0.3s ease;
+    transition: background-color 0.3s;
   }
   
-  .network-link:hover {
-    background: hsl(var(--muted) / 0.5);
+  .city-link:hover {
+    background: rgba(255, 255, 255, 0.05);
   }
   
-  .network-link--global {
-    border: 1px solid hsl(var(--primary) / 0.2);
+  .city-link-global {
+    border: 1px solid rgba(var(--primary), 0.2);
   }
   
-  .network-name {
-    font-family: var(--font-serif);
+  .city-link h3 {
+    font-family: 'Cormorant Garamond', serif;
     font-weight: 700;
-    color: hsl(var(--foreground));
-    transition: color 0.3s ease;
+    color: var(--foreground);
+    transition: color 0.3s;
     margin: 0;
-    font-size: 0.875rem;
   }
   
-  .network-link:hover .network-name {
-    color: hsl(var(--primary));
+  .city-link:hover h3 {
+    color: var(--primary);
   }
   
-  .network-desc {
+  .city-link p {
     font-size: 0.75rem;
-    color: hsl(var(--muted-foreground));
-    margin: 0.25rem 0 0;
+    color: var(--muted-foreground);
+    margin-top: 0.25rem;
+    margin-bottom: 0;
   }
   
   /* Categories Dropdown Grid */
