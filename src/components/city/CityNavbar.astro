@@ -44,7 +44,7 @@ const { city, categories, activeCategorySlug } = Astro.props;
   }
 </style>
 
-<script>
+<script is:inline>
   const navbar = document.querySelector('.city-navbar');
   
   if (navbar) {

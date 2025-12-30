@@ -761,7 +761,7 @@ const cityAccentVar = `var(--${config.accent})`;
   }
 </style>
 
-<script>
+<script is:inline>
   // Dropdown toggle logic
   document.querySelectorAll('[data-dropdown-trigger]').forEach(trigger => {
     trigger.addEventListener('click', (e) => {
