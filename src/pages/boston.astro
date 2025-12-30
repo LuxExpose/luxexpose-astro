@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import CityNavbar from "../components/city/CityNavbar.astro";
 import ArticlesGrid from "../components/city/ArticlesGrid.astro";
+import ArticlesFilterBar from "../components/city/ArticlesFilterBar.astro";
 import CityAmbience from "../components/city/CityAmbience.astro";
 import CityHeroSection from "../components/city/CityHeroSection.astro";
 import CityHeroTagline from "../components/city/CityHeroTagline.astro";
@@ -23,6 +24,7 @@ import {
   getCityLocationId,
   getCityData,
   cityMapLocations,
+  cities,
 } from "../data/cities";
 
 const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
