@@ -9,6 +9,7 @@ import { getCityCopy } from "../data/cityCopywriting";
 import CityIntroSection from "../components/city/CityIntroSection.astro";
 import { cityIntros } from "../data/cityIntro";
 import CityStatsBox from "../components/CityStatsBox.astro";
+import { bostonStats } from "../data/bostonStats";
 import CityMap from "../components/CityMap.astro";
 import GlobalTrendingWidget from "../components/GlobalTrendingWidget.astro";
 import ExperiencesSidebar from "../components/ExperiencesSidebar.astro";
@@ -59,7 +60,7 @@ if (cityDataFromDB?.neighborhoods && cityDataFromDB.neighborhoods.length > 0) {
   neighborhoods = cityData?.neighborhoods || [];
 }
 
-// Stats: Database first, static fallback
+// Stats: Database first, static fallback, then bostonStats
 let stats = [];
 if (cityDataFromDB?.stats && cityDataFromDB.stats.length > 0) {
   stats = cityDataFromDB.stats.map(function(s) {
@@ -70,9 +71,12 @@ if (cityDataFromDB?.stats && cityDataFromDB.stats.length > 0) {
       description: s.description || '',
     };
   });
-} else {
-  // Fallback to static data
-  stats = cityData?.stats || [];
+} else if (cityData?.stats && cityData.stats.length > 0) {
+  // Fallback to static city data
+  stats = cityData.stats;
+} else if (citySlug === 'boston') {
+  // Final fallback: use bostonStats from data file
+  stats = bostonStats;
 }
 
 // Copy: Database first, static fallback
