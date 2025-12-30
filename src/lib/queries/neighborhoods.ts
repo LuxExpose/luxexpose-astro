@@ -54,7 +54,7 @@ export async function getCityNeighborhoods(citySlug: string): Promise<Neighborho
       return []
     }
 
-    return (data || []).map((item: any) => ({
+    const neighborhoods = (data || []).map((item: any) => ({
       id: item.id,
       name: item.name,
       slug: item.slug,
@@ -66,6 +66,15 @@ export async function getCityNeighborhoods(citySlug: string): Promise<Neighborho
       display_order: item.display_order || 0,
       location_id: item.location_id || '',
     }))
+
+    // Debug: Log neighborhoods with image URLs
+    if (import.meta.env.DEV) {
+      console.log(`[Neighborhoods] Fetched ${neighborhoods.length} neighborhoods for ${citySlug}:`, 
+        neighborhoods.map(n => ({ name: n.name, image_url: n.image_url }))
+      )
+    }
+
+    return neighborhoods
   } catch (error) {
     console.error('Error in getCityNeighborhoods:', error)
     return []

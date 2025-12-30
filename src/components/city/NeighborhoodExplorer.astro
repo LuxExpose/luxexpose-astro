@@ -20,6 +20,14 @@ const {
 let neighborhoods = [];
 try {
   neighborhoods = await getCityNeighborhoods(citySlug);
+  
+  // Debug: Log fetched neighborhoods
+  if (import.meta.env.DEV) {
+    console.log(`[NeighborhoodExplorer] Fetched ${neighborhoods.length} neighborhoods for ${citySlug}`);
+    neighborhoods.forEach(n => {
+      console.log(`  - ${n.name}: image_url = ${n.image_url || 'MISSING'}`);
+    });
+  }
 } catch (error) {
   console.error('Error fetching neighborhoods:', error);
   neighborhoods = [];
