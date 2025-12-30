@@ -296,9 +296,15 @@ const iconPaths = {
 
   /* Scroll Reveal Animation */
   .stats-container {
+    opacity: 1; /* Start visible, JS will handle animation */
+    transform: scale(1);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  /* Only hide if JS is loaded and element hasn't been revealed yet */
+  .stats-container.js-loaded:not(.is-visible) {
     opacity: 0;
     transform: scale(0.95);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   }
 
   .stats-container.is-visible {
