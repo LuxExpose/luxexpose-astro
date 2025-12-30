@@ -1,0 +1,311 @@
+---
+// src/components/ScrollingClouds.astro
+// This component creates parallax clouds that move as user scrolls
+---
+
+<div class="scrolling-clouds" id="scrolling-clouds">
+  <!-- Cloud layer 1 - slow movement (0.15x scroll speed) -->
+  <div class="cloud-layer" data-parallax-speed="0.15">
+    <div class="cloud cloud-1" style="top: 10%; left: 15%;"></div>
+    <div class="cloud cloud-2" style="top: 25%; left: 65%;"></div>
+    <div class="cloud cloud-3" style="top: 45%; left: 25%;"></div>
+  </div>
+
+  <!-- Cloud layer 2 - medium movement (0.25x scroll speed) -->
+  <div class="cloud-layer" data-parallax-speed="0.25">
+    <div class="cloud cloud-4" style="top: 20%; left: 45%;"></div>
+    <div class="cloud cloud-5" style="top: 55%; left: 70%;"></div>
+    <div class="cloud cloud-6" style="top: 75%; left: 10%;"></div>
+  </div>
+
+  <!-- Cloud layer 3 - faster movement (0.35x scroll speed) -->
+  <div class="cloud-layer" data-parallax-speed="0.35">
+    <div class="cloud cloud-7" style="top: 35%; left: 80%;"></div>
+    <div class="cloud cloud-8" style="top: 65%; left: 50%;"></div>
+    <div class="cloud cloud-9" style="top: 90%; left: 30%;"></div>
+  </div>
+</div>
+
+<style>
+  /* Float animation for gentle cloud movement */
+  @keyframes float-cloud {
+    0%, 100% {
+      transform: translateX(0) translateY(0);
+    }
+    50% {
+      transform: translateX(20px) translateY(-10px);
+    }
+  }
+
+  .scrolling-clouds {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .cloud-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+  }
+
+  /* Cloud base styles */
+  .cloud {
+    position: absolute;
+    background: radial-gradient(ellipse at center, 
+      hsl(0 0% 15% / 0.6) 0%,
+      hsl(0 0% 12% / 0.5) 30%,
+      hsl(0 0% 10% / 0.35) 60%,
+      hsl(0 0% 8% / 0.15) 100%
+    );
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: float-cloud 20s ease-in-out infinite;
+    mix-blend-mode: multiply;
+    box-shadow: 0 0 80px hsl(0 0% 0% / 0.2);
+  }
+
+  /* Pseudo-elements create the "fluffy" cloud shape */
+  .cloud::before,
+  .cloud::after {
+    content: '';
+    position: absolute;
+    background: radial-gradient(circle, 
+      hsl(0 0% 20% / 0.7) 0%,
+      hsl(0 0% 15% / 0.5) 40%,
+      hsl(0 0% 10% / 0.3) 70%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(50px);
+  }
+
+  /* Cloud 1 */
+  .cloud-1 {
+    width: 350px;
+    height: 120px;
+    animation-delay: 0s;
+    animation-duration: 25s;
+  }
+  .cloud-1::before {
+    width: 200px;
+    height: 100px;
+    top: -40px;
+    left: 40px;
+  }
+  .cloud-1::after {
+    width: 180px;
+    height: 90px;
+    top: -30px;
+    right: 50px;
+  }
+
+  /* Cloud 2 */
+  .cloud-2 {
+    width: 300px;
+    height: 100px;
+    animation-delay: 3s;
+    animation-duration: 22s;
+  }
+  .cloud-2::before {
+    width: 180px;
+    height: 80px;
+    top: -35px;
+    left: 35px;
+  }
+  .cloud-2::after {
+    width: 160px;
+    height: 75px;
+    top: -25px;
+    right: 40px;
+  }
+
+  /* Cloud 3 */
+  .cloud-3 {
+    width: 400px;
+    height: 130px;
+    animation-delay: 6s;
+    animation-duration: 28s;
+  }
+  .cloud-3::before {
+    width: 220px;
+    height: 110px;
+    top: -45px;
+    left: 50px;
+  }
+  .cloud-3::after {
+    width: 200px;
+    height: 95px;
+    top: -35px;
+    right: 60px;
+  }
+
+  /* Cloud 4 */
+  .cloud-4 {
+    width: 320px;
+    height: 110px;
+    animation-delay: 2s;
+    animation-duration: 24s;
+  }
+  .cloud-4::before {
+    width: 190px;
+    height: 85px;
+    top: -38px;
+    left: 38px;
+  }
+  .cloud-4::after {
+    width: 170px;
+    height: 80px;
+    top: -28px;
+    right: 45px;
+  }
+
+  /* Cloud 5 */
+  .cloud-5 {
+    width: 280px;
+    height: 95px;
+    animation-delay: 5s;
+    animation-duration: 21s;
+  }
+  .cloud-5::before {
+    width: 160px;
+    height: 75px;
+    top: -32px;
+    left: 32px;
+  }
+  .cloud-5::after {
+    width: 150px;
+    height: 70px;
+    top: -22px;
+    right: 38px;
+  }
+
+  /* Cloud 6 */
+  .cloud-6 {
+    width: 380px;
+    height: 125px;
+    animation-delay: 8s;
+    animation-duration: 27s;
+  }
+  .cloud-6::before {
+    width: 210px;
+    height: 105px;
+    top: -42px;
+    left: 48px;
+  }
+  .cloud-6::after {
+    width: 190px;
+    height: 90px;
+    top: -32px;
+    right: 55px;
+  }
+
+  /* Cloud 7 */
+  .cloud-7 {
+    width: 290px;
+    height: 105px;
+    animation-delay: 4s;
+    animation-duration: 23s;
+  }
+  .cloud-7::before {
+    width: 175px;
+    height: 82px;
+    top: -36px;
+    left: 36px;
+  }
+  .cloud-7::after {
+    width: 165px;
+    height: 77px;
+    top: -26px;
+    right: 42px;
+  }
+
+  /* Cloud 8 */
+  .cloud-8 {
+    width: 340px;
+    height: 115px;
+    animation-delay: 7s;
+    animation-duration: 26s;
+  }
+  .cloud-8::before {
+    width: 195px;
+    height: 95px;
+    top: -40px;
+    left: 42px;
+  }
+  .cloud-8::after {
+    width: 175px;
+    height: 85px;
+    top: -30px;
+    right: 48px;
+  }
+
+  /* Cloud 9 */
+  .cloud-9 {
+    width: 310px;
+    height: 108px;
+    animation-delay: 1s;
+    animation-duration: 20s;
+  }
+  .cloud-9::before {
+    width: 185px;
+    height: 88px;
+    top: -37px;
+    left: 40px;
+  }
+  .cloud-9::after {
+    width: 168px;
+    height: 82px;
+    top: -27px;
+    right: 44px;
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .cloud {
+      animation: none;
+    }
+    
+    .cloud-layer {
+      will-change: auto;
+    }
+  }
+</style>
+
+<script>
+  // Parallax scroll effect for clouds
+  function initCloudParallax() {
+    const cloudLayers = document.querySelectorAll('.cloud-layer');
+    
+    if (cloudLayers.length === 0) return;
+    
+    function updateParallax() {
+      const scrollY = window.scrollY;
+      
+      cloudLayers.forEach((layer) => {
+        const speed = parseFloat(layer.getAttribute('data-parallax-speed') || '0');
+        const translateY = scrollY * speed;
+        (layer as HTMLElement).style.transform = `translateY(${translateY}px)`;
+      });
+    }
+    
+    // Use passive listener for better performance
+    window.addEventListener('scroll', updateParallax, { passive: true });
+    
+    // Initial call
+    updateParallax();
+  }
+
+  // Initialize on DOM load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCloudParallax);
+  } else {
+    initCloudParallax();
+  }
+
+  // Also handle Astro's view transitions
+  document.addEventListener('astro:page-load', initCloudParallax);
+</script>

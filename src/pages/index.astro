@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import ScrollingClouds from "../components/ScrollingClouds.astro";
 import Navbar from "../components/Navbar.astro";
 import HeroSlider from "../components/HeroSlider.astro";
 import PlatformPillars from "../components/PlatformPillars.astro";
@@ -162,12 +163,13 @@ const canonicalUrl = `${SITE_URL}/`;
   <meta slot="head" name="twitter:title" content={homeTitle} />
   <meta slot="head" name="twitter:description" content={homeDesc} />
 
+  <ScrollingClouds />
   <Navbar />
 
   <!-- Spacer to account for fixed navbar height -->
   <div class="navbar-spacer"></div>
 
-  <div class="relative bg-glass-option-9 overflow-hidden min-h-screen">
+  <main class="relative z-10 bg-glass-option-9 overflow-hidden min-h-screen">
     <!-- Let HeroSlider fetch articles automatically if none provided -->
         <HeroSlider articles={featuredArticles.length > 0 ? featuredArticles : undefined} fetchArticles={featuredArticles.length === 0} />
         <PlatformPillars />
@@ -175,7 +177,7 @@ const canonicalUrl = `${SITE_URL}/`;
         <LuxuryQuotes />
         <BeyondTheEditorial />
         <EditorialGrid articles={editorialArticles} currentPage={page} totalPages={totalPages} />
-  </div>
+  </main>
 
   <Footer />
 </Layout>
