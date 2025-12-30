@@ -1,0 +1,108 @@
+---
+// src/components/city/CityBreadcrumbs.astro
+interface Props {
+  city: string;
+  cityName: string;
+  categoryName?: string;
+  categorySlug?: string;
+}
+
+const { city, cityName, categoryName, categorySlug } = Astro.props;
+---
+
+<nav class="breadcrumbs-container" aria-label="Breadcrumb">
+  <ol class="breadcrumbs-list">
+    <!-- Home -->
+    <li class="breadcrumb-item">
+      <a 
+        href="/" 
+        class="breadcrumb-link"
+      >
+        <svg class="breadcrumb-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Home
+      </a>
+    </li>
+    
+    <!-- Separator -->
+    <li class="breadcrumb-separator">›</li>
+    
+    <!-- City -->
+    {categoryName ? (
+      <>
+        <li class="breadcrumb-item">
+          <a 
+            href={`/${city}`} 
+            class="breadcrumb-link"
+          >
+            {cityName}
+          </a>
+        </li>
+        <li class="breadcrumb-separator">›</li>
+        <li class="breadcrumb-item">
+          <span class="breadcrumb-current">{categoryName}</span>
+        </li>
+      </>
+    ) : (
+      <li class="breadcrumb-item">
+        <span class="breadcrumb-current">{cityName}</span>
+      </li>
+    )}
+  </ol>
+</nav>
+
+<style>
+  .breadcrumbs-container {
+    width: 100%;
+    max-width: 80rem; /* 1280px */
+    margin: 0 auto;
+    padding: 2rem 1rem; /* py-8 px-4 */
+  }
+
+  .breadcrumbs-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem; /* 14px */
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .breadcrumb-link {
+    display: flex;
+    align-items: center;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .breadcrumb-link:hover {
+    color: hsl(var(--foreground));
+  }
+
+  .breadcrumb-icon {
+    width: 1rem; /* 16px */
+    height: 1rem;
+    margin-right: 0.25rem; /* mr-1 */
+  }
+
+  .breadcrumb-separator {
+    margin: 0 0.5rem; /* mx-2 */
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem; /* 14px */
+    font-weight: 400;
+  }
+
+  .breadcrumb-current {
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+</style>
+

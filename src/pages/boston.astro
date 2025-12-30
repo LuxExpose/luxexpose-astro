@@ -6,6 +6,8 @@ import CityAmbience from "../components/city/CityAmbience.astro";
 import CityHeroSection from "../components/city/CityHeroSection.astro";
 import CityHeroTagline from "../components/city/CityHeroTagline.astro";
 import { getCityCopy } from "../data/cityCopywriting";
+import CityIntroSection from "../components/city/CityIntroSection.astro";
+import { cityIntros } from "../data/cityIntro";
 import CityStatsBox from "../components/CityStatsBox.astro";
 import CityMap from "../components/CityMap.astro";
 import GlobalTrendingWidget from "../components/GlobalTrendingWidget.astro";
@@ -354,6 +356,28 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
             <CityHeroTagline heroTagline={tagline} heroSubtext={subtext} />
           ) : null;
         })()}
+
+    <!-- City Intro Section (Breadcrumbs + H1 + Description) -->
+    {(() => {
+      const intro = cityIntros[citySlug];
+      if (!intro) return null;
+      
+      // Get category name if category filter is active
+      const categoryName = categorySlug && categorySlug !== 'all' 
+        ? categoriesData.find((c) => c.slug === categorySlug)?.name 
+        : undefined;
+      
+      return (
+        <CityIntroSection
+          city={citySlug}
+          cityName={city.name}
+          headline={intro.headline}
+          description={intro.description}
+          categoryName={categoryName}
+          categorySlug={categorySlug !== 'all' ? categorySlug : undefined}
+        />
+      );
+    })()}
 
     <!-- Stats Box (if stats exist) - Database first, static fallback -->
     {stats.length > 0 && (

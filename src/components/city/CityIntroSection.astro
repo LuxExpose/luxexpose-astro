@@ -1,0 +1,95 @@
+---
+// src/components/city/CityIntroSection.astro
+import CityBreadcrumbs from './CityBreadcrumbs.astro';
+
+interface Props {
+  city: 'boston' | 'miami' | 'nyc' | 'doha';
+  cityName: string;
+  headline: string;
+  description: string;
+  categoryName?: string;
+  categorySlug?: string;
+}
+
+const { city, cityName, headline, description, categoryName, categorySlug } = Astro.props;
+---
+
+<!-- Breadcrumbs -->
+<CityBreadcrumbs 
+  city={city}
+  cityName={cityName}
+  categoryName={categoryName}
+  categorySlug={categorySlug}
+/>
+
+<!-- SEO H1 and Description Section -->
+<section class="intro-section">
+  <div class="intro-container">
+    <!-- H1 Headline with Golden Gradient -->
+    <h1 class="city-headline">
+      {headline}
+    </h1>
+    
+    <!-- Description -->
+    <p class="intro-description">
+      {description}
+    </p>
+  </div>
+</section>
+
+<style>
+  .intro-section {
+    width: 100%;
+    max-width: 80rem; /* 1280px */
+    margin: 0 auto;
+    padding: 0 1rem 2rem; /* px-4 pb-8 */
+  }
+
+  .intro-container {
+    max-width: 48rem; /* max-w-3xl / 768px */
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .city-headline {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 2.25rem; /* 36px / text-4xl */
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    margin-bottom: 1.5rem; /* mb-6 / 24px */
+    
+    /* Golden gradient */
+    background: linear-gradient(
+      to right,
+      hsl(41 70% 55%),   /* primary gold */
+      hsl(41 85% 60%),   /* accent brighter gold */
+      hsl(41 70% 55%)    /* primary gold */
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    
+    /* Decorative underline */
+    text-decoration: underline;
+    text-decoration-color: hsl(41 70% 55% / 0.5);
+    text-underline-offset: 8px;
+    text-decoration-thickness: 1px;
+  }
+
+  @media (min-width: 768px) {
+    .city-headline {
+      font-size: 3rem; /* 48px / text-5xl */
+    }
+  }
+
+  .intro-description {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.125rem; /* 18px / text-lg */
+    font-weight: 400;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.75; /* leading-relaxed */
+    margin: 0;
+  }
+</style>
+
