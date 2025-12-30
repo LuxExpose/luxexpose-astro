@@ -1,0 +1,337 @@
+---
+// src/components/city/SignatureExperiences.astro
+
+interface Props {
+  cityName: string;
+  citySlug: string;
+  experiences: {
+    title: string;
+    description: string;
+    image: string;
+    badge: string;
+    link: string;
+  }[];
+}
+
+const { cityName, citySlug, experiences } = Astro.props;
+
+// Cities that show "Coming Soon" toast instead of navigating
+const comingSoonCities = ['boston', 'miami', 'nyc'];
+const isComingSoon = comingSoonCities.includes(citySlug);
+---
+
+<section class="signature-experiences py-16">
+  <div class="container mx-auto px-4">
+    
+    <!-- Section Header -->
+    <div class="text-center mb-12">
+      <!-- Badge Pill -->
+      <div class="inline-flex items-center gap-2 glass-card-dark px-4 py-2 rounded-full mb-4">
+        <span class="badge-text">SIGNATURE EXPERIENCES</span>
+      </div>
+      
+      <!-- Title -->
+      <h2 class="section-title">
+        Only in {cityName}
+      </h2>
+      
+      <!-- Subtitle -->
+      <p class="section-subtitle">
+        Exclusive experiences that define the city's luxury lifestyle
+      </p>
+    </div>
+
+    <!-- Experience Cards Grid -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {experiences.map((experience, index) => (
+        <article 
+          class="experience-card group"
+          data-coming-soon={isComingSoon ? "true" : "false"}
+          data-link={experience.link}
+          style={`animation-delay: ${index * 0.1}s`}
+        >
+          <!-- Badge -->
+          <div class="absolute top-4 left-4 z-10">
+            <div class="badge-container">
+              <span class="badge-label">{experience.badge}</span>
+            </div>
+          </div>
+
+          <!-- Image Container -->
+          <div class="aspect-[3/4] overflow-hidden relative">
+            <img
+              src={experience.image}
+              alt={experience.title}
+              class="card-image"
+              loading="lazy"
+            />
+            <!-- Gradient Overlay -->
+            <div class="gradient-overlay"></div>
+          </div>
+
+          <!-- Content -->
+          <div class="card-content">
+            <h3 class="card-title">
+              {experience.title}
+            </h3>
+            <p class="card-description">
+              {experience.description}
+            </p>
+            <div class="card-cta">
+              <span>Discover more</span>
+              <svg 
+                class="cta-icon" 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
+              >
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" x2="21" y1="14" y2="3"/>
+              </svg>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* === SECTION === */
+  .signature-experiences {
+    /* py-16 = 64px */
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  /* === HEADER === */
+  .badge-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;        /* 14px */
+    font-weight: 500;
+    color: hsl(43, 35%, 48%);   /* --luxury-gold */
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.25rem, 5vw, 3rem);  /* 36px → 48px */
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: hsl(0, 0%, 98%);     /* --foreground */
+  }
+
+  .section-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.125rem;        /* 18px */
+    font-weight: 400;
+    color: hsl(0, 0%, 65%);     /* --muted-foreground */
+    max-width: 42rem;           /* 672px */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* === GLASS CARD DARK === */
+  .glass-card-dark {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 4px 24px 0 rgba(0, 0, 0, 0.2),
+      inset 0 0.5px 0 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* === EXPERIENCE CARD === */
+  .experience-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;        /* 16px */
+    cursor: pointer;
+    
+    /* Glass Card Dark */
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    
+    /* Animation */
+    transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .experience-card:hover {
+    border-color: rgba(218, 165, 32, 0.3);  /* Gold glow */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-4px);
+  }
+
+  /* === BADGE === */
+  .badge-container {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 0.25rem 0.75rem;   /* py-1 px-3 */
+    border-radius: 9999px;
+    border: 1px solid rgba(218, 165, 32, 0.3);  /* gold 30% */
+  }
+
+  .badge-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;         /* 12px */
+    font-weight: 600;
+    color: hsl(43, 35%, 48%);   /* --luxury-gold */
+    letter-spacing: 0.05em;
+  }
+
+  /* === IMAGE === */
+  .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 700ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .experience-card:hover .card-image {
+    transform: scale(1.1);
+  }
+
+  /* === GRADIENT OVERLAY === */
+  .gradient-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      hsl(0, 0%, 5%) 0%,              /* Solid at bottom */
+      hsla(0, 0%, 5%, 0.4) 40%,       /* Semi-transparent */
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  /* === CARD CONTENT === */
+  .card-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;            /* 24px */
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;         /* 20px */
+    font-weight: 700;
+    color: hsl(0, 0%, 98%);     /* --foreground */
+    margin-bottom: 0.5rem;      /* 8px */
+    transition: color 300ms ease;
+    
+    /* Line clamp */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .experience-card:hover .card-title {
+    color: hsl(43, 35%, 48%);   /* --luxury-gold */
+  }
+
+  .card-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;        /* 14px */
+    font-weight: 400;
+    color: hsl(0, 0%, 65%);     /* --muted-foreground */
+    margin-bottom: 1rem;        /* 16px */
+    line-height: 1.5;
+    
+    /* Line clamp */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* === CTA === */
+  .card-cta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;        /* 14px */
+    font-weight: 500;
+    color: hsl(43, 35%, 48%);   /* --luxury-gold */
+  }
+
+  .cta-icon {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 300ms ease;
+  }
+
+  .experience-card:hover .cta-icon {
+    transform: translate(4px, -4px);
+  }
+
+  /* === LIGHT MODE OVERRIDES === */
+  :global(.light) .section-title {
+    color: hsl(0, 0%, 10%);
+  }
+
+  :global(.light) .card-title {
+    color: hsl(0, 0%, 98%);     /* Keep white over image */
+  }
+
+  :global(.light) .gradient-overlay {
+    background: linear-gradient(
+      to top,
+      hsl(0, 0%, 10%) 0%,
+      hsla(0, 0%, 10%, 0.4) 40%,
+      transparent 100%
+    );
+  }
+</style>
+
+<script is:inline>
+  // Handle "Coming Soon" click behavior
+  (function() {
+    document.querySelectorAll('.experience-card').forEach(function(card) {
+      card.addEventListener('click', function(e) {
+        const isComingSoon = card.getAttribute('data-coming-soon') === 'true';
+        const link = card.getAttribute('data-link');
+        
+        if (isComingSoon) {
+          // Show toast notification (implement with your toast library)
+          if (typeof window.showToast === 'function') {
+            window.showToast({
+              title: "Coming Soon",
+              description: "Experience pages are coming soon! Stay tuned for detailed guides.",
+              duration: 3000
+            });
+          } else {
+            alert("Experience pages are coming soon! Stay tuned for detailed guides.");
+          }
+        } else if (link) {
+          window.location.href = link;
+        }
+      });
+    });
+  })();
+</script>
+
