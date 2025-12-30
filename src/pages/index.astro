@@ -169,15 +169,18 @@ const canonicalUrl = `${SITE_URL}/`;
   <!-- Spacer to account for fixed navbar height -->
   <div class="navbar-spacer"></div>
 
-  <main class="relative z-10 bg-glass-option-9 overflow-hidden min-h-screen">
-    <!-- Let HeroSlider fetch articles automatically if none provided -->
-        <HeroSlider articles={featuredArticles.length > 0 ? featuredArticles : undefined} fetchArticles={featuredArticles.length === 0} />
-        <PlatformPillars />
-        <FeaturedBrandsMarquee />
-        <LuxuryQuotes />
-        <BeyondTheEditorial />
-        <EditorialGrid articles={editorialArticles} currentPage={page} totalPages={totalPages} />
-  </main>
+  <!-- Wrapper for gradient background that extends through footer -->
+  <div class="relative z-10 bg-glass-option-9 overflow-hidden min-h-screen">
+    <main class="relative">
+      <!-- Let HeroSlider fetch articles automatically if none provided -->
+      <HeroSlider articles={featuredArticles.length > 0 ? featuredArticles : undefined} fetchArticles={featuredArticles.length === 0} />
+      <PlatformPillars />
+      <FeaturedBrandsMarquee />
+      <LuxuryQuotes />
+      <BeyondTheEditorial />
+      <EditorialGrid articles={editorialArticles} currentPage={page} totalPages={totalPages} />
+    </main>
 
-  <Footer />
+    <Footer />
+  </div>
 </Layout>
