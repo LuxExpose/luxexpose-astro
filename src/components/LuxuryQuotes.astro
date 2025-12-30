@@ -1,0 +1,298 @@
+---
+// Fetch quotes from Supabase
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuzthqxfippv.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
+
+interface LuxuryQuote {
+  id: string;
+  quote: string;
+  author: string | null;
+  display_order: number;
+}
+
+let quotes: LuxuryQuote[] = [];
+
+try {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/luxury_quotes?is_active=eq.true&order=display_order.asc&limit=10`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  if (response.ok) {
+    quotes = await response.json();
+  } else {
+    console.error('[LuxuryQuotes] Failed to fetch quotes:', response.status, response.statusText);
+  }
+} catch (error) {
+  console.error('[LuxuryQuotes] Error fetching luxury quotes:', error);
+}
+
+// Don't render if no quotes
+if (quotes.length === 0) {
+  return null;
+}
+---
+
+<section class="luxury-quotes">
+  <div class="container">
+    <div class="quotes-card">
+      <!-- Gold gradient overlay -->
+      <div class="quotes-gradient-horizontal"></div>
+      
+      <!-- Content wrapper -->
+      <div class="quotes-content">
+        <div class="quotes-inner">
+          <!-- Quote element - will be cycled via JS -->
+          <div class="quote-item ghost-fade-in" id="active-quote">
+            <blockquote class="quote-text" id="quote-text">
+              "{quotes[0].quote}"
+            </blockquote>
+            {quotes[0].author && (
+              <cite class="quote-author" id="quote-author">
+                — {quotes[0].author}
+              </cite>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Radial gold glow overlay -->
+      <div class="quotes-gradient-radial"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Pass quotes data to client-side JS -->
+<script define:vars={{ quotes }}>
+  // Quote cycling logic
+  if (quotes.length > 1) {
+    let currentIndex = 0;
+    const quoteElement = document.getElementById('active-quote');
+    const quoteText = document.getElementById('quote-text');
+    const quoteAuthor = document.getElementById('quote-author');
+    
+    setInterval(() => {
+      // Fade out
+      if (quoteElement) {
+        quoteElement.classList.remove('ghost-fade-in');
+        quoteElement.classList.add('ghost-fade-out');
+      }
+      
+      // After fade out, change content and fade in
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % quotes.length;
+        const nextQuote = quotes[currentIndex];
+        
+        if (quoteText) {
+          quoteText.textContent = `"${nextQuote.quote}"`;
+        }
+        
+        if (quoteAuthor) {
+          if (nextQuote.author) {
+            quoteAuthor.textContent = `— ${nextQuote.author}`;
+            quoteAuthor.style.display = 'block';
+          } else {
+            quoteAuthor.style.display = 'none';
+          }
+        }
+        
+        if (quoteElement) {
+          quoteElement.classList.remove('ghost-fade-out');
+          quoteElement.classList.add('ghost-fade-in');
+        }
+      }, 1500);
+    }, 7000); // 7 second interval
+  }
+</script>
+
+<style>
+  /* Section container */
+  .luxury-quotes {
+    position: relative;
+    padding: 3rem 0;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    .luxury-quotes {
+      padding: 4rem 0;
+    }
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  /* Glass Card Container */
+  .quotes-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    padding: 2rem;
+    
+    /* Glass effect */
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  @media (min-width: 768px) {
+    .quotes-card {
+      padding: 3rem;
+    }
+  }
+
+  /* Horizontal gold gradient overlay */
+  .quotes-gradient-horizontal {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(218, 165, 32, 0.05),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* Radial gold glow overlay */
+  .quotes-gradient-radial {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(218, 165, 32, 0.08) 0%,
+      transparent 60%
+    );
+    pointer-events: none;
+  }
+
+  /* Content wrapper */
+  .quotes-content {
+    position: relative;
+    z-index: 10;
+  }
+
+  .quotes-inner {
+    max-width: 56rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* Quote item */
+  .quote-item {
+    transition: all 1.5s ease-in-out;
+  }
+
+  /* Quote text */
+  .quote-text {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    line-height: 1.5;
+    color: hsl(0 0% 98%);
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .quote-text {
+      font-size: 2.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .quote-text {
+      font-size: 3rem;
+    }
+  }
+
+  /* Quote author */
+  .quote-author {
+    display: block;
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+    color: rgba(156, 163, 175, 0.8);
+    font-style: italic;
+  }
+
+  @media (min-width: 768px) {
+    .quote-author {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Ghost fade animations */
+  @keyframes ghost-fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ghost-fade-out {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+  .ghost-fade-in {
+    animation: ghost-fade-in 1.5s ease-in-out forwards;
+  }
+
+  .ghost-fade-out {
+    animation: ghost-fade-out 1.5s ease-in-out forwards;
+  }
+
+  /* Light theme */
+  .light .luxury-quotes {
+    border-top-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .light .quotes-card {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  
+  .light .quote-text {
+    color: hsl(0 0% 10%);
+  }
+  
+  .light .quote-author {
+    color: rgba(107, 114, 128, 0.9);
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .quote-item {
+      transition: opacity 0.3s ease;
+    }
+    
+    .ghost-fade-in,
+    .ghost-fade-out {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
