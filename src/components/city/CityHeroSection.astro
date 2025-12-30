@@ -202,21 +202,25 @@ const overlayClass = cityOverlays[city];
     <>
       <button
         id="hero-prev"
-        class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full z-30 hero-nav-btn"
+        class="nav-arrow nav-arrow-left"
         aria-label="Previous slide"
+        data-action="prev"
+        type="button"
       >
-        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
         </svg>
       </button>
       
       <button
         id="hero-next"
-        class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full z-30 hero-nav-btn"
+        class="nav-arrow nav-arrow-right"
         aria-label="Next slide"
+        data-action="next"
+        type="button"
       >
-        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
         </svg>
       </button>
     </>
@@ -240,17 +244,86 @@ const overlayClass = cityOverlays[city];
 </div>
 
 <style>
-  /* Navigation button glassmorphism */
-  .hero-nav-btn {
-    background: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.5s ease;
+  /* Navigation Arrows - Match front page slider style */
+  .hero-carousel {
+    position: relative; /* REQUIRED for absolute positioning of arrows */
   }
-  
-  .hero-nav-btn:hover {
-    background: rgba(0, 0, 0, 0.2);
-    border-color: rgba(218, 165, 32, 0.3); /* luxury-gold */
+
+  .nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20; /* Must be higher than slides */
+    
+    /* Visibility */
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white; /* SVG stroke color */
+    cursor: pointer;
+    
+    /* Transitions */
+    transition: all 0.3s ease;
+    
+    /* Ensure visibility */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-arrow svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));
+  }
+
+  @media (min-width: 640px) {
+    .nav-arrow {
+      padding: 0.875rem;
+    }
+    .nav-arrow svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .nav-arrow:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: hsl(var(--luxury-gold) / 0.5);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .nav-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  .nav-arrow-left {
+    left: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .nav-arrow-left {
+      left: 1.5rem;
+    }
+  }
+
+  .nav-arrow-right {
+    right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .nav-arrow-right {
+      right: 1.5rem;
+    }
+  }
+
+  /* Hide arrows if only one slide */
+  .hero-carousel:has(.hero-slide:only-child) .nav-arrow {
+    display: none;
   }
   
   /* Fade in animation */
