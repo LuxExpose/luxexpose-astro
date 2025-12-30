@@ -535,4 +535,24 @@ try {
   const html = document.documentElement;
   html.classList.add(savedTheme);
   updateThemeIcons(savedTheme === 'dark');
+
+  // Set navbar spacer height dynamically
+  function updateNavbarSpacer() {
+    const navbar = document.getElementById('navbar');
+    const spacer = document.querySelector('.navbar-spacer');
+    if (navbar && spacer) {
+      const height = navbar.offsetHeight;
+      (spacer as HTMLElement).style.height = `${height}px`;
+    }
+  }
+
+  // Update on load and resize
+  updateNavbarSpacer();
+  window.addEventListener('resize', updateNavbarSpacer);
+  
+  // Also update when mobile menu opens/closes
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  mobileMenuToggle?.addEventListener('click', () => {
+    setTimeout(updateNavbarSpacer, 100);
+  });
 </script>

@@ -33,7 +33,7 @@
 
 /* === Main Navbar Container === */
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -50,6 +50,13 @@
 
 .navbar.scrolled {
   box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Spacer for fixed navbar - prevents content from being hidden behind navbar */
+.navbar-spacer {
+  height: 0;
+  transition: height 0.3s ease;
+  flex-shrink: 0;
 }
 
 .nav-container {
