@@ -35,7 +35,7 @@
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 9999; /* Ensure navbar is always on top */
   background: hsl(var(--background) / 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -310,7 +310,7 @@
   left: 0;
   top: 100%;
   padding-top: 0.375rem; /* 6px - gap between trigger and dropdown */
-  z-index: 50;
+  z-index: 10000; /* Higher than navbar but within navbar context */
   opacity: 0;
   visibility: hidden;
   transform: scale(0.95);
