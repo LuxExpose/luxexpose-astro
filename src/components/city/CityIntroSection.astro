@@ -30,8 +30,8 @@ const { city, cityName, headline, description, categoryName, categorySlug } = As
       {headline}
     </h1>
     
-    <!-- Description -->
-    <p class="intro-description">
+    <!-- Description Paragraph -->
+    <p class="city-description">
       {description}
     </p>
   </div>
@@ -39,56 +39,55 @@ const { city, cityName, headline, description, categoryName, categorySlug } = As
 
 <style>
   .intro-section {
-    width: 100%;
-    max-width: 80rem; /* 1280px */
-    margin: 0 auto;
-    padding: 0 1rem 2rem; /* px-4 pb-8 */
+    padding-bottom: 32px; /* pb-8 */
   }
 
-  .intro-container {
-    max-width: 48rem; /* max-w-3xl / 768px */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .content-wrapper {
+    max-width: 768px; /* max-w-3xl = 48rem */
     margin: 0 auto;
     text-align: center;
   }
 
   .city-headline {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 2.25rem; /* 36px / text-4xl */
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    line-height: 1.2;
-    margin-bottom: 1.5rem; /* mb-6 / 24px */
+    font-family: 'Inter', system-ui, sans-serif; /* NOT Cormorant Garamond */
+    font-weight: 700; /* font-bold */
+    font-size: 36px; /* text-4xl */
+    line-height: 1.1;
+    letter-spacing: normal;
+    margin-bottom: 24px; /* mb-6 */
     
-    /* Golden gradient */
+    /* Golden Gradient Text Effect */
     background: linear-gradient(
       to right,
-      hsl(41 70% 55%),   /* primary gold */
-      hsl(41 85% 60%),   /* accent brighter gold */
-      hsl(41 70% 55%)    /* primary gold */
+      hsl(43 35% 48%),  /* --primary */
+      hsl(43 35% 48%),  /* --accent (same as primary) */
+      hsl(43 35% 48%)   /* --primary */
     );
-    -webkit-background-clip: text;
     background-clip: text;
+    -webkit-background-clip: text;
     color: transparent;
-    
-    /* Decorative underline */
-    text-decoration: underline;
-    text-decoration-color: hsl(41 70% 55% / 0.5);
-    text-underline-offset: 8px;
-    text-decoration-thickness: 1px;
+    -webkit-text-fill-color: transparent;
   }
 
   @media (min-width: 768px) {
     .city-headline {
-      font-size: 3rem; /* 48px / text-5xl */
+      font-size: 48px; /* md:text-5xl */
     }
   }
 
-  .intro-description {
+  .city-description {
     font-family: 'Inter', system-ui, sans-serif;
-    font-size: 1.125rem; /* 18px / text-lg */
-    font-weight: 400;
+    font-weight: 400; /* font-normal */
+    font-size: 18px; /* text-lg */
+    line-height: 1.7;
     color: hsl(var(--muted-foreground));
-    line-height: 1.75; /* leading-relaxed */
     margin: 0;
   }
 </style>
