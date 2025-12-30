@@ -383,16 +383,12 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
       );
     })()}
 
-    <!-- Stats Box (if stats exist) - Database first, static fallback -->
-    {stats.length > 0 && (
-        <CityStatsBox
-          stats={stats}
-          cityName={city.name}
-          citySlug={citySlug}
-          explorationHeadline={copy?.exploration_headline || copy?.explorationHeadline}
-          explorationSubtext={copy?.exploration_subtext || copy?.explorationSubtext}
-        />
-    )}
+    <!-- Stats Box - Always show with fallback data -->
+    <CityStatsBox
+      stats={stats.length > 0 ? stats : bostonStats}
+      cityName={city.name}
+      citySlug={citySlug}
+    />
 
     <!-- Main Content Section -->
     <section class="main-content-section">

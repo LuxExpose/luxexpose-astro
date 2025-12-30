@@ -11,12 +11,10 @@ interface Props {
   cityName: string;
   citySlug?: string;  // 'boston' | 'miami' | 'nyc' | 'doha'
   stats: CityStat[];
-  explorationHeadline?: string;
-  explorationSubtext?: string;
   className?: string;
 }
 
-const { cityName, citySlug = 'boston', stats, explorationHeadline, explorationSubtext, className = "" } = Astro.props;
+const { cityName, citySlug = 'boston', stats, className = "" } = Astro.props;
 
 // City-specific gold color class
 const goldColorClass = {
@@ -51,10 +49,10 @@ const iconPaths = {
       <!-- Header -->
       <div class="text-center mb-12">
         <h2 class="font-serif text-3xl md:text-4xl font-bold mb-3" style="color: hsl(0 0% 98%);">
-          {explorationHeadline || `${cityName} by the Numbers`}
+          {cityName} by the Numbers
         </h2>
         <p class="text-lg" style="color: hsl(0 0% 60%);">
-          {explorationSubtext || "A glimpse into the city's luxury landscape"}
+          A glimpse into the city's luxury landscape
         </p>
       </div>
 
