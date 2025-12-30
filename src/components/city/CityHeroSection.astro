@@ -149,7 +149,8 @@ const overlayClass = cityOverlays[city];
       {articles.length > 0 && (
         <div class="mb-3 sm:mb-4">
           <span 
-            class="hero-category inline-block px-3 sm:px-4 py-1 bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wider"
+            class="hero-category inline-block px-3 sm:px-4 py-1 text-white text-xs font-semibold uppercase tracking-wider rounded"
+            style="background-color: #9E8B60;"
             data-category-index="0"
           >
             {articles[0]?.categories?.name || 'Uncategorized'}
@@ -186,7 +187,8 @@ const overlayClass = cityOverlays[city];
       {articles.length > 0 && articles[0]?.slug && (
         <a 
           href={`/${articles[0].slug}`}
-          class="hero-cta inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-light uppercase text-base px-8 py-4 transition-colors tracking-luxury"
+          class="hero-cta inline-block text-white font-light uppercase text-base px-8 py-4 transition-colors tracking-luxury rounded"
+          style="background-color: #9E8B60;"
           data-slug-index="0"
         >
           Read Article
