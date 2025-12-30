@@ -50,8 +50,26 @@ export async function getCityNeighborhoods(citySlug: string): Promise<Neighborho
     }
 
     const neighborhoods = (data || []).map((item: any) => {
-      // Use image_url, fallback to hero_image_url if image_url is empty
-      const imageUrl = item.image_url || item.hero_image_url || '';
+      // Try multiple possible field names for image URL
+      // Database might use: image_url, image, imageUrl, hero_image, etc.
+      const imageUrl = item.image_url 
+        || item.image 
+        || item.hero_image_url 
+        || item.hero_image
+        || item.imageUrl
+        || '';
+      
+      // Debug: Log what we found for each neighborhood
+      if (import.meta.env.DEV) {
+        console.log(`[Neighborhoods] ${item.name}:`, {
+          image_url: item.image_url || 'NOT FOUND',
+          image: item.image || 'NOT FOUND',
+          hero_image_url: item.hero_image_url || 'NOT FOUND',
+          hero_image: item.hero_image || 'NOT FOUND',
+          final_imageUrl: imageUrl || 'EMPTY',
+          allKeys: Object.keys(item)
+        })
+      }
       
       return {
         id: item.id,
@@ -59,7 +77,7 @@ export async function getCityNeighborhoods(citySlug: string): Promise<Neighborho
         slug: item.slug,
         description: item.description || '',
         image_url: imageUrl,
-        hero_image_url: item.hero_image_url || '',
+        hero_image_url: item.hero_image_url || item.hero_image || '',
         gallery_images: Array.isArray(item.gallery_images) ? item.gallery_images : [],
         stats: item.stats || null,
         display_order: item.display_order || 0,
