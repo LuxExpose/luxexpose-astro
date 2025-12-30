@@ -42,6 +42,15 @@ if (!city) {
   return new Response("City not found", { status: 404 });
 }
 
+// Fetch featured directory listings
+let featuredListings = [];
+try {
+  featuredListings = await fetchFeaturedDirectoryListings(citySlug, 6);
+} catch (error) {
+  console.error("Error fetching featured directory listings:", error);
+  featuredListings = [];
+}
+
 // Database-First Approach: Fetch all city data from Supabase
 const cityDataFromDB = await fetchCompleteCityData(citySlug);
 const cityData = getCityData(citySlug); // Static fallback
