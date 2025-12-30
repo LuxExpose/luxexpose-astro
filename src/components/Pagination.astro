@@ -18,6 +18,20 @@ function getPageUrl(page: number): string {
   const queryString = params.toString();
   return queryString ? `${baseUrl}?${queryString}` : baseUrl;
 }
+
+// Build pages array in frontmatter to avoid Fragment issues
+const pages: Array<number | 'ellipsis'> = [];
+for (let page = 1; page <= totalPages; page++) {
+  if (
+    page === 1 ||
+    page === totalPages ||
+    (page >= currentPage - 2 && page <= currentPage + 2)
+  ) {
+    pages.push(page);
+  } else if (page === currentPage - 3 || page === currentPage + 3) {
+    pages.push('ellipsis');
+  }
+}
 ---
 
 {totalPages > 1 && (
@@ -32,40 +46,24 @@ function getPageUrl(page: number): string {
     )}
 
     <div class="flex gap-2">
-      {(() => {
-        const pages: Array<number | 'ellipsis'> = [];
-        
-        for (let page = 1; page <= totalPages; page++) {
-          if (
-            page === 1 ||
-            page === totalPages ||
-            (page >= currentPage - 2 && page <= currentPage + 2)
-          ) {
-            pages.push(page);
-          } else if (page === currentPage - 3 || page === currentPage + 3) {
-            pages.push('ellipsis');
-          }
+      {pages.map((item) => {
+        if (item === 'ellipsis') {
+          return <span class="px-2 text-white/50">...</span>;
         }
-        
-        return pages.map((item) => {
-          if (item === 'ellipsis') {
-            return <span class="px-2 text-white/50">...</span>;
-          }
-          const page = item as number;
-          return (
-            <a
-              href={getPageUrl(page)}
-              class={`px-4 py-2 rounded-lg border transition ${
-                page === currentPage
-                  ? "bg-[hsl(var(--luxury-gold))] text-black border-[hsl(var(--luxury-gold))]"
-                  : "border-white/20 bg-black/40 text-white hover:border-[hsl(var(--luxury-gold))]"
-              }`}
-            >
-              {page}
-            </a>
-          );
-        });
-      })()}
+        const page = item as number;
+        return (
+          <a
+            href={getPageUrl(page)}
+            class={`px-4 py-2 rounded-lg border transition ${
+              page === currentPage
+                ? "bg-[hsl(var(--luxury-gold))] text-black border-[hsl(var(--luxury-gold))]"
+                : "border-white/20 bg-black/40 text-white hover:border-[hsl(var(--luxury-gold))]"
+            }`}
+          >
+            {page}
+          </a>
+        );
+      })}
     </div>
 
     {currentPage < totalPages && (
