@@ -82,15 +82,19 @@ const cityNames = {
   
   .utility-container {
     width: 100%;
-    max-width: 80rem; /* 1280px */
+    max-width: 80rem; /* max-w-7xl = 1280px */
     margin: 0 auto;
     padding: 0.75rem 1.5rem; /* py-3 px-6 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
   
   .utility-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
     font-size: 0.875rem; /* text-sm */
   }
   
@@ -98,19 +102,20 @@ const cityNames = {
   .back-link {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: hsl(var(--muted-foreground));
+    gap: 0.5rem; /* gap-2 */
+    color: hsl(0 0% 60%); /* text-muted-foreground */
+    font-size: 0.875rem; /* text-sm */
     text-decoration: none;
     transition: color 0.3s ease;
   }
   
   .back-link:hover {
-    color: hsl(var(--foreground));
+    color: hsl(0 0% 98%); /* text-foreground */
   }
   
   .back-icon {
-    width: 1rem;
-    height: 1rem;
+    width: 16px;
+    height: 16px;
     transition: transform 0.3s ease;
   }
   
@@ -126,23 +131,22 @@ const cityNames = {
   }
   
   .utility-btn {
+    width: 32px; /* h-8 w-8 */
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
     background: transparent;
     border: none;
     border-radius: 0.375rem;
-    color: hsl(var(--muted-foreground));
+    color: hsl(0 0% 60%); /* text-muted-foreground */
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease, background-color 0.3s ease;
   }
   
   .utility-btn:hover {
-    color: hsl(var(--foreground));
-    background: hsl(var(--muted) / 0.5);
+    color: hsl(0 0% 98%); /* text-foreground */
+    background-color: rgba(255, 255, 255, 0.05);
   }
   
   .utility-btn svg {
