@@ -101,7 +101,14 @@ const overlayClass = cityOverlays[city];
 
 <div class="hero-carousel relative h-[70vh] md:h-[80vh] overflow-hidden">
   <!-- City-specific gradient overlay -->
-  <div class={`absolute inset-0 bg-gradient-to-b ${overlayClass} via-transparent to-transparent pointer-events-none z-10`}></div>
+  {city === 'boston' ? (
+    <div 
+      class="absolute inset-0 pointer-events-none z-10"
+      style="background: linear-gradient(to bottom, hsla(345, 79%, 31%, 0.05) 0%, transparent 50%, transparent 100%);"
+    ></div>
+  ) : (
+    <div class={`absolute inset-0 bg-gradient-to-b ${overlayClass} via-transparent to-transparent pointer-events-none z-10`}></div>
+  )}
   
   <!-- Article Slides -->
   {articles.length > 0 ? (
