@@ -1,20 +1,18 @@
 ---
 /**
- * Mobile dropdowns (accordions) polished:
- * - Smooth open/close animation
- * - Only one accordion open at a time
- * - Close menu on outside click + Escape
- * - Close menu after tapping any link
+ * Navbar Component - Homepage
+ * Based on Lovable specifications
  */
 
 import { fetchCategories } from "../utils/categories";
+import { cities } from "../data/cities";
 
 // Fetch categories from Supabase
 const categories = await fetchCategories();
 const displayCategories = categories.slice(0, 8); // Show first 8 categories in dropdown
 ---
 
-<nav class="lux-navbar sticky top-0 z-50">
+<nav class="navbar sticky top-0 z-50" id="mainNavbar">
   <!-- Top utility bar (desktop only) -->
   <div class="lux-navbar-top hidden md:block">
     <div class="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 py-2.5">
@@ -45,16 +43,16 @@ const displayCategories = categories.slice(0, 8); // Show first 8 categories in 
   <div class="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6">
     <div class="flex items-center justify-between gap-3 py-3">
       <!-- Logo -->
-      <a href="/" class="lux-logo hover:opacity-90 transition-opacity flex items-center gap-3">
+      <a href="/" class="flex items-center gap-1 sm:gap-2 hover:opacity-80 transition-opacity flex-shrink">
         <img 
           src="/images/lux-logo.png" 
-          alt="Lux Exposé" 
-          class="h-8 w-auto"
+          alt="Lux Exposé Logo" 
+          class="h-7 sm:h-9 md:h-12 w-auto"
           loading="eager"
         />
-        <div class="lux-logo-type">
-          <span class="lux-logo-lux">LUX</span>
-          <span class="lux-logo-expose">EXPOSÉ</span>
+        <div class="flex items-center gap-2 text-lg sm:text-xl md:text-2xl lg:text-3xl font-serif font-bold tracking-wider whitespace-nowrap">
+          <span class="text-foreground">LUX</span>
+          <span class="text-primary">EXPOSÉ</span>
         </div>
       </a>
 
@@ -62,25 +60,19 @@ const displayCategories = categories.slice(0, 8); // Show first 8 categories in 
       <div class="hidden lg:flex items-center justify-center flex-1">
         <div class="flex items-center gap-1">
           <div class="lux-dd group">
-            <a href="/cities" class="lux-nav-link">Cities<span class="lux-caret">▾</span></a>
+            <a href="/cities" class="lux-nav-link">CITIES<span class="lux-caret">▾</span></a>
             <div class="lux-dd-panel">
-              <a class="lux-dd-item" href="/boston">
-                <div class="lux-dd-title">Boston</div>
-                <div class="lux-dd-desc">Historic luxury & modern elegance</div>
-              </a>
-              <a class="lux-dd-item" href="/miami">
-                <div class="lux-dd-title">Miami</div>
-                <div class="lux-dd-desc">Tropical glamour & Art Deco energy</div>
-              </a>
-              <a class="lux-dd-item" href="/new-york">
-                <div class="lux-dd-title">New York</div>
-                <div class="lux-dd-desc">The ultimate urban luxury destination</div>
-              </a>
+              {cities.map((city) => (
+                <a class="lux-dd-item" href={city.path}>
+                  <div class="lux-dd-title">{city.name}</div>
+                  <div class="lux-dd-desc">{city.description}</div>
+                </a>
+              ))}
             </div>
           </div>
 
           <div class="lux-dd group">
-            <a href="/editorial" class="lux-nav-link">Editorial<span class="lux-caret">▾</span></a>
+            <a href="/editorial" class="lux-nav-link">EDITORIAL<span class="lux-caret">▾</span></a>
             {displayCategories.length > 0 && (
               <div class="lux-dd-panel">
                 {displayCategories.map((category) => (
@@ -98,8 +90,33 @@ const displayCategories = categories.slice(0, 8); // Show first 8 categories in 
               </div>
             )}
           </div>
-          <a href="/experiences" class="lux-nav-link">Experiences</a>
-          <a href="/community" class="lux-nav-link">Community</a>
+          <div class="lux-dd group">
+            <a href="/experiences" class="lux-nav-link">EXPERIENCES<span class="lux-caret">▾</span></a>
+            <div class="lux-dd-panel">
+              <a class="lux-dd-item" href="/experiences">
+                <div class="lux-dd-title">All Experiences</div>
+                <div class="lux-dd-desc">Browse luxury experiences</div>
+              </a>
+            </div>
+          </div>
+
+          <div class="lux-dd group">
+            <a href="/editorial" class="lux-nav-link">CATEGORIES<span class="lux-caret">▾</span></a>
+            {categories.length > displayCategories.length && (
+              <div class="lux-dd-panel">
+                {categories.slice(displayCategories.length).map((category) => (
+                  <a class="lux-dd-item" href={`/category/${category.slug}`}>
+                    <div class="lux-dd-title">{category.name}</div>
+                    {category.article_count && (
+                      <div class="lux-dd-desc">{category.article_count} articles</div>
+                    )}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <a href="/community" class="lux-nav-link">COMMUNITY</a>
 
           <div class="lux-dd group">
             <a href="/partners" class="lux-nav-link">Partners<span class="lux-caret">▾</span></a>
@@ -137,8 +154,12 @@ const displayCategories = categories.slice(0, 8); // Show first 8 categories in 
 
       <!-- Right actions (desktop) -->
       <div class="hidden md:flex items-center gap-2">
-        <a href="/signin" class="lux-btn-secondary">Sign In</a>
-        <a href="/concierge" class="lux-btn-primary">Contact Concierge</a>
+        <a href="/concierge" class="concierge-btn">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+          Concierge
+        </a>
       </div>
 
       <!-- Mobile buttons -->
@@ -331,4 +352,21 @@ const displayCategories = categories.slice(0, 8); // Show first 8 categories in 
 
   // Init: ensure all panels collapsed
   closeAllAccordions();
+
+  // Scroll detection for navbar shadow
+  const navbar = document.getElementById("mainNavbar");
+  if (navbar) {
+    let lastScroll = 0;
+    function handleScroll() {
+      const currentScroll = window.scrollY;
+      if (currentScroll > 20) {
+        navbar.classList.add("scrolled");
+      } else {
+        navbar.classList.remove("scrolled");
+      }
+      lastScroll = currentScroll;
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+  }
 </script>
