@@ -125,11 +125,11 @@ const categories = categoriesData.map((cat) => ({
   name: cat.name,
 }));
 
-// Prepare categories for city navbar (with paths)
+// Prepare categories for city navbar (with paths using query params)
 const categoryLinks = categories.map((cat) => ({
   name: cat.name,
   slug: cat.slug,
-  path: `/boston/category/${cat.slug}`,
+  path: `/boston?category=${cat.slug}`,
 }));
 
 // Fetch regular articles (filtered by location_id, search, category)
