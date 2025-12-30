@@ -20,7 +20,6 @@ import GlobalTrendingWidget from "../components/GlobalTrendingWidget.astro";
 import ExperiencesSidebar from "../components/ExperiencesSidebar.astro";
 import Pagination from "../components/Pagination.astro";
 import NeighborhoodExplorer from "../components/city/NeighborhoodExplorer.astro";
-import SeasonalRecommendations from "../components/city/SeasonalRecommendations.astro";
 import { getCityConfig } from "../utils/cityConfig";
 import { fetchAllCategories } from "../utils/categories";
 import { fetchLocationIdBySlug, fetchLocationBySlug } from "../utils/locations";
@@ -343,11 +342,11 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
   <!-- Spacer to account for fixed navbar height -->
   <div class="city-navbar-spacer"></div>
 
-      <div class={`relative bg-gradient-subtle min-h-screen ${city.themeClass || ''}`}>
+  <div class={`relative bg-gradient-subtle min-h-screen ${city.themeClass || ''}`}>
         <!-- City Ambience Background -->
         <CityAmbience city={citySlug} />
         
-        <!-- Hero Section -->
+    <!-- Hero Section -->
         <CityHeroSection 
           city={citySlug} 
           cityId={articleLocationId || ''}
@@ -426,22 +425,22 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
     <!-- Main Content Section - Articles Grid -->
     <ArticlesGrid articles={articles}>
       <div slot="sidebar">
-        <GlobalTrendingWidget
-          articles={trendingArticles.map((art) => ({
-            id: art.id,
-            title: art.title,
-            slug: art.slug,
-            featured_image: art.featured_image,
-            categories: art.categories
-              ? { name: art.categories.name, slug: art.categories.slug }
-              : undefined,
-            locations: art.locations
-              ? { name: art.locations.name, slug: art.locations.slug }
-              : undefined,
-          }))}
-        />
-        <ExperiencesSidebar experiences={experiences} />
-      </div>
+            <GlobalTrendingWidget
+              articles={trendingArticles.map((art) => ({
+                id: art.id,
+                title: art.title,
+                slug: art.slug,
+                featured_image: art.featured_image,
+                categories: art.categories
+                  ? { name: art.categories.name, slug: art.categories.slug }
+                  : undefined,
+                locations: art.locations
+                  ? { name: art.locations.name, slug: art.locations.slug }
+                  : undefined,
+              }))}
+            />
+            <ExperiencesSidebar experiences={experiences} />
+          </div>
     </ArticlesGrid>
 
     <!-- Pagination -->
@@ -493,13 +492,7 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
       cityDisplayName={city.name}
     />
 
-    <!-- Seasonal Recommendations Section -->
-    <SeasonalRecommendations
-      cityName={city.name}
-      citySlug={citySlug}
-    />
-
-    <!-- Map Section -->
+      <!-- Map Section -->
     <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
       <div class="mb-12 md:mb-16">
         <CityMap

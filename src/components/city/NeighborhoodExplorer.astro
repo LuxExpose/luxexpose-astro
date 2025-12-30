@@ -20,14 +20,6 @@ const {
 let neighborhoods = [];
 try {
   neighborhoods = await getCityNeighborhoods(citySlug);
-  
-  // Debug: Log fetched neighborhoods
-  if (import.meta.env.DEV) {
-    console.log(`[NeighborhoodExplorer] Fetched ${neighborhoods.length} neighborhoods for ${citySlug}`);
-    neighborhoods.forEach(n => {
-      console.log(`  - ${n.name}: image_url = ${n.image_url || 'MISSING'}`);
-    });
-  }
 } catch (error) {
   console.error('Error fetching neighborhoods:', error);
   neighborhoods = [];
@@ -58,7 +50,7 @@ const reactAppUrl = import.meta.env.PUBLIC_REACT_APP_URL || 'https://luxexpose.c
             <!-- Image -->
             <div class="card-image-container">
               <img
-                src={neighborhood.image_url || neighborhood.hero_image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}
+                src={neighborhood.image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}
                 alt={neighborhood.name}
                 class="card-image"
                 loading="lazy"
