@@ -1,0 +1,408 @@
+---
+// Props interface
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  featured_image?: string;
+  published_at?: string;
+  featured_video_url?: string;
+  categories?: {
+    name: string;
+  };
+}
+
+interface Props {
+  articles: Article[];
+}
+
+const { articles = [] } = Astro.props;
+
+// Normalize article data
+const normalizedArticles = articles.map(article => ({
+  id: article.id,
+  title: article.title,
+  category: article.categories?.name || "Editorial",
+  image: article.featured_image || "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1920&q=80",
+  slug: article.slug,
+  date: article.published_at 
+    ? new Date(article.published_at).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }) 
+    : "",
+  videoUrl: article.featured_video_url,
+}));
+
+const hasArticles = normalizedArticles.length > 0;
+---
+
+{hasArticles ? (
+  <div 
+    class="hero-slider relative h-[70vh] md:h-[80vh] overflow-hidden"
+    role="region"
+    aria-roledescription="carousel"
+    aria-label="Featured articles"
+  >
+    <!-- Slides -->
+    {normalizedArticles.map((article, index) => (
+      <div 
+        class:list={["slide absolute inset-0", { "active": index === 0 }]}
+        data-slide-index={index}
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${index + 1} of ${normalizedArticles.length}: ${article.title}`}
+        aria-hidden={index !== 0 ? "true" : "false"}
+      >
+        <!-- Background Image -->
+        <div class="absolute inset-0">
+          <img
+            src={article.image}
+            alt={article.title}
+            class="w-full h-full object-cover"
+            loading={index === 0 ? "eager" : "lazy"}
+            decoding={index === 0 ? "sync" : "async"}
+          />
+          <!-- Gradient Overlays -->
+          <div class="absolute inset-0 bg-gradient-to-r from-[hsl(var(--background)_/_0.8)] via-transparent to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-[hsl(var(--background)_/_0.6)] via-transparent to-transparent"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="relative h-full container mx-auto px-4 sm:px-6 flex items-end pb-12 sm:pb-16">
+          <div class="max-w-3xl slide-content">
+            <!-- Category Badge -->
+            <div class="mb-3 sm:mb-4">
+              <span class="inline-block px-3 sm:px-4 py-1 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-xs font-semibold uppercase tracking-wider">
+                {article.category}
+              </span>
+            </div>
+
+            <!-- Title -->
+            <h2 class="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mb-6 sm:mb-8 leading-loose text-white tracking-luxury">
+              {article.title}
+            </h2>
+
+            <!-- Meta Info -->
+            <div class="flex items-center gap-4 sm:gap-6 text-sm sm:text-base text-white/80 mb-8 sm:mb-10 font-light">
+              <span>Lux Exposé</span>
+              <span>•</span>
+              <span>{article.date}</span>
+            </div>
+
+            <!-- CTA Button -->
+            <a
+              href={`/${article.slug}`}
+              class="inline-flex items-center bg-[hsl(var(--primary))] hover:opacity-90 text-[hsl(var(--primary-foreground))] font-light uppercase tracking-luxury text-base px-8 py-4 rounded-lg transition-opacity"
+            >
+              Read Article
+            </a>
+          </div>
+        </div>
+      </div>
+    ))}
+
+    <!-- Navigation Arrows -->
+    <button
+      class="nav-arrow nav-arrow-left absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-[hsl(var(--background)_/_0.1)] backdrop-blur-sm border border-[hsl(var(--border)_/_0.2)] hover:border-[hsl(var(--luxury-gold)_/_0.3)] hover:bg-[hsl(var(--background)_/_0.2)] transition-all duration-500"
+      aria-label="Previous slide"
+      data-action="prev"
+    >
+      <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <button
+      class="nav-arrow nav-arrow-right absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-[hsl(var(--background)_/_0.1)] backdrop-blur-sm border border-[hsl(var(--border)_/_0.2)] hover:border-[hsl(var(--luxury-gold)_/_0.3)] hover:bg-[hsl(var(--background)_/_0.2)] transition-all duration-500"
+      aria-label="Next slide"
+      data-action="next"
+    >
+      <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+
+    <!-- Dot Indicators -->
+    <div class="dots-container absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+      {normalizedArticles.map((_, index) => (
+        <button
+          class:list={["dot w-2 h-2 rounded-full transition-all", { "active w-8 bg-[hsl(var(--primary))]": index === 0, "bg-[hsl(var(--muted-foreground)_/_0.5)]": index !== 0 }]}
+          data-dot-index={index}
+          aria-label={`Go to slide ${index + 1}`}
+          aria-current={index === 0 ? "true" : "false"}
+        />
+      ))}
+    </div>
+
+    <!-- Progress Bar (Optional - luxury touch) -->
+    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-[hsl(var(--border)_/_0.2)]">
+      <div class="progress-bar h-full bg-[hsl(var(--primary))] w-0 transition-all ease-linear" style="transition-duration: 10000ms;"></div>
+    </div>
+  </div>
+) : (
+  <!-- Placeholder when no articles -->
+  <div class="relative h-[70vh] md:h-[80vh] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-[hsl(var(--background))] via-[hsl(var(--background)_/_0.95)] to-[hsl(var(--primary)_/_0.1)]">
+      <div class="absolute inset-0 opacity-30" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bS00IDB2Mmg0di0yaC00em0tNCAwdjJoNHYtMmgtNHptLTQgMHYyaDR2LTJoLTR6bS00IDB2Mmg0di0yaC00em0tNCAwdjJoNHYtMmgtNHptLTQgMHYyaDR2LTJoLTR6bS00IDB2Mmg0di0yaC00em0tNCAwdjJoNHYtMmgtNHoiLz48L2c+PC9nPjwvc3ZnPg==');"></div>
+    </div>
+    <div class="relative h-full container mx-auto px-4 sm:px-6 flex items-center justify-center">
+      <div class="text-center space-y-4">
+        <h2 class="font-serif text-4xl md:text-6xl text-[hsl(var(--foreground))]">
+          Lux Exposé
+        </h2>
+        <p class="text-xl md:text-2xl text-[hsl(var(--muted-foreground))]">
+          Your Premier Luxury Lifestyle Magazine
+        </p>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  /* Slide transitions */
+  .slide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+  }
+
+  .slide.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Content animation on active */
+  .slide.active .slide-content {
+    animation: fade-in 0.6s ease-out;
+  }
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Luxury letter spacing */
+  .tracking-luxury {
+    letter-spacing: 0.1em;
+  }
+
+  /* Dot active state */
+  .dot.active {
+    width: 2rem;
+    background: hsl(var(--primary));
+  }
+
+  /* Progress bar animation */
+  .progress-bar.animating {
+    width: 100%;
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .slide {
+      transition: none;
+    }
+    .slide.active .slide-content {
+      animation: none;
+    }
+    .progress-bar {
+      display: none;
+    }
+  }
+</style>
+
+<script lang="ts">
+  // Hero Slider JavaScript
+  class HeroSlider {
+    private container: HTMLElement;
+    private slides: NodeListOf<HTMLElement>;
+    private dots: NodeListOf<HTMLElement>;
+    private progressBar: HTMLElement | null;
+    private currentIndex: number = 0;
+    private autoPlayInterval: ReturnType<typeof setInterval> | null = null;
+    private readonly AUTO_PLAY_DELAY = 10000; // 10 seconds
+    private isReducedMotion: boolean;
+
+    constructor(container: HTMLElement) {
+      this.container = container;
+      this.slides = container.querySelectorAll('[data-slide-index]');
+      this.dots = container.querySelectorAll('[data-dot-index]');
+      this.progressBar = container.querySelector('.progress-bar');
+      this.isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      this.init();
+    }
+
+    private init() {
+      // Arrow navigation
+      const prevBtn = this.container.querySelector('[data-action="prev"]');
+      const nextBtn = this.container.querySelector('[data-action="next"]');
+
+      prevBtn?.addEventListener('click', () => this.goToPrevious());
+      nextBtn?.addEventListener('click', () => this.goToNext());
+
+      // Dot navigation
+      this.dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => this.goToSlide(index));
+      });
+
+      // Keyboard navigation
+      this.container.addEventListener('keydown', (e) => this.handleKeydown(e));
+
+      // Touch/swipe support
+      this.setupTouchEvents();
+
+      // Pause on hover
+      this.container.addEventListener('mouseenter', () => this.pauseAutoPlay());
+      this.container.addEventListener('mouseleave', () => this.startAutoPlay());
+
+      // Pause when tab is hidden
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.pauseAutoPlay();
+        } else {
+          this.startAutoPlay();
+        }
+      });
+
+      // Start auto-play
+      if (!this.isReducedMotion) {
+        this.startAutoPlay();
+      }
+    }
+
+    private goToSlide(index: number) {
+      // Remove active from current slide
+      this.slides[this.currentIndex].classList.remove('active');
+      this.slides[this.currentIndex].setAttribute('aria-hidden', 'true');
+      this.dots[this.currentIndex].classList.remove('active', 'w-8', 'bg-[hsl(var(--primary))]');
+      this.dots[this.currentIndex].classList.add('bg-[hsl(var(--muted-foreground)_/_0.5)]');
+      this.dots[this.currentIndex].setAttribute('aria-current', 'false');
+
+      // Set new index
+      this.currentIndex = index;
+
+      // Add active to new slide
+      this.slides[this.currentIndex].classList.add('active');
+      this.slides[this.currentIndex].setAttribute('aria-hidden', 'false');
+      this.dots[this.currentIndex].classList.add('active', 'w-8', 'bg-[hsl(var(--primary))]');
+      this.dots[this.currentIndex].classList.remove('bg-[hsl(var(--muted-foreground)_/_0.5)]');
+      this.dots[this.currentIndex].setAttribute('aria-current', 'true');
+
+      // Reset progress bar
+      this.resetProgressBar();
+
+      // Restart autoplay
+      this.pauseAutoPlay();
+      this.startAutoPlay();
+    }
+
+    private goToNext() {
+      const nextIndex = (this.currentIndex + 1) % this.slides.length;
+      this.goToSlide(nextIndex);
+    }
+
+    private goToPrevious() {
+      const prevIndex = (this.currentIndex - 1 + this.slides.length) % this.slides.length;
+      this.goToSlide(prevIndex);
+    }
+
+    private handleKeydown(e: KeyboardEvent) {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        this.goToPrevious();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        this.goToNext();
+      }
+    }
+
+    private setupTouchEvents() {
+      let touchStartX = 0;
+      let touchEndX = 0;
+
+      this.container.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      this.container.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        this.handleSwipe(touchStartX, touchEndX);
+      }, { passive: true });
+    }
+
+    private handleSwipe(startX: number, endX: number) {
+      const swipeThreshold = 50;
+      const diff = startX - endX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swipe left - go next
+          this.goToNext();
+        } else {
+          // Swipe right - go previous
+          this.goToPrevious();
+        }
+      }
+    }
+
+    private startAutoPlay() {
+      if (this.isReducedMotion) return;
+      
+      this.pauseAutoPlay();
+      
+      // Start progress bar animation
+      if (this.progressBar) {
+        this.progressBar.classList.add('animating');
+      }
+
+      this.autoPlayInterval = setInterval(() => {
+        this.goToNext();
+      }, this.AUTO_PLAY_DELAY);
+    }
+
+    private pauseAutoPlay() {
+      if (this.autoPlayInterval) {
+        clearInterval(this.autoPlayInterval);
+        this.autoPlayInterval = null;
+      }
+      this.resetProgressBar();
+    }
+
+    private resetProgressBar() {
+      if (this.progressBar) {
+        this.progressBar.classList.remove('animating');
+        // Force reflow
+        void this.progressBar.offsetWidth;
+        this.progressBar.classList.add('animating');
+      }
+    }
+  }
+
+  // Initialize all sliders
+  document.addEventListener('DOMContentLoaded', () => {
+    const sliders = document.querySelectorAll<HTMLElement>('.hero-slider');
+    sliders.forEach(slider => new HeroSlider(slider));
+  });
+
+  // Also handle Astro's view transitions
+  document.addEventListener('astro:page-load', () => {
+    const sliders = document.querySelectorAll<HTMLElement>('.hero-slider');
+    sliders.forEach(slider => {
+      if (!slider.dataset.initialized) {
+        new HeroSlider(slider);
+        slider.dataset.initialized = 'true';
+      }
+    });
+  });
+</script>
+

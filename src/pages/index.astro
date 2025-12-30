@@ -1,31 +1,50 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
-import FeaturedHero from "../components/FeaturedHero.astro";
+import HeroSlider from "../components/HeroSlider.astro";
 import EditorialGrid from "../components/EditorialGrid.astro";
 import Footer from "../components/Footer.astro";
 
-const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuzthqxfippv.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
 const SITE_URL = "https://luxexpose.com";
 
-let featured: any = null;
+let featuredArticles: any[] = [];
 let rest: any[] = [];
 
 try {
-  const res = await fetch(`${FUNCTIONS_BASE}/mobile-api-feed`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "latest", page: 1, limit: 25 }),
-  });
-
-  if (res.ok) {
-    const data = await res.json();
-    const articles = data?.articles ?? [];
-    featured = articles[0] ?? null;
-    rest = articles.slice(1);
+  // Fetch featured articles for hero slider (5 articles)
+  const featuredResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,published_at,featured_video_url,categories(name)&status=eq.published&order=published_at.desc&limit=5`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  
+  if (featuredResponse.ok) {
+    featuredArticles = await featuredResponse.json();
   }
-} catch {
-  featured = null;
+
+  // Fetch additional articles for editorial grid
+  const restResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/articles?select=id,title,slug,excerpt,featured_image,published_at,categories(name)&status=eq.published&order=published_at.desc&limit=25&offset=5`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  
+  if (restResponse.ok) {
+    rest = await restResponse.json();
+  }
+} catch (error) {
+  console.error('Failed to fetch articles:', error);
+  featuredArticles = [];
   rest = [];
 }
 
@@ -56,7 +75,7 @@ const canonicalUrl = `${SITE_URL}/`;
   <Navbar />
 
   <div class="relative bg-glass-option-9 overflow-hidden min-h-screen">
-    <FeaturedHero article={featured} />
+    <HeroSlider articles={featuredArticles} />
     <EditorialGrid articles={rest} />
   </div>
 
