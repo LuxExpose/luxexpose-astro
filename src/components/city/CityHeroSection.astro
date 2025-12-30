@@ -159,8 +159,7 @@ const overlayClass = cityOverlays[city];
       
       <!-- Article Title -->
       <h2 
-        class="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mb-6 sm:mb-8 leading-loose text-white"
-        style="letter-spacing: 0.02em;"
+        class="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mb-6 sm:mb-8 leading-loose text-white tracking-luxury"
         data-title-index="0"
       >
         {articles.length > 0 ? (articles[0]?.title || 'Featured Article') : 'Lux Exposé'}
@@ -187,8 +186,7 @@ const overlayClass = cityOverlays[city];
       {articles.length > 0 && articles[0]?.slug && (
         <a 
           href={`/${articles[0].slug}`}
-          class="hero-cta inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-light uppercase text-base px-8 py-4 transition-colors"
-          style="letter-spacing: 0.05em;"
+          class="hero-cta inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-light uppercase text-base px-8 py-4 transition-colors tracking-luxury"
           data-slug-index="0"
         >
           Read Article
