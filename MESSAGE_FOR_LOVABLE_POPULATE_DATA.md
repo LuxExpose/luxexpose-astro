@@ -4,7 +4,18 @@ Copy and send this to Lovable:
 
 ---
 
-H96542815-ffad4c1539a9?q=80&w=3875", "alt": "Commonwealth Avenue mansion"},
+Hi! I need to populate the Back Bay neighborhood data in the `city_neighborhoods` table. The database schema has already been updated with the new fields (`hero_image_url`, `gallery_images`, `stats`, `seo_title`, `seo_description`), but these fields need to be populated with data.
+
+Can you run this SQL migration to populate the Back Bay neighborhood?
+
+```sql
+-- Back Bay, Boston
+UPDATE city_neighborhoods 
+SET 
+  hero_image_url = 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=1920&q=80',
+  gallery_images = '[
+    {"url": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=3870", "alt": "Back Bay brownstones"},
+    {"url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=3875", "alt": "Commonwealth Avenue mansion"},
     {"url": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=3853", "alt": "Luxury interior"}
   ]'::jsonb,
   stats = '[
@@ -39,15 +50,3 @@ Thank you!
 
 If you prefer, I can also update the data programmatically via API. Could you provide the Supabase service_role key so I can use it in a script? Or would you prefer to run the SQL directly?
 
-i! I need to populate the Back Bay neighborhood data in the `city_neighborhoods` table. The database schema has already been updated with the new fields (`hero_image_url`, `gallery_images`, `stats`, `seo_title`, `seo_description`), but these fields need to be populated with data.
-
-Can you run this SQL migration to populate the Back Bay neighborhood?
-
-```sql
--- Back Bay, Boston
-UPDATE city_neighborhoods 
-SET 
-  hero_image_url = 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=1920&q=80',
-  gallery_images = '[
-    {"url": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=3870", "alt": "Back Bay brownstones"},
-    {"url": "https://images.unsplash.com/photo-16005
