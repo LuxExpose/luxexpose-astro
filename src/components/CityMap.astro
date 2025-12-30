@@ -36,7 +36,7 @@ const { cityName, centerLat, centerLng, zoom = 12, locations = [] } = Astro.prop
     </div>
   </div>
 
-  <script define:vars={{ cityName, centerLat, centerLng, zoom, locations }}>
+  <script define:vars={{ cityName, centerLat, centerLng, zoom, locations }} type="module">
     // Initialize Leaflet map
     import L from "leaflet";
     import "leaflet/dist/leaflet.css";
