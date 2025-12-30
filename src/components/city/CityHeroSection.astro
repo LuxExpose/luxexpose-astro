@@ -404,12 +404,16 @@ const overlayClass = cityOverlays[city];
     // Update content
     const article = articles[index];
     if (article) {
-      if (categoryEl) categoryEl.textContent = article.categories?.name || 'Uncategorized';
+      if (categoryEl) {
+        categoryEl.textContent = article.categories?.name || 'Uncategorized';
+        categoryEl.style.backgroundColor = '#9E8B60';
+      }
       if (titleEl) titleEl.textContent = article.title || 'Featured Article';
       if (dateEl) dateEl.textContent = formatDate(article.published_at);
       if (ctaEl) {
         ctaEl.href = `/${article.slug || ''}`;
         ctaEl.style.display = article.slug ? 'inline-block' : 'none';
+        ctaEl.style.backgroundColor = '#9E8B60';
       }
     }
     
