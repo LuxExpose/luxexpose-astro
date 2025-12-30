@@ -25,10 +25,14 @@ const { city, categories, activeCategorySlug } = Astro.props;
 
 <style>
   .city-navbar {
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 50;
-    background: rgba(var(--background), 0.85);
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    width: 100%;
+    isolation: isolate;
+    background: hsl(var(--background) / 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
@@ -47,6 +51,19 @@ const { city, categories, activeCategorySlug } = Astro.props;
     window.addEventListener('scroll', () => {
       navbar.classList.toggle('scrolled', window.scrollY > 20);
     }, { passive: true });
+    
+    // Set navbar spacer height dynamically
+    function updateCityNavbarSpacer() {
+      const spacer = document.querySelector('.city-navbar-spacer');
+      if (navbar && spacer) {
+        const height = navbar.offsetHeight;
+        (spacer as HTMLElement).style.height = `${height}px`;
+      }
+    }
+    
+    // Update on load and resize
+    updateCityNavbarSpacer();
+    window.addEventListener('resize', updateCityNavbarSpacer);
   }
 </script>
 

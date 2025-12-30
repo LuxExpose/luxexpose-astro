@@ -318,6 +318,9 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
     categories={categoryLinks}
     activeCategorySlug={categorySlug !== 'all' ? categorySlug : undefined}
   />
+  
+  <!-- Spacer to account for fixed navbar height -->
+  <div class="city-navbar-spacer"></div>
 
       <div class={`relative bg-gradient-subtle min-h-screen ${city.themeClass || ''}`}>
         <!-- City Ambience Background -->
