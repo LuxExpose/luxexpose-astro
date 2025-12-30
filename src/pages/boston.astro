@@ -392,6 +392,23 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
       citySlug={citySlug}
     />
 
+    <!-- Articles Filter Bar -->
+    <ArticlesFilterBar
+      citySlug={citySlug}
+      cityName={city.name}
+      totalArticles={totalArticles}
+      currentCount={articles.length}
+      categories={categories}
+      cities={cities.map(c => ({
+        slug: c.slug,
+        name: c.name,
+        path: c.path,
+        available: true, // All cities are available
+      }))}
+      currentCategory={categorySlug}
+      searchQuery={searchQuery}
+    />
+
     <!-- Main Content Section - Articles Grid -->
     <ArticlesGrid articles={articles}>
       <div slot="sidebar">
