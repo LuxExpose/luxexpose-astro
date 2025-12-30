@@ -381,14 +381,12 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
 
     <!-- Stats Box (if stats exist) - Database first, static fallback -->
     {stats.length > 0 && (
-      <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
-        <CityStatsBox
-          stats={stats}
-          explorationHeadline={copy?.exploration_headline || copy?.explorationHeadline || "Curated for the Ultra-High-Net-Worth"}
-          explorationSubtext={copy?.exploration_subtext || copy?.explorationSubtext || "Access world-class experiences."}
-          cityName={city.name}
-        />
-      </section>
+      <CityStatsBox
+        stats={stats}
+        explorationHeadline={copy?.exploration_headline || copy?.explorationHeadline || "Curated for the Ultra-High-Net-Worth"}
+        explorationSubtext={copy?.exploration_subtext || copy?.explorationSubtext || "Access world-class experiences."}
+        cityName={city.name}
+      />
     )}
 
     <!-- Main Content Section -->

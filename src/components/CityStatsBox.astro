@@ -27,7 +27,7 @@ const iconPaths = {
 };
 ---
 
-<section class={`stats-section ${className}`}>
+<div class={`stats-section ${className}`}>
   <div class="container">
     <div 
       class="stats-container glass-card-dark"
@@ -55,16 +55,32 @@ const iconPaths = {
             <div class="stat-card glass-card-subtle group">
               <!-- Icon Container -->
               <div class="icon-container glass-card-dark glass-border-gold">
-                <svg 
-                  class="icon" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  stroke-width="2" 
-                  stroke-linecap="round" 
-                  stroke-linejoin="round"
-                  set:html={iconPaths[stat.icon]}
-                />
+                {iconPaths[stat.icon] ? (
+                  <svg 
+                    class="icon" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    stroke-width="2" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round"
+                    set:html={iconPaths[stat.icon]}
+                  />
+                ) : (
+                  <svg 
+                    class="icon" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    stroke-width="2" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                )}
               </div>
               
               <!-- Value -->
