@@ -1,71 +1,65 @@
 ---
-/**
- * Navbar Component - Homepage
- * Complete implementation based on Lovable specifications
- */
+// src/components/Navbar.astro
+import '../styles/navbar.css';
+import { cities } from '../data/cities';
 
-import { fetchCategories } from "../utils/categories";
-import { cities } from "../data/cities";
+// Fetch categories from Supabase at build time
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuzthqxfippv.supabase.co';
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
 
-// Fetch categories from Supabase
-const categories = await fetchCategories();
-const displayCategories = categories.slice(0, 8); // Show first 8 categories in EDITORIAL dropdown
-const additionalCategories = categories.slice(8); // Remaining categories for CATEGORIES dropdown
+let categories: Array<{ id: string; name: string; slug: string; article_count: number }> = [];
+
+try {
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/categories?select=id,name,slug,articles!inner(id)&articles.status=eq.published&order=name`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+    }
+  );
+  
+  if (response.ok) {
+    const data = await response.json();
+    const categoryMap = new Map();
+    
+    data.forEach((cat: any) => {
+      if (!categoryMap.has(cat.id)) {
+        categoryMap.set(cat.id, {
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug,
+          article_count: 0,
+        });
+      }
+      if (cat.articles?.id) {
+        categoryMap.get(cat.id).article_count++;
+      }
+    });
+    
+    categories = Array.from(categoryMap.values()).filter((cat) => cat.article_count > 0);
+  }
+} catch (error) {
+  console.error('Failed to fetch categories:', error);
+}
 ---
 
-<nav class="navbar sticky top-0 z-50 bg-background/85 backdrop-blur-md border-b border-border transition-all duration-500" id="mainNavbar">
-  <!-- Top Utility Bar (hidden on mobile) -->
-  <div class="utility-bar hidden md:block">
-    <div class="utility-bar-content">
-      <div class="flex items-center gap-2">
+<nav class="navbar" id="navbar">
+  <!-- Top Utility Bar -->
+  <div class="utility-bar">
+    <div class="nav-container">
+      <div class="utility-bar-content">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
           <!-- Theme Toggle -->
-          <button 
-            class="utility-btn h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            aria-label="Toggle theme"
-            type="button"
-            data-theme-toggle
-          >
-            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
+          <button class="utility-btn" id="theme-toggle" aria-label="Toggle theme">
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
           </button>
           
           <!-- Search Button -->
-          <button 
-            class="utility-btn h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            aria-label="Search"
-            type="button"
-            onclick="window.location.href='/search'"
-          >
-            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-          
-          <!-- Messages Icon (placeholder - show if authenticated) -->
-          <a 
-            href="/messages" 
-            class="utility-btn relative h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            aria-label="Messages"
-          >
-            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <!-- Unread badge (hidden for now - show when count > 0) -->
-            <!-- <span class="notification-badge pulse">3</span> -->
-          </a>
-          
-          <!-- Notifications Bell -->
-          <button 
-            class="utility-btn relative h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            aria-label="Notifications"
-            type="button"
-          >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0018 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <!-- Unread badge (hidden for now - show when count > 0) -->
-            <!-- <span class="notification-badge destructive">5</span> -->
+          <button class="utility-btn" id="search-btn" aria-label="Search" onclick="window.location.href='/search'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           </button>
         </div>
       </div>
@@ -74,452 +68,306 @@ const additionalCategories = categories.slice(8); // Remaining categories for CA
 
   <!-- Main Navigation -->
   <div class="nav-container">
-    <div class="nav-content">
-      
+    <div class="main-nav">
       <!-- Logo -->
       <a href="/" class="logo-link">
-        <img 
-          src="/images/lux-logo.png" 
-          alt="Lux Exposé Logo" 
-          class="logo-image"
-          loading="eager"
-        />
+        <img src="/images/lux-logo.png" alt="Lux Exposé Logo" class="logo-image" />
         <div class="logo-text">
           <span class="logo-lux">LUX</span>
           <span class="logo-expose">EXPOSÉ</span>
         </div>
       </a>
-      
-      <!-- Desktop Navigation (hidden lg:flex) -->
-      <nav class="desktop-nav">
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav" aria-label="Main navigation">
         <ul class="nav-list">
-          <!-- CITIES Dropdown -->
-          <li class="nav-item has-dropdown" data-dropdown>
-            <button class="nav-trigger" data-dropdown-trigger>
+          <!-- Cities Dropdown -->
+          <li class="nav-item">
+            <button class="nav-trigger" data-dropdown="cities">
               CITIES
-              <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
-            <div class="dropdown-content glass-card-menu dropdown-cities" data-dropdown-content>
-              {cities.map((city) => (
-                <a class="dropdown-item" href={city.path}>
-                  <h3>{city.name}</h3>
-                  <p>{city.description}</p>
-                </a>
-              ))}
-            </div>
-          </li>
-
-          <!-- EXPERIENCES Dropdown -->
-          <li class="nav-item has-dropdown" data-dropdown>
-            <button class="nav-trigger" data-dropdown-trigger>
-              EXPERIENCES
-              <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <div class="dropdown-content glass-card-menu dropdown-editorial" data-dropdown-content>
-              <a class="dropdown-item" href="/experiences">
-                <h3>All Experiences</h3>
-                <p>Browse luxury experiences</p>
-              </a>
-            </div>
-          </li>
-
-          <!-- EDITORIAL Dropdown -->
-          <li class="nav-item has-dropdown" data-dropdown>
-            <button class="nav-trigger" data-dropdown-trigger>
-              EDITORIAL
-              <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {displayCategories.length > 0 && (
-              <div class="dropdown-content glass-card-menu dropdown-editorial" data-dropdown-content>
-                {displayCategories.map((category) => (
-                  <a class="dropdown-item" href={`/category/${category.slug}`}>
-                    <h3>{category.name}</h3>
-                    {category.article_count && (
-                      <p>{category.article_count} articles</p>
-                    )}
+            <div class="dropdown glass-card-menu dropdown-cities" id="dropdown-cities">
+              <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                {cities.map((city) => (
+                  <a href={city.path} class="city-item">
+                    <h3 class="city-name">{city.name}</h3>
+                    <p class="city-description">{city.description}</p>
                   </a>
                 ))}
-                <a class="dropdown-item" href="/editorial">
-                  <h3>View All Editorial</h3>
-                  <p>Browse all articles</p>
-                </a>
               </div>
-            )}
+            </div>
           </li>
 
-          <!-- CATEGORIES Dropdown (additional categories) -->
-          {additionalCategories.length > 0 && (
-            <li class="nav-item has-dropdown" data-dropdown>
-              <button class="nav-trigger" data-dropdown-trigger>
+          <!-- Experiences -->
+          <li class="nav-item">
+            <a href="/experiences" class="nav-link">EXPERIENCES</a>
+          </li>
+
+          <!-- Editorial -->
+          <li class="nav-item">
+            <a href="/editorial" class="nav-link">EDITORIAL</a>
+          </li>
+
+          <!-- Categories Dropdown -->
+          {categories.length > 0 && (
+            <li class="nav-item">
+              <button class="nav-trigger" data-dropdown="categories">
                 CATEGORIES
-                <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
               </button>
-              <div class="dropdown-content glass-card-menu dropdown-categories" data-dropdown-content>
-                {additionalCategories.map((category) => (
-                  <a class="dropdown-item" href={`/category/${category.slug}`}>
-                    <h3>{category.name}</h3>
-                    {category.article_count && (
-                      <p>{category.article_count} articles</p>
-                    )}
-                  </a>
-                ))}
+              <div class="dropdown glass-card-menu dropdown-categories" id="dropdown-categories">
+                <div class="categories-grid">
+                  {categories.map((cat) => (
+                    <a href={`/category/${cat.slug}`} class="category-item">
+                      <div class="category-name">{cat.name}</div>
+                      <div class="category-count">{cat.article_count} articles</div>
+                    </a>
+                  ))}
+                </div>
               </div>
             </li>
           )}
 
-          <!-- COMMUNITY Link -->
+          <!-- Community -->
           <li class="nav-item">
-            <a href="/community" class="nav-link">COMMUNITY</a>
+            <a href="/community-info" class="nav-link">COMMUNITY</a>
           </li>
         </ul>
       </nav>
-      
-      <!-- Right Actions - Desktop -->
-      <div class="hidden md:flex items-center gap-2 lg:gap-3">
+
+      <!-- Right Actions (Desktop) -->
+      <div class="right-actions">
         <!-- Concierge Button -->
         <a href="/concierge" class="btn-luxury">
-          <svg class="concierge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          <span class="concierge-text">Concierge</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <span class="btn-text">Concierge</span>
         </a>
         
-        <!-- User Menu (placeholder - implement when auth is ready) -->
-        <!-- <div class="user-menu">...</div> -->
+        <!-- Sign In (placeholder) -->
+        <a href="/auth" class="user-menu-trigger">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Sign In
+        </a>
       </div>
-      
-      <!-- Right Actions - Mobile -->
-      <div class="flex md:hidden items-center gap-1">
-        <!-- Concierge Button -->
+
+      <!-- Mobile Actions -->
+      <div class="mobile-actions">
         <a href="/concierge" class="btn-luxury">
-          <svg class="concierge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
         </a>
         
-        <!-- Search Button -->
-        <button 
-          class="utility-btn h-8 w-8"
-          aria-label="Search"
-          onclick="window.location.href='/search'"
-        >
-          <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+        <button class="utility-btn" id="mobile-search-btn" aria-label="Search" onclick="window.location.href='/search'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         </button>
         
-        <!-- Mobile Menu Toggle -->
-        <button 
-          class="utility-btn h-8 w-8" 
-          aria-label="Toggle menu"
-          aria-expanded="false"
-          data-menu-toggle
-          type="button"
-        >
-          <svg class="h-[18px] w-[18px] menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          <svg class="h-[18px] w-[18px] close-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+        <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
     </div>
-  </div>
 
-  <!-- Mobile Menu -->
-  <div class="mobile-menu" data-mobile-menu>
-    <div class="mobile-menu-content">
-      <!-- Mobile Search Button -->
-      <a href="/search" class="mobile-search-btn">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <span>Search</span>
-      </a>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+      <!-- Mobile Search -->
+      <button class="mobile-search-btn" id="mobile-search-trigger" onclick="window.location.href='/search'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search site</span>
+      </button>
 
-      <!-- Mobile Navigation Links -->
-      <div class="mt-4 space-y-1">
-        <!-- CITIES Accordion -->
-        <div class="mobile-accordion">
-          <button class="mobile-accordion-trigger" data-accordion="cities" type="button">
-            <span>CITIES</span>
-            <svg class="w-4 h-4 accordion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div class="mobile-accordion-content" data-accordion-content="cities">
-            {cities.map((city) => (
-              <a href={city.path} class="mobile-nav-link" data-close-mobile>
-                {city.name}
-              </a>
-            ))}
-          </div>
+      <!-- Quick Links -->
+      <div class="mobile-quick-links">
+        <a href="/concierge" class="mobile-quick-link primary">Contact Concierge</a>
+      </div>
+
+      <!-- Cities Section -->
+      <div class="mobile-accordion">
+        <button class="mobile-accordion-trigger" data-accordion="mobile-cities">
+          CITIES
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="mobile-accordion-content" id="mobile-cities" style="display: none;">
+          {cities.map((city) => (
+            <a href={city.path} style="display: block; padding: 0.5rem 0; font-size: 0.875rem; color: hsl(var(--foreground)); text-decoration: none;">
+              {city.name}
+            </a>
+          ))}
         </div>
+      </div>
 
-        <!-- EXPERIENCES -->
-        <a href="/experiences" class="mobile-nav-link" data-close-mobile>EXPERIENCES</a>
+      <!-- Experiences -->
+      <a href="/experiences" class="mobile-nav-link">EXPERIENCES</a>
 
-        <!-- EDITORIAL Accordion -->
+      <!-- Editorial -->
+      <a href="/editorial" class="mobile-nav-link">EDITORIAL</a>
+
+      <!-- Categories Section -->
+      {categories.length > 0 && (
         <div class="mobile-accordion">
-          <button class="mobile-accordion-trigger" data-accordion="editorial" type="button">
-            <span>EDITORIAL</span>
-            <svg class="w-4 h-4 accordion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
+          <button class="mobile-accordion-trigger" data-accordion="mobile-categories">
+            CATEGORIES
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>
-          <div class="mobile-accordion-content" data-accordion-content="editorial">
-            {displayCategories.map((category) => (
-              <a href={`/category/${category.slug}`} class="mobile-nav-link" data-close-mobile>
-                {category.name}
-                {category.article_count && (
-                  <span class="text-muted-foreground ml-2">({category.article_count})</span>
-                )}
-              </a>
-            ))}
-            <a href="/editorial" class="mobile-nav-link" data-close-mobile>View All Editorial</a>
-          </div>
-        </div>
-
-        <!-- CATEGORIES Accordion (if additional categories exist) -->
-        {additionalCategories.length > 0 && (
-          <div class="mobile-accordion">
-            <button class="mobile-accordion-trigger" data-accordion="categories" type="button">
-              <span>CATEGORIES</span>
-              <svg class="w-4 h-4 accordion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <div class="mobile-accordion-content" data-accordion-content="categories">
-              {additionalCategories.map((category) => (
-                <a href={`/category/${category.slug}`} class="mobile-nav-link" data-close-mobile>
-                  {category.name}
-                  {category.article_count && (
-                    <span class="text-muted-foreground ml-2">({category.article_count})</span>
-                  )}
+          <div class="mobile-accordion-content" id="mobile-categories" style="display: none;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+              {categories.map((cat) => (
+                <a href={`/category/${cat.slug}`} style="display: block; padding: 0.5rem 0.75rem; border-radius: 0.375rem; background: hsl(var(--muted)); font-size: 0.875rem; text-decoration: none;">
+                  <div style="font-weight: 500; color: hsl(var(--foreground));">{cat.name}</div>
+                  <div style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">{cat.article_count} articles</div>
                 </a>
               ))}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <!-- COMMUNITY -->
-        <a href="/community" class="mobile-nav-link" data-close-mobile>COMMUNITY</a>
+      <!-- Community -->
+      <a href="/community-info" class="mobile-nav-link">COMMUNITY</a>
+
+      <!-- Theme Toggle -->
+      <div class="mobile-theme-section">
+        <button class="mobile-theme-btn" id="mobile-theme-toggle">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          <span class="theme-text">Light Mode</span>
+        </button>
       </div>
     </div>
   </div>
 </nav>
 
 <script is:inline>
-  // Scroll detection for shadow
-  document.addEventListener('DOMContentLoaded', () => {
-    const navbar = document.getElementById('mainNavbar');
-    
-    if (navbar) {
-      window.addEventListener('scroll', () => {
-        if (window.scrollY > 20) {
-          navbar.classList.add('scrolled');
-        } else {
-          navbar.classList.remove('scrolled');
-        }
-      }, { passive: true });
+  // Scroll detection
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      navbar?.classList.add('scrolled');
+    } else {
+      navbar?.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Mobile menu toggle
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const menuIcon = mobileMenuToggle?.querySelector('.menu-icon') as HTMLElement;
+  const closeIcon = mobileMenuToggle?.querySelector('.close-icon') as HTMLElement;
+
+  mobileMenuToggle?.addEventListener('click', () => {
+    const isOpen = mobileMenu?.classList.toggle('open');
+    if (menuIcon && closeIcon) {
+      menuIcon.style.display = isOpen ? 'none' : 'block';
+      closeIcon.style.display = isOpen ? 'block' : 'none';
+    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+
+  // Dropdown toggles
+  const dropdownTriggers = document.querySelectorAll('[data-dropdown]');
+  dropdownTriggers.forEach((trigger) => {
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dropdownId = (trigger as HTMLElement).dataset.dropdown;
+      const dropdown = document.getElementById(`dropdown-${dropdownId}`);
       
-      // Check initial state
-      if (window.scrollY > 20) {
-        navbar.classList.add('scrolled');
-      }
+      // Close other dropdowns
+      document.querySelectorAll('.dropdown').forEach((d) => {
+        if (d !== dropdown) d.classList.remove('open');
+      });
+      document.querySelectorAll('[data-dropdown]').forEach((t) => {
+        if (t !== trigger) t.setAttribute('data-state', 'closed');
+      });
+      
+      dropdown?.classList.toggle('open');
+      trigger.setAttribute('data-state', dropdown?.classList.contains('open') ? 'open' : 'closed');
+    });
+  });
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('[data-dropdown]') && !target.closest('.dropdown')) {
+      document.querySelectorAll('.dropdown').forEach((d) => d.classList.remove('open'));
+      dropdownTriggers.forEach((t) => t.setAttribute('data-state', 'closed'));
     }
   });
 
-  // Mobile menu toggle
-  (function() {
-    const menuToggle = document.querySelector('[data-menu-toggle]');
-    const mobileMenu = document.querySelector('[data-mobile-menu]');
-    const menuIcon = menuToggle?.querySelector('.menu-icon');
-    const closeIcon = menuToggle?.querySelector('.close-icon');
-    const body = document.body;
-
-    menuToggle?.addEventListener('click', () => {
-      const isOpen = mobileMenu?.classList.contains('open');
+  // Accordion toggles
+  const accordionTriggers = document.querySelectorAll('[data-accordion]');
+  accordionTriggers.forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const accordionId = (trigger as HTMLElement).dataset.accordion;
+      const content = document.getElementById(accordionId || '');
+      if (!content) return;
       
-      if (isOpen) {
-        mobileMenu?.classList.remove('open');
-        menuToggle.setAttribute('aria-expanded', 'false');
-        body.classList.remove('overflow-hidden');
-        menuIcon?.classList.remove('hidden');
-        closeIcon?.classList.add('hidden');
-      } else {
-        mobileMenu?.classList.add('open');
-        menuToggle.setAttribute('aria-expanded', 'true');
-        body.classList.add('overflow-hidden');
-        menuIcon?.classList.add('hidden');
-        closeIcon?.classList.remove('hidden');
-      }
+      const isOpen = content.style.display === 'block';
+      
+      content.style.display = isOpen ? 'none' : 'block';
+      trigger.setAttribute('data-state', isOpen ? 'closed' : 'open');
     });
-
-    // Close mobile menu when clicking links
-    document.querySelectorAll('[data-close-mobile]').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu?.classList.remove('open');
-        menuToggle?.setAttribute('aria-expanded', 'false');
-        body.classList.remove('overflow-hidden');
-        menuIcon?.classList.remove('hidden');
-        closeIcon?.classList.add('hidden');
-      });
-    });
-
-    // Close mobile menu on outside click
-    document.addEventListener('click', (e) => {
-      if (mobileMenu?.classList.contains('open')) {
-        const target = e.target as HTMLElement;
-        const clickedInside = mobileMenu.contains(target) || menuToggle?.contains(target);
-        if (!clickedInside) {
-          mobileMenu.classList.remove('open');
-          menuToggle?.setAttribute('aria-expanded', 'false');
-          body.classList.remove('overflow-hidden');
-          menuIcon?.classList.remove('hidden');
-          closeIcon?.classList.add('hidden');
-        }
-      }
-    });
-
-    // Close on ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && mobileMenu?.classList.contains('open')) {
-        mobileMenu.classList.remove('open');
-        menuToggle?.setAttribute('aria-expanded', 'false');
-        body.classList.remove('overflow-hidden');
-        menuIcon?.classList.remove('hidden');
-        closeIcon?.classList.add('hidden');
-      }
-    });
-  })();
+  });
 
   // Theme toggle
-  (function() {
-    const themeToggle = document.querySelector('[data-theme-toggle]');
-    
-    themeToggle?.addEventListener('click', () => {
-      const html = document.documentElement;
-      const currentTheme = html.classList.contains('dark') ? 'dark' : 'light';
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      
-      html.classList.remove(currentTheme);
-      html.classList.add(newTheme);
-      localStorage.setItem('theme', newTheme);
+  const themeToggle = document.getElementById('theme-toggle');
+  const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+  
+  const updateThemeIcons = () => {
+    const isDark = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
+    document.querySelectorAll('.sun-icon').forEach((icon) => {
+      (icon as HTMLElement).style.display = isDark ? 'block' : 'none';
     });
-
-    // Initialize theme from localStorage
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.classList.add(savedTheme);
-  })();
-
-  // Dropdown functionality
-  (function() {
-    const dropdowns = document.querySelectorAll('[data-dropdown]');
-    
-    dropdowns.forEach(dropdown => {
-      const trigger = dropdown.querySelector('[data-dropdown-trigger]');
-      const content = dropdown.querySelector('[data-dropdown-content]');
-      
-      if (!trigger || !content) return;
-
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const isOpen = content.classList.contains('open');
-        
-        // Close all other dropdowns
-        document.querySelectorAll('[data-dropdown-content].open').forEach(d => {
-          d.classList.remove('open');
-          d.previousElementSibling?.setAttribute('data-state', 'closed');
-        });
-        
-        if (!isOpen) {
-          content.classList.add('open');
-          trigger.setAttribute('data-state', 'open');
-        } else {
-          content.classList.remove('open');
-          trigger.setAttribute('data-state', 'closed');
-        }
-      });
+    document.querySelectorAll('.moon-icon').forEach((icon) => {
+      (icon as HTMLElement).style.display = isDark ? 'none' : 'block';
     });
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[data-dropdown]')) {
-        document.querySelectorAll('[data-dropdown-content].open').forEach(d => {
-          d.classList.remove('open');
-          const trigger = d.previousElementSibling;
-          if (trigger) trigger.setAttribute('data-state', 'closed');
-        });
-      }
+    document.querySelectorAll('.theme-text').forEach((text) => {
+      text.textContent = isDark ? 'Light Mode' : 'Dark Mode';
     });
-  })();
+  };
 
-  // Mobile accordion functionality
-  (function() {
-    const accordions = document.querySelectorAll('[data-accordion]');
-    
-    accordions.forEach(button => {
-      button.addEventListener('click', () => {
-        const key = button.getAttribute('data-accordion');
-        const content = document.querySelector(`[data-accordion-content="${key}"]`);
-        const icon = button.querySelector('.accordion-icon');
-        
-        if (!content) return;
+  const toggleTheme = () => {
+    const isDark = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
+    if (isDark) {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    }
+    updateThemeIcons();
+  };
 
-        const isOpen = content.classList.contains('open');
-        
-        // Close all other accordions
-        document.querySelectorAll('[data-accordion-content].open').forEach(acc => {
-          acc.classList.remove('open');
-          acc.style.maxHeight = '0';
-        });
-        document.querySelectorAll('.accordion-icon').forEach(ic => {
-          ic.style.transform = 'rotate(0deg)';
-        });
+  themeToggle?.addEventListener('click', toggleTheme);
+  mobileThemeToggle?.addEventListener('click', toggleTheme);
 
-        if (!isOpen) {
-          content.classList.add('open');
-          content.style.maxHeight = content.scrollHeight + 'px';
-          if (icon) icon.style.transform = 'rotate(180deg)';
-        } else {
-          content.classList.remove('open');
-          content.style.maxHeight = '0';
-          if (icon) icon.style.transform = 'rotate(0deg)';
-        }
-      });
-    });
-  })();
+  // Initialize theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  if (savedTheme === 'light') {
+    document.documentElement.classList.add('light');
+  } else {
+    document.documentElement.classList.add('dark');
+  }
+  updateThemeIcons();
 </script>
 
 <style>
-  /* Additional mobile accordion styles */
-  .mobile-accordion {
-    border-bottom: 1px solid hsl(var(--border));
+  .dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    z-index: 100;
   }
-
-  .mobile-accordion-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+  
+  .dropdown.open {
+    display: block;
   }
-
-  .mobile-accordion-content.open {
-    max-height: 1000px;
-  }
-
-  .accordion-icon {
-    transition: transform 0.3s ease;
+  
+  .nav-item {
+    position: relative;
+    list-style: none;
   }
 </style>

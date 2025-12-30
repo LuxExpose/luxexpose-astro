@@ -7,7 +7,7 @@
    ========================================= */
 @layer base {
   :root {
-    /* Core Colors (Dark Mode - Default) */
+    /* Core Colors - Dark Mode */
     --background: 30 5% 10%;
     --foreground: 0 0% 98%;
     --card: 30 5% 12%;
@@ -28,25 +28,32 @@
     --input: 0 0% 15%;
     --ring: 43 35% 48%;
     --radius: 0.25rem;
-    
-    /* Luxury Colors */
+
+    /* Luxury Gold Palette */
     --luxury-gold: 43 35% 48%;
     --luxury-gold-light: 43 40% 60%;
     --luxury-gold-dark: 43 30% 35%;
+    --luxury-rose-gold: 25 50% 55%;
+    --luxury-champagne: 45 40% 70%;
+    --luxury-bronze: 30 45% 40%;
+    --luxury-red: 354 70% 54%;
+    --luxury-burgundy: 0 45% 25%;
 
-    /* City accents */
+    /* Neutrals */
+    --deep-black: 30 5% 10%;
+    --rich-black: 30 5% 12%;
+    --soft-white: 0 0% 98%;
+    --elegant-gray: 0 0% 25%;
+    --subtle-gray: 0 0% 40%;
+
+    /* City Accent Colors */
     --boston-burgundy: 345 79% 31%;
-    --boston-gold: 43 74% 52%;
     --boston-accent: 345 79% 42%;
-    
     --miami-turquoise: 174 70% 56%;
     --miami-accent: 174 85% 45%;
-    
-    --nyc-gold: 51 100% 50%;
+    --nyc-electric: 210 100% 50%;
     --nyc-accent: 210 100% 40%;
-    
     --doha-maroon: 350 79% 28%;
-    --doha-gold: 43 85% 55%;
     --doha-accent: 350 79% 38%;
 
     /* Fonts */
@@ -69,11 +76,11 @@
     --muted-foreground: 0 0% 45%;
     --accent: 43 96% 56%;
     --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 43 96% 56%;
-    
-    /* Luxury Colors (Light Mode) */
     --luxury-gold: 43 96% 56%;
     --luxury-gold-light: 43 96% 70%;
     --luxury-gold-dark: 43 96% 40%;
