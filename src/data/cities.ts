@@ -48,7 +48,7 @@ export const categoryOrder = [
 ];
 
 // Featured categories shown directly in nav (rest go in "MORE" dropdown)
-export const featuredCategorySlugs = ['automotive', 'real-estate', 'restaurants-venues'];
+export const featuredCategorySlugs = ['automotive', 'restaurants-venues'];
 
 // Fallback city data structure
 interface CityData {
