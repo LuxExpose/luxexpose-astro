@@ -195,8 +195,8 @@ const overlayClass = cityOverlays[city];
     </div>
   </div>
   
-  <!-- Navigation Arrows -->
-  {articles.length > 1 && (
+  <!-- Navigation Arrows - Always render, hide if only one slide -->
+  {articles.length > 0 && (
     <>
       <button
         id="hero-prev"
@@ -204,6 +204,7 @@ const overlayClass = cityOverlays[city];
         aria-label="Previous slide"
         data-action="prev"
         type="button"
+        style:display={articles.length > 1 ? 'flex' : 'none'}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m15 18-6-6 6-6"/>
@@ -216,6 +217,7 @@ const overlayClass = cityOverlays[city];
         aria-label="Next slide"
         data-action="next"
         type="button"
+        style:display={articles.length > 1 ? 'flex' : 'none'}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m9 18 6-6-6-6"/>
