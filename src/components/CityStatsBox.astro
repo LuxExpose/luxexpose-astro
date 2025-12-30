@@ -1,63 +1,312 @@
 ---
-interface Stat {
-  icon: string;
+// src/components/CityStatsBox.astro
+interface CityStat {
+  icon: "michelin" | "landmarks" | "cultural" | "hotels" | "growth";
   label: string;
   value: string;
-  description?: string;
+  description: string;
 }
 
 interface Props {
-  stats: Stat[];
+  cityName: string;
+  stats: CityStat[];
   explorationHeadline?: string;
   explorationSubtext?: string;
-  cityName?: string;
+  className?: string;
 }
 
-const { stats, explorationHeadline, explorationSubtext, cityName } = Astro.props;
+const { cityName, stats, explorationHeadline, explorationSubtext, className = "" } = Astro.props;
+
+// Icon SVG paths (Lucide icons)
+const iconPaths = {
+  michelin: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  landmarks: '<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+  cultural: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+  hotels: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>',
+  growth: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>'
+};
 ---
 
-<section class="max-w-6xl mx-auto">
-  {explorationHeadline && (
-    <div class="text-center mb-8 md:mb-12">
-      <h2 class="font-serif text-3xl md:text-4xl text-white mb-4">
-        {explorationHeadline}
-      </h2>
-      {explorationSubtext && (
-        <p class="text-white/70 text-lg max-w-2xl mx-auto">
-          {explorationSubtext}
-        </p>
+<section class={`stats-section ${className}`}>
+  <div class="container">
+    <div 
+      class="stats-container glass-card-dark"
+      data-scroll-reveal
+    >
+      <!-- Background accent orb -->
+      <div class="background-orb"></div>
+      
+      <!-- Header -->
+      <div class="header-group">
+        <h2 class="stats-title">
+          {explorationHeadline || `${cityName} by the Numbers`}
+        </h2>
+        {explorationSubtext && (
+          <p class="stats-subtitle">
+            {explorationSubtext}
+          </p>
+        )}
+      </div>
+
+      <!-- Stats Grid -->
+      {stats.length > 0 && (
+        <div class="stats-grid">
+          {stats.map((stat) => (
+            <div class="stat-card glass-card-subtle group">
+              <!-- Icon Container -->
+              <div class="icon-container glass-card-dark glass-border-gold">
+                <svg 
+                  class="icon" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"
+                  set:html={iconPaths[stat.icon]}
+                />
+              </div>
+              
+              <!-- Value -->
+              <div class="stat-value">
+                {stat.value}
+              </div>
+              
+              <!-- Label -->
+              <div class="stat-label">
+                {stat.label}
+              </div>
+              
+              <!-- Description -->
+              <div class="stat-description">
+                {stat.description}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
-  )}
-
-  {stats.length > 0 && (
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-      {stats.map((stat) => (
-        <div class="text-center p-4 md:p-6 rounded-xl border border-white/10 bg-black/40 backdrop-blur-sm">
-          <div class="mb-3 text-3xl md:text-4xl">
-            {stat.icon === "home" && "🏠"}
-            {stat.icon === "trending-up" && "📈"}
-            {stat.icon === "dollar-sign" && "💰"}
-            {stat.icon === "award" && "🏆"}
-            {stat.icon === "star" && "⭐"}
-            {stat.icon === "users" && "👥"}
-            {stat.icon === "building" && "🏢"}
-            {!["home", "trending-up", "dollar-sign", "award", "star", "users", "building"].includes(stat.icon) && "✨"}
-          </div>
-          <div class="text-2xl md:text-3xl font-serif text-[hsl(var(--luxury-gold))] mb-2">
-            {stat.value}
-          </div>
-          <div class="text-xs md:text-sm uppercase tracking-wider text-white/70">
-            {stat.label}
-          </div>
-          {stat.description && (
-            <div class="mt-2 text-xs text-white/50">
-              {stat.description}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )}
+  </div>
 </section>
 
+<style>
+  /* Section */
+  .stats-section {
+    padding-top: 4rem 0; /* py-16 = 64px */
+    padding-bottom: 4rem 0;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 1rem; /* px-4 = 16px */
+    padding-right: 1rem;
+  }
+
+  /* Main Glass Card */
+  .stats-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem; /* rounded-3xl = 24px */
+    padding: 2rem; /* p-8 = 32px mobile */
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 4px 24px 0 rgba(0, 0, 0, 0.2),
+      inset 0 0.5px 0 0 rgba(255, 255, 255, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    .stats-container {
+      padding: 3rem; /* md:p-12 = 48px desktop */
+    }
+  }
+
+  /* Background Accent Orb */
+  .background-orb {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24rem; /* w-96 = 384px */
+    height: 24rem;
+    background-color: hsla(43, 74%, 52%, 0.05); /* bg-boston-gold/5 */
+    border-radius: 50%;
+    filter: blur(64px); /* blur-3xl */
+    -webkit-filter: blur(64px);
+    z-index: -1;
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+
+  /* Header Group */
+  .header-group {
+    text-align: center;
+    margin-bottom: 3rem; /* mb-12 = 48px */
+  }
+
+  .stats-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.875rem; /* text-3xl = 30px */
+    line-height: 1.2;
+    color: hsl(0 0% 98%); /* --foreground #fafafa */
+    margin-bottom: 0.75rem; /* mb-3 = 12px */
+  }
+
+  @media (min-width: 768px) {
+    .stats-title {
+      font-size: 2.25rem; /* md:text-4xl = 36px */
+    }
+  }
+
+  .stats-subtitle {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 1.125rem; /* text-lg = 18px */
+    line-height: 1.5;
+    color: hsl(0 0% 60%); /* --muted-foreground #999999 */
+    margin: 0;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    gap: 1.5rem; /* gap-6 = 24px */
+    grid-template-columns: 1fr; /* Mobile: 1 column */
+  }
+
+  @media (min-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr); /* md: 2 columns */
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr); /* lg: 3 columns */
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .stats-grid {
+      grid-template-columns: repeat(5, 1fr); /* xl: 5 columns */
+    }
+  }
+
+  /* Individual Stat Card */
+  .stat-card {
+    border-radius: 1rem; /* rounded-2xl = 16px */
+    padding: 1.5rem; /* p-6 = 24px */
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    border-color: rgba(212, 165, 34, 0.3); /* Boston gold on hover */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Icon Container */
+  .icon-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem; /* w-16 = 64px */
+    height: 4rem;
+    border-radius: 50%;
+    margin-bottom: 1rem; /* mb-4 = 16px */
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 0.5px solid rgba(212, 165, 34, 0.15); /* Boston gold with opacity */
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover .icon-container {
+    transform: scale(1.1);
+  }
+
+  .icon {
+    width: 2rem; /* w-8 = 32px */
+    height: 2rem;
+    color: hsl(43 74% 52%); /* --boston-gold #d4a522 */
+  }
+
+  /* Stat Value */
+  .stat-value {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.875rem; /* text-3xl = 30px */
+    line-height: 1.2;
+    color: hsl(0 0% 98%); /* --foreground #fafafa */
+    margin-bottom: 0.5rem; /* mb-2 = 8px */
+  }
+
+  /* Stat Label */
+  .stat-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600; /* font-semibold */
+    font-size: 0.875rem; /* text-sm = 14px */
+    line-height: 1.4;
+    color: hsl(43 74% 52%); /* --boston-gold #d4a522 */
+    margin-bottom: 0.5rem; /* mb-2 = 8px */
+  }
+
+  /* Stat Description */
+  .stat-description {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 0.75rem; /* text-xs = 12px */
+    line-height: 1.6; /* leading-relaxed */
+    color: hsl(0 0% 60%); /* --muted-foreground #999999 */
+    margin: 0;
+  }
+
+  /* Pulse Glow Animation */
+  @keyframes pulse-glow {
+    0%, 100% { 
+      opacity: 0.3; 
+    }
+    50% { 
+      opacity: 0.6; 
+    }
+  }
+
+  /* Scroll Reveal Animation */
+  .stats-container {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .stats-container.is-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+</style>
+
+<script>
+  // Scroll reveal observer
+  if (typeof window !== 'undefined') {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    document.querySelectorAll('[data-scroll-reveal]').forEach((el) => {
+      observer.observe(el);
+    });
+  }
+</script>
