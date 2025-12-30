@@ -14,6 +14,7 @@ import { bostonStats } from "../data/bostonStats";
 import SignatureExperiences from "../components/city/SignatureExperiences.astro";
 import { bostonSignatureExperiences } from "../data/bostonExperiences";
 import LocalLuxuryDirectory from "../components/city/LocalLuxuryDirectory.astro";
+import { fetchFeaturedDirectoryListings } from "../lib/queries/directory";
 import CityMap from "../components/CityMap.astro";
 import GlobalTrendingWidget from "../components/GlobalTrendingWidget.astro";
 import ExperiencesSidebar from "../components/ExperiencesSidebar.astro";
@@ -34,16 +35,6 @@ const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
 const SITE_URL = "https://luxexpose.com";
 const SUPABASE_URL = "https://ppmdgygupuzthqxfippv.supabase.co";
 const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4";
-
-// Fetch featured directory listings
-import { fetchFeaturedDirectoryListings } from "../lib/queries/directory";
-let featuredListings = [];
-try {
-  featuredListings = await fetchFeaturedDirectoryListings(citySlug, 6);
-} catch (error) {
-  console.error("Error fetching featured directory listings:", error);
-  featuredListings = [];
-}
 
 const citySlug = "boston";
 const city = getCityConfig(citySlug);
