@@ -32,26 +32,21 @@ export async function getCityNeighborhoods(citySlug: string): Promise<Neighborho
     }
 
     // Then fetch neighborhoods for that location
+    // Select all fields to see what's actually in the database
     const { data, error } = await supabase
       .from('city_neighborhoods')
-      .select(`
-        id,
-        name,
-        slug,
-        description,
-        image_url,
-        hero_image_url,
-        gallery_images,
-        stats,
-        display_order,
-        location_id
-      `)
+      .select('*')
       .eq('location_id', locationData.id)
       .order('display_order', { ascending: true })
 
     if (error) {
       console.error('Error fetching neighborhoods:', error)
       return []
+    }
+
+    // Debug: Log raw data to see what fields exist
+    if (import.meta.env.DEV && data && data.length > 0) {
+      console.log('[Neighborhoods Debug] Raw data from database:', JSON.stringify(data[0], null, 2))
     }
 
     const neighborhoods = (data || []).map((item: any) => {
