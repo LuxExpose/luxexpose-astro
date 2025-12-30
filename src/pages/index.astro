@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
 import HeroSlider from "../components/HeroSlider.astro";
 import PlatformPillars from "../components/PlatformPillars.astro";
+import FeaturedBrandsMarquee from "../components/FeaturedBrandsMarquee.astro";
 import EditorialGrid from "../components/EditorialGrid.astro";
 import Footer from "../components/Footer.astro";
 
@@ -107,6 +108,7 @@ const canonicalUrl = `${SITE_URL}/`;
     <!-- Let HeroSlider fetch articles automatically if none provided -->
     <HeroSlider articles={featuredArticles.length > 0 ? featuredArticles : undefined} fetchArticles={featuredArticles.length === 0} />
     <PlatformPillars />
+    <FeaturedBrandsMarquee />
     <EditorialGrid articles={rest} />
   </div>
 

@@ -1,0 +1,249 @@
+---
+// src/components/FeaturedBrandsMarquee.astro
+
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://ppmdgygupuzthqxfippv.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4';
+
+interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url?: string;
+  is_featured?: boolean;
+  display_order?: number;
+}
+
+let brands: Brand[] = [];
+
+try {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/featured_brands?is_featured=eq.true&order=display_order.asc&limit=12`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  if (res.ok) {
+    const data = await res.json();
+    brands = Array.isArray(data) ? data : [];
+    console.log(`[FeaturedBrandsMarquee] Fetched ${brands.length} featured brands`);
+  } else {
+    console.error('[FeaturedBrandsMarquee] Failed to fetch brands:', res.status, res.statusText);
+  }
+} catch (error) {
+  console.error('[FeaturedBrandsMarquee] Error fetching brands:', error);
+}
+---
+
+{brands.length > 0 && (
+  <section class="featured-brands-marquee">
+    <div class="marquee-container">
+      <h2 class="marquee-title">Featured Brands</h2>
+      
+      <div class="marquee-track-wrapper">
+        <div class="marquee-track">
+          <!-- Set 1 -->
+          <div class="brand-set">
+            {brands.map((brand) => (
+              <a href={`/brand/${brand.slug}`} class="brand-item" key={`set1-${brand.id}`}>
+                {brand.logo_url ? (
+                  <img 
+                    src={brand.logo_url} 
+                    alt={brand.name} 
+                    class="brand-logo"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span class="brand-name">{brand.name}</span>
+                )}
+              </a>
+            ))}
+          </div>
+          
+          <!-- Set 2 (duplicate for seamless loop) -->
+          <div class="brand-set">
+            {brands.map((brand) => (
+              <a href={`/brand/${brand.slug}`} class="brand-item" aria-hidden="true" key={`set2-${brand.id}`}>
+                {brand.logo_url ? (
+                  <img 
+                    src={brand.logo_url} 
+                    alt="" 
+                    class="brand-logo"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span class="brand-name">{brand.name}</span>
+                )}
+              </a>
+            ))}
+          </div>
+          
+          <!-- Set 3 -->
+          <div class="brand-set">
+            {brands.map((brand) => (
+              <a href={`/brand/${brand.slug}`} class="brand-item" aria-hidden="true" key={`set3-${brand.id}`}>
+                {brand.logo_url ? (
+                  <img 
+                    src={brand.logo_url} 
+                    alt="" 
+                    class="brand-logo"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span class="brand-name">{brand.name}</span>
+                )}
+              </a>
+            ))}
+          </div>
+          
+          <!-- Set 4 -->
+          <div class="brand-set">
+            {brands.map((brand) => (
+              <a href={`/brand/${brand.slug}`} class="brand-item" aria-hidden="true" key={`set4-${brand.id}`}>
+                {brand.logo_url ? (
+                  <img 
+                    src={brand.logo_url} 
+                    alt="" 
+                    class="brand-logo"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span class="brand-name">{brand.name}</span>
+                )}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  /* ========== SECTION CONTAINER ========== */
+  .featured-brands-marquee {
+    width: 100%;
+    padding: 3rem 0; /* py-12 */
+    border-top: 1px solid hsl(var(--border));
+    overflow: hidden;
+  }
+
+  /* ========== TITLE ========== */
+  .marquee-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 2.25rem; /* text-4xl */
+    font-weight: 300; /* font-light */
+    text-align: center;
+    margin-bottom: 3rem; /* mb-12 */
+    color: hsl(var(--foreground));
+    line-height: 2; /* leading-loose */
+    letter-spacing: 0.1em; /* tracking-luxury */
+    padding: 0 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .marquee-title {
+      font-size: 3rem; /* md:text-5xl */
+    }
+  }
+
+  /* ========== TRACK WRAPPER ========== */
+  .marquee-track-wrapper {
+    width: 100%;
+    padding: 2rem 0; /* py-8 */
+    overflow: hidden;
+    border-top: 1px solid hsl(var(--border) / 0.5);
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    background: hsl(var(--muted) / 0.2); /* bg-muted/20 */
+  }
+
+  /* ========== ANIMATED TRACK ========== */
+  .marquee-track {
+    display: flex;
+    gap: 3rem; /* gap-12 */
+    animation: slide-left 12s linear infinite; /* mobile speed */
+  }
+
+  @media (min-width: 768px) {
+    .marquee-track {
+      animation: slide-left 20s linear infinite; /* desktop speed */
+    }
+  }
+
+  /* Pause on hover */
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  /* ========== BRAND SET (each duplicate group) ========== */
+  .brand-set {
+    display: flex;
+    gap: 3rem; /* gap-12 */
+    flex-shrink: 0;
+  }
+
+  /* ========== BRAND ITEM ========== */
+  .brand-item {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.25rem; /* text-xl */
+    color: hsl(var(--foreground) / 0.7);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+
+  .brand-item:hover {
+    color: hsl(var(--foreground));
+    filter: drop-shadow(0 0 10px rgba(218, 165, 32, 0.4));
+  }
+
+  /* ========== BRAND LOGO ========== */
+  .brand-logo {
+    height: 1.5rem; /* h-6 */
+    width: auto;
+    object-fit: contain;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+  }
+
+  @media (min-width: 768px) {
+    .brand-logo {
+      height: 2rem; /* md:h-8 */
+    }
+  }
+
+  .brand-item:hover .brand-logo {
+    opacity: 1;
+  }
+
+  /* ========== BRAND NAME (fallback when no logo) ========== */
+  .brand-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 400;
+  }
+
+  /* ========== KEYFRAMES ========== */
+  @keyframes slide-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%); /* Move exactly half (2 sets worth) */
+    }
+  }
+
+  /* ========== REDUCED MOTION ========== */
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+</style>
+
