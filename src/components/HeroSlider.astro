@@ -464,29 +464,23 @@ const hasArticles = normalizedArticles.length > 0;
   }
 </style>
 
-<script lang="ts">
+<script>
   // Hero Slider JavaScript
   class HeroSlider {
-    private container: HTMLElement;
-    private slides: NodeListOf<HTMLElement>;
-    private dots: NodeListOf<HTMLElement>;
-    private progressBar: HTMLElement | null;
-    private currentIndex: number = 0;
-    private autoPlayInterval: ReturnType<typeof setInterval> | null = null;
-    private readonly AUTO_PLAY_DELAY = 10000; // 10 seconds
-    private isReducedMotion: boolean;
-
-    constructor(container: HTMLElement) {
+    constructor(container) {
       this.container = container;
       this.slides = container.querySelectorAll('[data-slide-index]');
       this.dots = container.querySelectorAll('[data-dot-index]');
       this.progressBar = container.querySelector('.progress-bar');
+      this.currentIndex = 0;
+      this.autoPlayInterval = null;
+      this.AUTO_PLAY_DELAY = 10000; // 10 seconds
       this.isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       this.init();
     }
 
-    private init() {
+    init() {
       // Only initialize if we have more than one slide
       if (this.slides.length <= 1) return;
 
@@ -536,7 +530,7 @@ const hasArticles = normalizedArticles.length > 0;
       }
     }
 
-    private goToSlide(index: number) {
+    goToSlide(index) {
       if (index < 0 || index >= this.slides.length) return;
       if (index === this.currentIndex) return;
 
@@ -571,17 +565,17 @@ const hasArticles = normalizedArticles.length > 0;
       this.resetProgressBar();
     }
 
-    private goToNext() {
+    goToNext() {
       const nextIndex = (this.currentIndex + 1) % this.slides.length;
       this.goToSlide(nextIndex);
     }
 
-    private goToPrevious() {
+    goToPrevious() {
       const prevIndex = (this.currentIndex - 1 + this.slides.length) % this.slides.length;
       this.goToSlide(prevIndex);
     }
 
-    private handleKeydown(e: KeyboardEvent) {
+    handleKeydown(e) {
       // Only handle if slider is focused or container is in viewport
       if (!this.container.contains(document.activeElement) && 
           !this.container.matches(':hover')) {
@@ -599,7 +593,7 @@ const hasArticles = normalizedArticles.length > 0;
       }
     }
 
-    private setupTouchEvents() {
+    setupTouchEvents() {
       let touchStartX = 0;
       let touchEndX = 0;
 
@@ -613,7 +607,7 @@ const hasArticles = normalizedArticles.length > 0;
       }, { passive: true });
     }
 
-    private handleSwipe(startX: number, endX: number) {
+    handleSwipe(startX, endX) {
       const swipeThreshold = 50;
       const diff = startX - endX;
 
@@ -629,7 +623,7 @@ const hasArticles = normalizedArticles.length > 0;
       }
     }
 
-    private startAutoPlay() {
+    startAutoPlay() {
       if (this.isReducedMotion || this.slides.length <= 1) return;
       
       this.pauseAutoPlay();
@@ -644,7 +638,7 @@ const hasArticles = normalizedArticles.length > 0;
       }, this.AUTO_PLAY_DELAY);
     }
 
-    private pauseAutoPlay() {
+    pauseAutoPlay() {
       if (this.autoPlayInterval) {
         clearInterval(this.autoPlayInterval);
         this.autoPlayInterval = null;
@@ -652,14 +646,14 @@ const hasArticles = normalizedArticles.length > 0;
       this.resetProgressBar();
     }
 
-    private resetAutoPlay() {
+    resetAutoPlay() {
       this.pauseAutoPlay();
       if (!this.isReducedMotion && this.slides.length > 1) {
         this.startAutoPlay();
       }
     }
 
-    private resetProgressBar() {
+    resetProgressBar() {
       if (this.progressBar) {
         this.progressBar.classList.remove('animating');
         // Force reflow
@@ -676,13 +670,13 @@ const hasArticles = normalizedArticles.length > 0;
 
   // Initialize all sliders
   document.addEventListener('DOMContentLoaded', () => {
-    const sliders = document.querySelectorAll<HTMLElement>('.hero-slider');
+    const sliders = document.querySelectorAll('.hero-slider');
     sliders.forEach(slider => new HeroSlider(slider));
   });
 
   // Also handle Astro's view transitions
   document.addEventListener('astro:page-load', () => {
-    const sliders = document.querySelectorAll<HTMLElement>('.hero-slider');
+    const sliders = document.querySelectorAll('.hero-slider');
     sliders.forEach(slider => {
       if (!slider.dataset.initialized) {
         new HeroSlider(slider);
