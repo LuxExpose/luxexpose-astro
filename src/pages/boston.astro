@@ -484,8 +484,16 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
           </div>
         </div>
       )}
+    </section>
 
-      <!-- Map Section -->
+    <!-- Neighborhoods Section - Above Map -->
+    <NeighborhoodExplorer
+      citySlug={citySlug}
+      cityDisplayName={city.name}
+    />
+
+    <!-- Map Section -->
+    <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
       <div class="mb-12 md:mb-16">
         <CityMap
           cityName={city.name}
@@ -496,12 +504,6 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
         />
       </div>
     </section>
-
-    <!-- Neighborhoods Section -->
-    <NeighborhoodExplorer
-      citySlug={citySlug}
-      cityDisplayName={city.name}
-    />
 
     <!-- Experience Callout -->
     {(copy?.experience_callout || copy?.experienceCallout) && (
