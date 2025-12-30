@@ -15,10 +15,9 @@ const additionalCategories = categories.slice(8); // Remaining categories for CA
 
 <nav class="navbar sticky top-0 z-50 bg-background/85 backdrop-blur-md border-b border-border transition-all duration-500" id="mainNavbar">
   <!-- Top Utility Bar (hidden on mobile) -->
-  <div class="border-b border-border/50 hidden md:block">
-    <div class="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
-      <div class="flex items-center justify-end text-xs sm:text-sm">
-        <div class="flex items-center gap-2">
+  <div class="utility-bar hidden md:block">
+    <div class="utility-bar-content">
+      <div class="flex items-center gap-2">
           <!-- Theme Toggle -->
           <button 
             class="utility-btn h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
@@ -74,107 +73,123 @@ const additionalCategories = categories.slice(8); // Remaining categories for CA
   </div>
 
   <!-- Main Navigation -->
-  <div class="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-    <div class="flex items-center justify-between gap-2 sm:gap-4 py-3 sm:py-4">
+  <div class="nav-container">
+    <div class="nav-content">
       
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-1 sm:gap-2 hover:opacity-80 transition-opacity flex-shrink">
+      <a href="/" class="logo-link">
         <img 
           src="/images/lux-logo.png" 
           alt="Lux Exposé Logo" 
-          class="h-7 sm:h-9 md:h-12 w-auto"
+          class="logo-image"
           loading="eager"
         />
-        <div class="flex items-center gap-2 text-lg sm:text-xl md:text-2xl lg:text-3xl font-serif font-bold tracking-wider whitespace-nowrap">
-          <span class="text-foreground">LUX</span>
-          <span class="text-primary">EXPOSÉ</span>
+        <div class="logo-text">
+          <span class="logo-lux">LUX</span>
+          <span class="logo-expose">EXPOSÉ</span>
         </div>
       </a>
       
       <!-- Desktop Navigation (hidden lg:flex) -->
-      <nav class="hidden lg:flex items-center gap-1">
-        <!-- CITIES Dropdown -->
-        <div class="lux-dd group" data-dropdown>
-          <a href="/cities" class="lux-nav-link nav-trigger" data-dropdown-trigger>
-            CITIES<span class="lux-caret">▾</span>
-          </a>
-          <div class="lux-dd-panel glass-card-menu" data-dropdown-content>
-            {cities.map((city) => (
-              <a class="lux-dd-item dropdown-item" href={city.path}>
-                <h3 class="lux-dd-title">{city.name}</h3>
-                <p class="lux-dd-desc">{city.description}</p>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        <!-- EXPERIENCES Dropdown -->
-        <div class="lux-dd group" data-dropdown>
-          <a href="/experiences" class="lux-nav-link nav-trigger" data-dropdown-trigger>
-            EXPERIENCES<span class="lux-caret">▾</span>
-          </a>
-          <div class="lux-dd-panel glass-card-menu" data-dropdown-content>
-            <a class="lux-dd-item dropdown-item" href="/experiences">
-              <h3 class="lux-dd-title">All Experiences</h3>
-              <p class="lux-dd-desc">Browse luxury experiences</p>
-            </a>
-          </div>
-        </div>
-
-        <!-- EDITORIAL Dropdown -->
-        <div class="lux-dd group" data-dropdown>
-          <a href="/editorial" class="lux-nav-link nav-trigger" data-dropdown-trigger>
-            EDITORIAL<span class="lux-caret">▾</span>
-          </a>
-          {displayCategories.length > 0 && (
-            <div class="lux-dd-panel glass-card-menu" data-dropdown-content>
-              {displayCategories.map((category) => (
-                <a class="lux-dd-item dropdown-item" href={`/category/${category.slug}`}>
-                  <h3 class="lux-dd-title">{category.name}</h3>
-                  {category.article_count && (
-                    <p class="lux-dd-desc">{category.article_count} articles</p>
-                  )}
+      <nav class="desktop-nav">
+        <ul class="nav-list">
+          <!-- CITIES Dropdown -->
+          <li class="nav-item has-dropdown" data-dropdown>
+            <button class="nav-trigger" data-dropdown-trigger>
+              CITIES
+              <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="dropdown-content glass-card-menu dropdown-cities" data-dropdown-content>
+              {cities.map((city) => (
+                <a class="dropdown-item" href={city.path}>
+                  <h3>{city.name}</h3>
+                  <p>{city.description}</p>
                 </a>
               ))}
-              <a class="lux-dd-item dropdown-item" href="/editorial">
-                <h3 class="lux-dd-title">View All Editorial</h3>
-                <p class="lux-dd-desc">Browse all articles</p>
+            </div>
+          </li>
+
+          <!-- EXPERIENCES Dropdown -->
+          <li class="nav-item has-dropdown" data-dropdown>
+            <button class="nav-trigger" data-dropdown-trigger>
+              EXPERIENCES
+              <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="dropdown-content glass-card-menu dropdown-editorial" data-dropdown-content>
+              <a class="dropdown-item" href="/experiences">
+                <h3>All Experiences</h3>
+                <p>Browse luxury experiences</p>
               </a>
             </div>
+          </li>
+
+          <!-- EDITORIAL Dropdown -->
+          <li class="nav-item has-dropdown" data-dropdown>
+            <button class="nav-trigger" data-dropdown-trigger>
+              EDITORIAL
+              <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {displayCategories.length > 0 && (
+              <div class="dropdown-content glass-card-menu dropdown-editorial" data-dropdown-content>
+                {displayCategories.map((category) => (
+                  <a class="dropdown-item" href={`/category/${category.slug}`}>
+                    <h3>{category.name}</h3>
+                    {category.article_count && (
+                      <p>{category.article_count} articles</p>
+                    )}
+                  </a>
+                ))}
+                <a class="dropdown-item" href="/editorial">
+                  <h3>View All Editorial</h3>
+                  <p>Browse all articles</p>
+                </a>
+              </div>
+            )}
+          </li>
+
+          <!-- CATEGORIES Dropdown (additional categories) -->
+          {additionalCategories.length > 0 && (
+            <li class="nav-item has-dropdown" data-dropdown>
+              <button class="nav-trigger" data-dropdown-trigger>
+                CATEGORIES
+                <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div class="dropdown-content glass-card-menu dropdown-categories" data-dropdown-content>
+                {additionalCategories.map((category) => (
+                  <a class="dropdown-item" href={`/category/${category.slug}`}>
+                    <h3>{category.name}</h3>
+                    {category.article_count && (
+                      <p>{category.article_count} articles</p>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </li>
           )}
-        </div>
 
-        <!-- CATEGORIES Dropdown (additional categories) -->
-        {additionalCategories.length > 0 && (
-          <div class="lux-dd group" data-dropdown>
-            <a href="/editorial" class="lux-nav-link nav-trigger" data-dropdown-trigger>
-              CATEGORIES<span class="lux-caret">▾</span>
-            </a>
-            <div class="lux-dd-panel glass-card-menu" data-dropdown-content>
-              {additionalCategories.map((category) => (
-                <a class="lux-dd-item dropdown-item" href={`/category/${category.slug}`}>
-                  <h3 class="lux-dd-title">{category.name}</h3>
-                  {category.article_count && (
-                    <p class="lux-dd-desc">{category.article_count} articles</p>
-                  )}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <!-- COMMUNITY Link -->
-        <a href="/community" class="lux-nav-link nav-link">COMMUNITY</a>
+          <!-- COMMUNITY Link -->
+          <li class="nav-item">
+            <a href="/community" class="nav-link">COMMUNITY</a>
+          </li>
+        </ul>
       </nav>
       
       <!-- Right Actions - Desktop -->
       <div class="hidden md:flex items-center gap-2 lg:gap-3">
         <!-- Concierge Button -->
-        <a href="/concierge" class="concierge-btn inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-md font-light tracking-wide text-xs sm:text-sm text-primary-foreground">
-          <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        <a href="/concierge" class="btn-luxury">
+          <svg class="concierge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <span class="hidden sm:inline lg:inline">Concierge</span>
+          <span class="concierge-text">Concierge</span>
         </a>
         
         <!-- User Menu (placeholder - implement when auth is ready) -->
@@ -184,9 +199,9 @@ const additionalCategories = categories.slice(8); // Remaining categories for CA
       <!-- Right Actions - Mobile -->
       <div class="flex md:hidden items-center gap-1">
         <!-- Concierge Button -->
-        <a href="/concierge" class="concierge-btn px-3 py-2 rounded-md">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        <a href="/concierge" class="btn-luxury">
+          <svg class="concierge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         </a>
         

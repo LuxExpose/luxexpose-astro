@@ -7,22 +7,32 @@
    ========================================= */
 @layer base {
   :root {
-    /* Core colors */
+    /* Core Colors (Dark Mode - Default) */
     --background: 30 5% 10%;
     --foreground: 0 0% 98%;
+    --card: 30 5% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 30 5% 12%;
+    --popover-foreground: 0 0% 98%;
     --primary: 43 35% 48%;
     --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
-    --border: 0 0% 15%;
+    --accent: 43 35% 48%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --radius: 0.75rem;
-
-    /* Luxury Gold */
-    --luxury-gold: 45 100% 51%;
-    --luxury-gold-light: 45 100% 70%;
-    --luxury-gold-dark: 45 100% 35%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 43 35% 48%;
+    --radius: 0.25rem;
+    
+    /* Luxury Colors */
+    --luxury-gold: 43 35% 48%;
+    --luxury-gold-light: 43 40% 60%;
+    --luxury-gold-dark: 43 30% 35%;
 
     /* City accents */
     --boston-burgundy: 345 79% 31%;
@@ -40,8 +50,33 @@
     --doha-accent: 350 79% 38%;
 
     /* Fonts */
-    --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
+  }
+
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 43 96% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 43 96% 56%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 43 96% 56%;
+    
+    /* Luxury Colors (Light Mode) */
+    --luxury-gold: 43 96% 56%;
+    --luxury-gold-light: 43 96% 70%;
+    --luxury-gold-dark: 43 96% 40%;
   }
 
   html,
