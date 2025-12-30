@@ -444,6 +444,14 @@ const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema,
       </div>
     )}
 
+    <!-- Signature Experiences Section -->
+    {bostonSignatureExperiences.length > 0 && (
+      <SignatureExperiences
+        cityName={city.name}
+        citySlug={citySlug}
+        experiences={bostonSignatureExperiences}
+      />
+    )}
 
     <!-- Additional Content Sections -->
     <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
