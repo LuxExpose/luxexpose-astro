@@ -14,3 +14,23 @@ export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey
 );
+
+// Fetch all cities from the locations table
+export async function getAllCities() {
+  // NOTE: adjust table name/columns if your DB differs
+  const { data, error } = await supabase
+    .from("locations")
+    .select("name, slug")
+    .eq("type", "city")
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error("getAllCities error:", error);
+    return [];
+  }
+
+  return (data ?? []).map((row: any) => ({
+    name: row.name,
+    slug: row.slug,
+  }));
+}
