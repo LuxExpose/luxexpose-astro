@@ -53,6 +53,24 @@
       linear-gradient(180deg, #000 0%, #0a0a0a 100%);
   }
 
+  /* Ocean Sunset Gradient Background */
+  .bg-glass-option-9 {
+    background: 
+      radial-gradient(ellipse 80% 50% at 0% 0%, rgba(255, 140, 0, 0.5) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 100% 0%, rgba(255, 105, 135, 0.45) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 0% 100%, rgba(25, 25, 112, 0.55) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(75, 0, 130, 0.5) 0%, transparent 60%),
+      linear-gradient(180deg, 
+        hsl(240, 10%, 3.9%) 0%,
+        hsl(240, 15%, 5%) 25%,
+        hsl(240, 20%, 6%) 50%,
+        hsl(240, 25%, 7%) 75%,
+        hsl(240, 10%, 3.9%) 100%
+      ) !important;
+    background-attachment: fixed !important;
+    background-size: 100% 100% !important;
+  }
+
   .glass-card-dark {
     background: rgba(0, 0, 0, 0.60);
     backdrop-filter: blur(18px) saturate(140%);
@@ -206,7 +224,7 @@
   position: relative;
 }
 
-/* 🔥 This is the “bridge” that fixes the hover gap.
+/* 🔥 This is the "bridge" that fixes the hover gap.
    It creates an invisible strip under the link so your mouse can travel
    down into the dropdown without it disappearing. */
 .lux-dd::after {

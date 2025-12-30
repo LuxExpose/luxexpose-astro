@@ -1,0 +1,63 @@
+---
+interface Location {
+  name: string;
+  lat: number;
+  lng: number;
+  type?: string;
+}
+
+interface Props {
+  cityName: string;
+  centerLat: number;
+  centerLng: number;
+  zoom?: number;
+  locations?: Location[];
+}
+
+const { cityName, centerLat, centerLng, zoom = 12, locations = [] } = Astro.props;
+---
+
+<section class="w-full">
+  <div class="mb-6">
+    <h2 class="font-serif text-3xl md:text-4xl text-white mb-2">
+      Explore {cityName}
+    </h2>
+    <p class="text-white/70">
+      Discover luxury experiences and destinations
+    </p>
+  </div>
+
+  <div class="w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden border border-white/10 bg-black/40">
+    <div id={`map-${cityName.toLowerCase().replace(/\s+/g, "-")}`} class="w-full h-full">
+      <!-- Map will be initialized client-side -->
+      <div class="w-full h-full flex items-center justify-center text-white/50">
+        <p>Map loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Leaflet map
+    import L from "leaflet";
+    import "leaflet/dist/leaflet.css";
+
+    const mapId = `map-${cityName.toLowerCase().replace(/\s+/g, "-")}`;
+    const mapElement = document.getElementById(mapId);
+    
+    if (mapElement) {
+      const map = L.map(mapId).setView([{centerLat}, {centerLng}], {zoom});
+      
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      // Add markers for locations
+      {JSON.stringify(locations)}.forEach((location) => {
+        L.marker([location.lat, location.lng])
+          .addTo(map)
+          .bindPopup(location.name);
+      });
+    }
+  </script>
+</section>
+

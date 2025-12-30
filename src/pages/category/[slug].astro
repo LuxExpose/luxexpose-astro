@@ -1,0 +1,135 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ArticleGrid from "../../components/ArticleGrid.astro";
+import Pagination from "../../components/Pagination.astro";
+import { fetchCategories } from "../../utils/categories";
+
+const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
+const SITE_URL = "https://luxexpose.com";
+const SUPABASE_URL = "https://ppmdgygupuzthqxfippv.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4";
+
+const categorySlug = Astro.params.slug || "";
+
+// Fetch all categories to find the one matching the slug
+const categories = await fetchCategories();
+const category = categories.find((cat) => cat.slug === categorySlug);
+
+if (!category) {
+  return new Response("Category not found", { status: 404 });
+}
+
+// Get URL query parameters
+const url = new URL(Astro.request.url);
+const currentPage = parseInt(url.searchParams.get('page') || '1');
+const ARTICLES_PER_PAGE = 12;
+
+// Fetch articles using semantic-search endpoint
+let articles = [];
+let totalArticles = 0;
+
+try {
+  // Use semantic-search endpoint to get articles by category
+  const searchResponse = await fetch(`${FUNCTIONS_BASE}/semantic-search`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      query: "", // Empty query to get all articles in category
+      filters: { categoryId: category.id },
+      limit: 100, // semantic-search doesn't support pagination, so fetch all and paginate client-side
+    }),
+  });
+
+  if (searchResponse.ok) {
+    const searchData = await searchResponse.json();
+    const allResults = searchData.results || []; // Note: returns 'results' not 'articles'
+    totalArticles = allResults.length;
+
+    // Apply pagination (client-side since semantic-search doesn't support pagination)
+    const startIndex = (currentPage - 1) * ARTICLES_PER_PAGE;
+    const endIndex = startIndex + ARTICLES_PER_PAGE;
+    articles = allResults.slice(startIndex, endIndex);
+  }
+} catch (error) {
+  console.error("Error fetching category articles:", error);
+  articles = [];
+  totalArticles = 0;
+}
+
+// SEO
+const seoTitle = `${category.name} | Lux Exposé`;
+const seoDescription = `Explore ${category.name} articles on Lux Exposé. Discover luxury editorial, travel, horology, automotive icons, exceptional real estate, and exclusive experiences.`;
+const canonicalUrl = `${SITE_URL}/category/${categorySlug}`;
+---
+
+<Layout>
+  <span slot="title">{seoTitle}</span>
+
+  <meta slot="head" name="description" content={seoDescription} />
+  <link slot="head" rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph -->
+  <meta slot="head" property="og:title" content={seoTitle} />
+  <meta slot="head" property="og:description" content={seoDescription} />
+  <meta slot="head" property="og:url" content={canonicalUrl} />
+  <meta slot="head" property="og:type" content="website" />
+  <meta slot="head" property="og:site_name" content="Lux Exposé" />
+
+  <!-- Twitter -->
+  <meta slot="head" name="twitter:card" content="summary_large_image" />
+  <meta slot="head" name="twitter:title" content={seoTitle} />
+  <meta slot="head" name="twitter:description" content={seoDescription} />
+
+  <div class="relative bg-gradient-subtle min-h-screen">
+    <!-- Hero Section -->
+    <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <div class="max-w-6xl mx-auto">
+        <nav class="mb-6 text-sm">
+          <a href="/" class="text-white/60 hover:text-white transition">Home</a>
+          <span class="text-white/40 mx-2">/</span>
+          <a href="/editorial" class="text-white/60 hover:text-white transition">Editorial</a>
+          <span class="text-white/40 mx-2">/</span>
+          <span class="text-white">{category.name}</span>
+        </nav>
+
+        <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl text-white mb-4">
+          {category.name}
+        </h1>
+        {totalArticles > 0 && (
+          <p class="text-white/70 text-lg">
+            {totalArticles} {totalArticles === 1 ? 'article' : 'articles'}
+          </p>
+        )}
+      </div>
+    </section>
+
+    <!-- Articles Section -->
+    <section class="container mx-auto px-4 sm:px-6 pb-12 md:pb-16">
+      <div class="max-w-6xl mx-auto">
+        {articles.length > 0 ? (
+          <>
+            <ArticleGrid articles={articles} />
+            {Math.ceil(totalArticles / ARTICLES_PER_PAGE) > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalArticles / ARTICLES_PER_PAGE)}
+                baseUrl={`/category/${categorySlug}`}
+                queryParams={url.search}
+              />
+            )}
+          </>
+        ) : (
+          <div class="text-center py-12">
+            <p class="text-white/60 text-lg">
+              No articles found in this category.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  </div>
+</Layout>
+

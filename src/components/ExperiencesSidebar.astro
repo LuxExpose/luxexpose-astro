@@ -1,0 +1,51 @@
+---
+interface Experience {
+  id?: string;
+  name: string;
+  description?: string;
+  image?: string;
+  url?: string;
+}
+
+interface Props {
+  experiences?: Experience[];
+}
+
+const { experiences = [] } = Astro.props;
+---
+
+{experiences.length > 0 && (
+  <div class="rounded-xl border border-white/10 bg-black/40 backdrop-blur-sm p-6">
+    <h3 class="font-serif text-xl md:text-2xl text-white mb-4">
+      Featured Experiences
+    </h3>
+    <div class="space-y-4">
+      {experiences.map((experience) => {
+        const href = experience.url || "#";
+        return (
+          <a href={href} class="group block">
+            {experience.image && (
+              <div class="w-full aspect-video rounded-lg overflow-hidden mb-3">
+                <img
+                  src={experience.image}
+                  alt={experience.name}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <h4 class="font-serif text-base text-white group-hover:text-[hsl(var(--luxury-gold))] transition-colors mb-1">
+              {experience.name}
+            </h4>
+            {experience.description && (
+              <p class="text-sm text-white/70 line-clamp-2">
+                {experience.description}
+              </p>
+            )}
+          </a>
+        );
+      })}
+    </div>
+  </div>
+)}
+

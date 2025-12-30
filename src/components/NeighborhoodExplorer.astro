@@ -1,0 +1,76 @@
+---
+interface Neighborhood {
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+}
+
+interface Props {
+  citySlug: string;
+  neighborhoods: Neighborhood[];
+  title?: string;
+  subtitle?: string;
+}
+
+const { citySlug, neighborhoods, title = "Explore the Neighborhoods", subtitle } = Astro.props;
+---
+
+{neighborhoods.length > 0 && (
+  <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="font-serif text-3xl md:text-4xl lg:text-5xl text-white mb-4">
+          {title}
+        </h2>
+        {subtitle && (
+          <p class="text-white/70 text-lg md:text-xl max-w-3xl mx-auto">
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {neighborhoods.map((neighborhood) => {
+          const href = `/cities/${citySlug}/neighborhoods/${neighborhood.slug}`;
+          return (
+            <a
+              href={href}
+              class="group block overflow-hidden rounded-xl border border-white/10 glass-card-dark lux-hover-lift"
+            >
+              <div class="relative w-full aspect-[4/3] overflow-hidden bg-black/60">
+                {neighborhood.image ? (
+                  <img
+                    src={neighborhood.image}
+                    alt={neighborhood.name}
+                    loading="lazy"
+                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                ) : (
+                  <div class="h-full w-full bg-white/5"></div>
+                )}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+              </div>
+
+              <div class="p-6">
+                <h3 class="font-serif text-xl md:text-2xl text-white mb-3 transition-colors duration-300 group-hover:text-[hsl(var(--luxury-gold))]">
+                  {neighborhood.name}
+                </h3>
+                {neighborhood.description && (
+                  <p class="text-white/70 text-sm leading-relaxed line-clamp-2">
+                    {neighborhood.description}
+                  </p>
+                )}
+                <div class="mt-4 flex items-center gap-2 text-sm font-medium text-white/70 group-hover:text-white transition-colors">
+                  <span>Explore</span>
+                  <span>→</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}
+

@@ -1,0 +1,77 @@
+---
+interface Category {
+  slug: string;
+  name: string;
+}
+
+interface Props {
+  currentCity: string;
+  searchQuery?: string;
+  selectedCategory?: string;
+  categories?: Category[];
+  totalArticles?: number;
+  showingCount?: number;
+}
+
+const { currentCity, searchQuery = "", selectedCategory = "all", categories = [], totalArticles = 0, showingCount = 0 } = Astro.props;
+---
+
+<section class="container mx-auto px-4 sm:px-6 py-8 border-b border-white/10">
+  <div class="max-w-6xl mx-auto">
+    <!-- Search Bar -->
+    <form method="GET" action={`/${currentCity}`} class="mb-6">
+      <div class="flex flex-col md:flex-row gap-4">
+        <input
+          type="text"
+          name="q"
+          value={searchQuery}
+          placeholder="Search articles..."
+          class="flex-1 px-4 py-3 rounded-lg border border-white/20 bg-black/40 text-white placeholder-white/50 focus:outline-none focus:border-[hsl(var(--luxury-gold))] transition"
+        />
+        <input type="hidden" name="category" value={selectedCategory} />
+        <button
+          type="submit"
+          class="px-6 py-3 rounded-lg bg-[hsl(var(--luxury-gold))] text-black font-semibold hover:opacity-90 transition"
+        >
+          Search
+        </button>
+      </div>
+    </form>
+
+    <!-- Category Filters -->
+    {categories.length > 0 && (
+      <div class="flex flex-wrap gap-2 mb-4">
+        <a
+          href={`/${currentCity}${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ""}`}
+          class={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+            selectedCategory === "all"
+              ? "bg-[hsl(var(--luxury-gold))] text-black"
+              : "bg-black/40 text-white/70 border border-white/20 hover:border-white/40"
+          }`}
+        >
+          All
+        </a>
+        {categories.map((category) => (
+          <a
+            href={`/${currentCity}?category=${category.slug}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ""}`}
+            class={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+              selectedCategory === category.slug
+                ? "bg-[hsl(var(--luxury-gold))] text-black"
+                : "bg-black/40 text-white/70 border border-white/20 hover:border-white/40"
+            }`}
+          >
+            {category.name}
+          </a>
+        ))}
+      </div>
+    )}
+
+    <!-- Results Count -->
+    {totalArticles > 0 && (
+      <p class="text-white/60 text-sm">
+        Showing {showingCount} of {totalArticles} articles
+      </p>
+    )}
+  </div>
+</section>
+

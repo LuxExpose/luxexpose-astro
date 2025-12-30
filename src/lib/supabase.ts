@@ -10,7 +10,6 @@ if (!supabaseUrl) {
 if (!supabaseAnonKey) {
   throw new Error("SUPABASE_ANON_KEY missing. Check Vercel Environment Variables.");
 }
-
 export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey

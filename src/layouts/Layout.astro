@@ -1,21 +1,45 @@
 ---
+/**
+ * Layout.astro
+ * - Loads site-wide fonts + global CSS
+ * - Provides slots:
+ *   - slot="title" (page title override)
+ *   - slot="head" (page-level meta tags, canonical, OG, Twitter, JSON-LD, etc.)
+ *   - default slot (page content)
+ */
+
 import "../styles/global.css";
+
+const defaultTitle = "Lux Exposé";
+const defaultDescription =
+  "Luxury editorial featuring world-class travel, horology, automotive icons, exceptional real estate, and exclusive experiences.";
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Default title (pages can override by injecting their own <title> in slot="head") -->
-    <title>Lux Exposé</title>
+    <!-- Fonts (match LuxExpose.com) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap"
+      rel="stylesheet"
+    />
 
-    <!-- Pages inject SEO/OG/Twitter/JSON-LD here -->
+    <!-- Default title/description (pages can override) -->
+    <title>
+      <slot name="title">{defaultTitle}</slot>
+    </title>
+    <meta name="description" content={defaultDescription} />
+
+    <!-- Page-level SEO / OG / Twitter / JSON-LD -->
     <slot name="head" />
   </head>
 
-  <body class="bg-black text-white">
+  <body class="bg-black text-white antialiased">
     <slot />
   </body>
 </html>

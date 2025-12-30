@@ -1,0 +1,90 @@
+---
+interface Article {
+  id?: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  featured_image?: string;
+  featured_video_url?: string;
+  published_at?: string;
+  categories?: { name?: string; slug?: string } | null;
+}
+
+interface Props {
+  articles?: Article[];
+}
+
+const { articles = [] } = Astro.props;
+
+const featuredArticle = articles[0] || null;
+---
+
+{featuredArticle ? (
+  <section class="relative h-[600px] md:h-[700px] overflow-hidden">
+    <!-- Background image/video -->
+    <div class="absolute inset-0">
+      {featuredArticle.featured_video_url ? (
+        <video
+          autoplay
+          muted
+          loop
+          playsinline
+          class="h-full w-full object-cover"
+        >
+          <source src={featuredArticle.featured_video_url} type="video/mp4" />
+        </video>
+      ) : (
+        <img
+          src={featuredArticle.featured_image || "https://luxexpose.com/wp-content/uploads/2023/08/LuxExpose-Logo.png"}
+          alt={featuredArticle.title}
+          class="h-full w-full object-cover"
+          loading="eager"
+        />
+      )}
+      <!-- Dark gradient overlay -->
+      <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-black/95"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="relative container max-w-6xl mx-auto px-6 h-full flex flex-col justify-center">
+      <div class="max-w-3xl">
+        {featuredArticle.categories?.name && (
+          <p class="mb-5 text-xs uppercase tracking-[0.35em] text-white/55">
+            {featuredArticle.categories.name}
+          </p>
+        )}
+
+        <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl leading-tight text-white mb-6">
+          {featuredArticle.title}
+        </h1>
+
+        {featuredArticle.excerpt && (
+          <p class="text-lg md:text-xl text-white/75 leading-relaxed mb-8 max-w-2xl">
+            {featuredArticle.excerpt}
+          </p>
+        )}
+
+        <a
+          href={`/${featuredArticle.slug}`}
+          class="inline-flex items-center rounded-lg bg-[hsl(var(--luxury-gold))] px-7 py-3 text-black font-semibold hover:opacity-90 transition"
+        >
+          Read Story →
+        </a>
+      </div>
+    </div>
+  </section>
+) : (
+  <section class="relative h-[400px] md:h-[500px] overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black">
+    <div class="relative container max-w-6xl mx-auto px-6 h-full flex flex-col justify-center">
+      <div class="max-w-3xl">
+        <h1 class="font-serif text-4xl md:text-6xl leading-tight text-white mb-6">
+          Luxury Lifestyle Guide
+        </h1>
+        <p class="text-lg md:text-xl text-white/75 leading-relaxed">
+          Discover the finest experiences, properties, and destinations.
+        </p>
+      </div>
+    </div>
+  </section>
+)}
+

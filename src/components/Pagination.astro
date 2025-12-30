@@ -1,0 +1,70 @@
+---
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
+  queryParams?: string;
+}
+
+const { currentPage, totalPages, baseUrl, queryParams = "" } = Astro.props;
+
+function getPageUrl(page: number): string {
+  const params = new URLSearchParams(queryParams);
+  if (page === 1) {
+    params.delete("page");
+  } else {
+    params.set("page", page.toString());
+  }
+  const queryString = params.toString();
+  return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+}
+---
+
+{totalPages > 1 && (
+  <nav class="flex justify-center items-center gap-2 mt-12">
+    {currentPage > 1 && (
+      <a
+        href={getPageUrl(currentPage - 1)}
+        class="px-4 py-2 rounded-lg border border-white/20 bg-black/40 text-white hover:border-[hsl(var(--luxury-gold))] transition"
+      >
+        ← Previous
+      </a>
+    )}
+
+    <div class="flex gap-2">
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+        if (
+          page === 1 ||
+          page === totalPages ||
+          (page >= currentPage - 2 && page <= currentPage + 2)
+        ) {
+          return (
+            <a
+              href={getPageUrl(page)}
+              class={`px-4 py-2 rounded-lg border transition ${
+                page === currentPage
+                  ? "bg-[hsl(var(--luxury-gold))] text-black border-[hsl(var(--luxury-gold))]"
+                  : "border-white/20 bg-black/40 text-white hover:border-[hsl(var(--luxury-gold))]"
+              }`}
+            >
+              {page}
+            </a>
+          );
+        } else if (page === currentPage - 3 || page === currentPage + 3) {
+          return <span class="px-2 text-white/50">...</span>;
+        }
+        return null;
+      })}
+    </div>
+
+    {currentPage < totalPages && (
+      <a
+        href={getPageUrl(currentPage + 1)}
+        class="px-4 py-2 rounded-lg border border-white/20 bg-black/40 text-white hover:border-[hsl(var(--luxury-gold))] transition"
+      >
+        Next →
+      </a>
+    )}
+  </nav>
+)}
+

@@ -1,0 +1,299 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import ArticleGrid from "../../../../components/ArticleGrid.astro";
+import SearchFilters from "../../../../components/SearchFilters.astro";
+import Pagination from "../../../../components/Pagination.astro";
+import { getCityConfig } from "../../../../utils/cityConfig";
+import { fetchCategories } from "../../../../utils/categories";
+
+const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
+const SITE_URL = "https://luxexpose.com";
+const SUPABASE_URL = "https://ppmdgygupuzthqxfippv.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4";
+
+const citySlug = Astro.params.citySlug || "";
+const neighborhoodSlug = Astro.params.neighborhoodSlug || "";
+
+const city = getCityConfig(citySlug);
+if (!city) {
+  return new Response("City not found", { status: 404 });
+}
+
+// Fetch neighborhood data
+let neighborhood: any = null;
+let locationId: string | null = null;
+
+try {
+  // First get location_id for the city
+  const locationResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/locations?slug=eq.${citySlug}&select=id&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  
+  if (locationResponse.ok) {
+    const locations = await locationResponse.json();
+    locationId = locations?.[0]?.id || null;
+  }
+
+  // Then fetch neighborhood
+  if (locationId) {
+    const neighborhoodResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/city_neighborhoods?location_id=eq.${locationId}&slug=eq.${neighborhoodSlug}&select=*&limit=1`,
+      {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      }
+    );
+
+    if (neighborhoodResponse.ok) {
+      const neighborhoods = await neighborhoodResponse.json();
+      neighborhood = neighborhoods?.[0] || null;
+    }
+  }
+} catch (error) {
+  console.error("Error fetching neighborhood:", error);
+}
+
+if (!neighborhood) {
+  return new Response("Neighborhood not found", { status: 404 });
+}
+
+// Parse JSONB fields
+const stats = neighborhood.stats ? (typeof neighborhood.stats === 'string' ? JSON.parse(neighborhood.stats) : neighborhood.stats) : [];
+const galleryImages = neighborhood.gallery_images ? (typeof neighborhood.gallery_images === 'string' ? JSON.parse(neighborhood.gallery_images) : neighborhood.gallery_images) : [];
+
+// Get URL query parameters
+const url = new URL(Astro.request.url);
+const searchQuery = url.searchParams.get('q') || '';
+const categorySlug = url.searchParams.get('category') || 'all';
+const currentPage = parseInt(url.searchParams.get('page') || '1');
+const ARTICLES_PER_PAGE = 12;
+
+// Fetch categories
+const categoriesData = await fetchCategories();
+const categories = categoriesData.map((cat) => ({
+  slug: cat.slug,
+  name: cat.name,
+}));
+
+// Fetch articles filtered by neighborhood name
+let articles = [];
+let totalArticles = 0;
+
+try {
+  let articlesUrl = `${SUPABASE_URL}/rest/v1/articles?status=eq.published&select=id,title,slug,excerpt,featured_image,published_at,categories(name,slug)`;
+  
+  // Filter by neighborhood name in title or content (basic search)
+  if (neighborhood.name) {
+    articlesUrl += `&or=(title.ilike.%25${encodeURIComponent(neighborhood.name)}%25,excerpt.ilike.%25${encodeURIComponent(neighborhood.name)}%25)`;
+  }
+  
+  // Apply category filter
+  if (categorySlug !== 'all') {
+    const category = categoriesData.find((c) => c.slug === categorySlug);
+    if (category) {
+      articlesUrl += `&category_id=eq.${category.id}`;
+    }
+  }
+  
+  // Apply search filter
+  if (searchQuery) {
+    articlesUrl += `&title=ilike.%25${encodeURIComponent(searchQuery)}%25`;
+  }
+  
+  // Get total count
+  const countUrl = articlesUrl.replace(
+    'select=id,title,slug,excerpt,featured_image,published_at,categories(name,slug)',
+    'select=id'
+  );
+  const countResponse = await fetch(countUrl, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      Prefer: 'count=exact',
+    },
+  });
+  if (countResponse.ok) {
+    const countHeader = countResponse.headers.get('content-range');
+    if (countHeader) {
+      totalArticles = parseInt(countHeader.split('/')[1]) || 0;
+    }
+  }
+
+  // Apply pagination
+  const offset = (currentPage - 1) * ARTICLES_PER_PAGE;
+  articlesUrl += `&order=published_at.desc&limit=${ARTICLES_PER_PAGE}&offset=${offset}`;
+
+  // Get articles
+  const articlesResponse = await fetch(articlesUrl, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+  });
+  if (articlesResponse.ok) {
+    articles = (await articlesResponse.json()) || [];
+  }
+} catch (error) {
+  console.error('Error fetching neighborhood articles:', error);
+}
+
+// SEO
+const seoTitle = neighborhood.seo_title || `${neighborhood.name} | ${city.name} Luxury Neighborhood | Lux Exposé`;
+const seoDescription = neighborhood.seo_description || neighborhood.description || `Explore ${neighborhood.name} in ${city.name}. Discover luxury real estate, fine dining, and exclusive experiences.`;
+const canonicalUrl = `${SITE_URL}/cities/${citySlug}/neighborhoods/${neighborhoodSlug}`;
+const heroImage = neighborhood.hero_image_url || neighborhood.image_url || "https://luxexpose.com/wp-content/uploads/2023/08/LuxExpose-Logo.png";
+---
+
+<Layout>
+  <span slot="title">{seoTitle}</span>
+
+  <meta slot="head" name="description" content={seoDescription} />
+  <link slot="head" rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph -->
+  <meta slot="head" property="og:title" content={seoTitle} />
+  <meta slot="head" property="og:description" content={seoDescription} />
+  <meta slot="head" property="og:image" content={heroImage} />
+  <meta slot="head" property="og:url" content={canonicalUrl} />
+  <meta slot="head" property="og:type" content="website" />
+
+  <!-- Twitter -->
+  <meta slot="head" name="twitter:card" content="summary_large_image" />
+  <meta slot="head" name="twitter:title" content={seoTitle} />
+  <meta slot="head" name="twitter:description" content={seoDescription} />
+  <meta slot="head" name="twitter:image" content={heroImage} />
+
+  <div class="relative bg-gradient-subtle min-h-screen">
+    <!-- Hero Section -->
+    <section class="relative h-[500px] md:h-[600px] overflow-hidden">
+      <div class="absolute inset-0">
+        <img
+          src={heroImage}
+          alt={neighborhood.name}
+          class="h-full w-full object-cover"
+          loading="eager"
+        />
+        <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-black/95"></div>
+      </div>
+
+      <div class="relative container max-w-6xl mx-auto px-6 h-full flex flex-col justify-end pb-12">
+        <a
+          href={`/${citySlug}`}
+          class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition"
+        >
+          <span>←</span>
+          <span>Back to {city.name}</span>
+        </a>
+        <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl text-white mb-4">
+          {neighborhood.name}
+        </h1>
+        {neighborhood.description && (
+          <p class="text-lg md:text-xl text-white/80 italic max-w-3xl">
+            {neighborhood.description}
+          </p>
+        )}
+      </div>
+    </section>
+
+    <!-- Content Section (Two Columns) -->
+    <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Description -->
+        <div class="lg:col-span-2">
+          {neighborhood.description && (
+            <div class="prose prose-invert max-w-none">
+              <p class="text-white/80 text-lg leading-relaxed">
+                {neighborhood.description}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <!-- Right Column: Prestige Metrics -->
+        {stats.length > 0 && (
+          <div class="lg:col-span-1">
+            <div class="sticky top-24 rounded-xl border border-white/10 bg-black/40 backdrop-blur-sm p-6">
+              <h3 class="font-serif text-xl text-white mb-4">Prestige Metrics</h3>
+              <div class="space-y-4">
+                {stats.map((stat: any) => (
+                  <div class="border-b border-white/10 pb-4 last:border-0">
+                    <div class="text-sm text-white/60 mb-1">{stat.label}</div>
+                    <div class="text-2xl font-serif text-[hsl(var(--luxury-gold))]">
+                      {stat.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+
+    <!-- Lifestyle Gallery -->
+    {galleryImages.length > 0 && (
+      <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="font-serif text-3xl md:text-4xl text-white mb-8">Lifestyle & Architecture</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {galleryImages.slice(0, 3).map((img: any) => (
+              <div class="relative aspect-[4/3] rounded-xl overflow-hidden group">
+                <img
+                  src={img.url}
+                  alt={img.alt || neighborhood.name}
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- Articles Section -->
+    <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="font-serif text-3xl md:text-4xl text-white mb-8">Related Articles</h2>
+        
+        <SearchFilters
+          currentCity={citySlug}
+          searchQuery={searchQuery}
+          selectedCategory={categorySlug}
+          categories={categories}
+          totalArticles={totalArticles}
+          showingCount={articles.length}
+        />
+
+        {articles.length > 0 ? (
+          <>
+            <ArticleGrid articles={articles} />
+            {Math.ceil(totalArticles / ARTICLES_PER_PAGE) > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalArticles / ARTICLES_PER_PAGE)}
+                baseUrl={`/cities/${citySlug}/neighborhoods/${neighborhoodSlug}`}
+                queryParams={url.search}
+              />
+            )}
+          </>
+        ) : (
+          <div class="text-center py-12">
+            <p class="text-white/60 text-lg">
+              No articles found. Try adjusting your filters.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  </div>
+</Layout>
+

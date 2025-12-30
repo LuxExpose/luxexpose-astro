@@ -1,0 +1,169 @@
+---
+/**
+ * Cities Index Page
+ * Lists all cities from the locations table in the database
+ * Replaces hardcoded city list with dynamic database query
+ */
+
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { getAllCities } from "../lib/supabase";
+import { getCityConfig } from "../utils/cityConfig";
+
+const SITE_URL = "https://luxexpose.com";
+
+// Fetch all cities from database
+const cities = await getAllCities();
+
+// Get city configs for additional metadata (theme, colors, etc.)
+const citiesWithConfig = cities.map(function(city) {
+  const config = getCityConfig(city.slug);
+  return {
+    ...city,
+    config: config || null,
+  };
+});
+
+// SEO metadata
+const metaTitle = "Lux Exposé Cities - Luxury Lifestyle Destinations";
+const metaDescription = "Explore luxury lifestyle destinations around the world. Discover exclusive experiences, editorial content, and curated guides for the world's most prestigious cities.";
+
+// JSON-LD Schema
+const citiesSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Lux Exposé Cities",
+  "description": metaDescription,
+  "url": `${SITE_URL}/cities`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": citiesWithConfig.map(function(city, index) {
+      return {
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "City",
+          "name": city.name,
+          "url": `${SITE_URL}/cities/${city.slug}`,
+        },
+      };
+    }),
+  },
+};
+
+---
+
+<Layout title={metaTitle} description={metaDescription}>
+  <Fragment slot="head">
+    <link rel="canonical" href={`${SITE_URL}/cities`} />
+    <meta property="og:title" content={metaTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={`${SITE_URL}/cities`} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={metaTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <script type="application/ld+json" set:html={JSON.stringify(citiesSchema)} />
+  </Fragment>
+
+  <Header />
+
+  <main class="min-h-screen bg-background">
+    <!-- Hero Section -->
+    <section class="relative py-24 md:py-32 border-b border-border">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+          <h1 class="text-5xl md:text-6xl lg:text-7xl font-serif font-bold mb-6 text-foreground">
+            Explore Luxury Destinations
+          </h1>
+          <p class="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+            Discover exclusive experiences, editorial content, and curated guides for the world's most prestigious cities.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cities Grid -->
+    <section class="container mx-auto px-4 py-16">
+      {citiesWithConfig.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {citiesWithConfig.map(function(city) {
+            const cityAccentColor = city.config?.colors?.accent || "hsl(43, 35%, 48%)";
+            
+            return (
+              <a
+                href={`/cities/${city.slug}`}
+                class="group relative overflow-hidden rounded-lg border border-border bg-card hover:border-primary/50 transition-all duration-300"
+              >
+                <!-- City Image/Background -->
+                <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-background">
+                  {city.config?.copy?.heroTagline && (
+                    <div class="absolute inset-0 flex items-center justify-center p-8">
+                      <h2 class="text-3xl md:text-4xl font-serif font-bold text-foreground text-center">
+                        {city.name}
+                      </h2>
+                    </div>
+                  )}
+                  
+                  <!-- Hover Overlay -->
+                  <div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div class="absolute bottom-0 left-0 right-0 p-6">
+                      <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {city.config?.description || `Explore luxury in ${city.name}`}
+                      </p>
+                      <span
+                        class="inline-flex items-center gap-2 text-primary font-semibold text-sm"
+                        style={`color: ${cityAccentColor}`}
+                      >
+                        Explore {city.name}
+                        <svg
+                          class="w-4 h-4 transition-transform group-hover:translate-x-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- City Info -->
+                <div class="p-6">
+                  <h3 class="text-2xl font-serif font-bold mb-2 text-foreground">
+                    {city.config?.fullName || `Lux ${city.name}`}
+                  </h3>
+                  <p class="text-muted-foreground line-clamp-2">
+                    {city.config?.description || `Discover luxury lifestyle in ${city.name}`}
+                  </p>
+                </div>
+
+                <!-- Accent Border on Hover -->
+                <div
+                  class="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={`background: linear-gradient(to right, ${cityAccentColor}, transparent);`}
+                ></div>
+              </a>
+            );
+          })}
+        </div>
+      ) : (
+        <div class="text-center py-16">
+          <p class="text-xl text-muted-foreground">
+            No cities found in the database. Cities will appear here once they are added to the locations table.
+          </p>
+        </div>
+      )}
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+

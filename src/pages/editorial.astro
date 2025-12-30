@@ -1,0 +1,419 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+import { fetchCategories } from "../utils/categories";
+
+const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
+const SITE_URL = "https://luxexpose.com";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4";
+const ARTICLES_PER_PAGE = 12;
+
+// Get query params
+const url = Astro.url;
+const categoryId = url.searchParams.get("category") || "all";
+const sort = url.searchParams.get("sort") || "latest";
+const pageParam = url.searchParams.get("page") || "1";
+const query = url.searchParams.get("q") || "";
+const currentPage = Math.max(1, Number(pageParam) || 1);
+
+// Fetch categories
+const categories = await fetchCategories();
+
+// Find selected category
+const selectedCategory = categories.find((cat) => cat.id === categoryId);
+
+// Fetch articles
+let articles: any[] = [];
+let totalArticles = 0;
+
+try {
+  if (query || categoryId !== "all") {
+    // Use semantic-search when there's a search query or category filter
+    const searchResponse = await fetch(`${FUNCTIONS_BASE}/semantic-search`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        query: query || "",
+        filters: categoryId !== "all" ? { categoryId } : {},
+        limit: ARTICLES_PER_PAGE,
+      }),
+    });
+
+    if (searchResponse.ok) {
+      const searchData = await searchResponse.json();
+      articles = searchData.results || [];
+      // Note: semantic-search doesn't return total count, so we estimate
+      totalArticles = articles.length;
+    }
+  } else {
+    // Use mobile-api-feed for default browsing
+    const feedResponse = await fetch(`${FUNCTIONS_BASE}/mobile-api-feed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        page: currentPage,
+        limit: ARTICLES_PER_PAGE,
+        type: "latest",
+      }),
+    });
+
+    if (feedResponse.ok) {
+      const feedData = await feedResponse.json();
+      articles = feedData.articles || [];
+      totalArticles = feedData.total || feedData.pagination?.total || articles.length;
+    }
+  }
+} catch (error) {
+  console.error("Error fetching articles:", error);
+  articles = [];
+}
+
+// Apply sorting (client-side for now, since API doesn't support it)
+if (sort === "oldest") {
+  articles.sort((a, b) => {
+    const dateA = new Date(a.published_at || 0).getTime();
+    const dateB = new Date(b.published_at || 0).getTime();
+    return dateA - dateB;
+  });
+} else if (sort === "title") {
+  articles.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+}
+
+const totalPages = Math.ceil(totalArticles / ARTICLES_PER_PAGE);
+
+// Generate page numbers with ellipsis
+function getVisiblePages(current: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const pages: (number | string)[] = [];
+  pages.push(1);
+
+  if (current <= 4) {
+    // Near start: [1] [2] [3] [4] [5] ... [total]
+    for (let i = 2; i <= 5; i++) {
+      pages.push(i);
+    }
+    pages.push("...");
+    pages.push(total);
+  } else if (current >= total - 3) {
+    // Near end: [1] ... [total-4] [total-3] [total-2] [total-1] [total]
+    pages.push("...");
+    for (let i = total - 4; i <= total; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Middle: [1] ... [current-1] [current] [current+1] ... [total]
+    pages.push("...");
+    pages.push(current - 1);
+    pages.push(current);
+    pages.push(current + 1);
+    pages.push("...");
+    pages.push(total);
+  }
+
+  return pages;
+}
+
+const visiblePages = getVisiblePages(currentPage, totalPages);
+
+// Build URL helper
+function buildUrl(params: Record<string, string | number>): string {
+  const searchParams = new URLSearchParams();
+  if (params.category && params.category !== "all") searchParams.set("category", String(params.category));
+  if (params.sort && params.sort !== "latest") searchParams.set("sort", String(params.sort));
+  if (params.page && Number(params.page) !== 1) searchParams.set("page", String(params.page));
+  if (params.q) searchParams.set("q", String(params.q));
+  const qs = searchParams.toString();
+  return `/editorial${qs ? "?" + qs : ""}`;
+}
+
+// Hero image from first article or default gradient
+const heroImage = articles[0]?.featured_image || "";
+
+const seoTitle = "Editorial | Lux Exposé";
+const seoDescription =
+  "Discover luxury editorial featuring world-class travel, horology, automotive icons, exceptional real estate, and exclusive experiences.";
+const canonicalUrl = `${SITE_URL}/editorial${url.search}`;
+---
+
+<Layout>
+  <span slot="title">{seoTitle}</span>
+
+  <meta slot="head" name="description" content={seoDescription} />
+  <link slot="head" rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph -->
+  <meta slot="head" property="og:title" content={seoTitle} />
+  <meta slot="head" property="og:description" content={seoDescription} />
+  <meta slot="head" property="og:url" content={canonicalUrl} />
+  <meta slot="head" property="og:type" content="website" />
+  <meta slot="head" property="og:site_name" content="Lux Exposé" />
+
+  <!-- Twitter -->
+  <meta slot="head" name="twitter:card" content="summary_large_image" />
+  <meta slot="head" name="twitter:title" content={seoTitle} />
+  <meta slot="head" name="twitter:description" content={seoDescription} />
+
+  <div class="relative bg-gradient-subtle overflow-hidden min-h-screen">
+    <!-- Hero Section -->
+    <section class="relative h-[400px] overflow-hidden">
+      <div
+        class="absolute inset-0 bg-cover bg-center"
+        style={
+          heroImage
+            ? `background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${heroImage});`
+            : "background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));"
+        }
+      >
+        <div class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+          <h1 class="text-5xl md:text-7xl font-serif font-bold text-white mb-4">EDITORIAL</h1>
+          <p class="text-xl text-white/90 max-w-2xl">Curated stories from the world of luxury</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="border-b border-border bg-muted/30">
+      <div class="container mx-auto px-4 py-6">
+        <form id="filter-form" class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+          <!-- Search -->
+          <div class="relative w-full lg:w-96">
+            <svg
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              name="q"
+              value={query}
+              placeholder="Search articles..."
+              class="w-full h-10 pl-10 pr-3 rounded-md border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+            />
+          </div>
+
+          <!-- Category and Sort -->
+          <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+            <select
+              name="category"
+              class="h-10 w-[200px] rounded-md border border-input bg-background px-3 text-sm text-foreground"
+            >
+              <option value="all" selected={categoryId === "all"}>All Categories</option>
+              {categories.map((cat) => (
+                <option value={cat.id} selected={categoryId === cat.id}>
+                  {cat.name} ({cat.article_count || 0})
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="sort"
+              class="h-10 w-[180px] rounded-md border border-input bg-background px-3 text-sm text-foreground"
+            >
+              <option value="latest" selected={sort === "latest"}>Latest First</option>
+              <option value="oldest" selected={sort === "oldest"}>Oldest First</option>
+              <option value="title" selected={sort === "title"}>A-Z</option>
+            </select>
+
+            <button
+              type="submit"
+              class="h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Apply
+            </button>
+
+            {(categoryId !== "all" || query || sort !== "latest") && (
+              <a
+                href="/editorial"
+                class="h-10 px-4 rounded-md border border-input bg-background text-sm font-medium flex items-center hover:bg-accent/50 transition-colors text-foreground"
+              >
+                Clear Filters
+              </a>
+            )}
+          </div>
+        </form>
+
+        <!-- Category Chips (Quick filters) -->
+        {categoryId === "all" && !query && (
+          <div class="flex flex-wrap gap-2 mt-4">
+            {categories.slice(0, 8).map((cat) => (
+              <a
+                href={buildUrl({ category: cat.id, sort, page: 1, q: "" })}
+                class="inline-flex items-center rounded-full border border-transparent bg-secondary text-secondary-foreground px-2.5 py-0.5 text-xs font-semibold transition-colors hover:bg-primary hover:text-primary-foreground"
+              >
+                {cat.name}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+
+    <!-- Results Count -->
+    <section class="container mx-auto px-4 py-6">
+      <p class="text-muted-foreground">
+        {totalArticles} article{totalArticles !== 1 ? "s" : ""} found
+      </p>
+    </section>
+
+    <!-- Articles Grid with Sidebar -->
+    <section class="container mx-auto px-4 pb-12">
+      <div class="flex gap-8">
+        <!-- Main Content -->
+        <div class="flex-1">
+          {articles.length === 0 ? (
+            <div class="text-center py-12">
+              <p class="text-muted-foreground text-lg">No articles found matching your criteria.</p>
+              <a
+                href="/editorial"
+                class="mt-4 inline-flex h-10 px-6 items-center justify-center rounded bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Clear Filters
+              </a>
+            </div>
+          ) : (
+            <>
+              <div class="grid gap-8 md:grid-cols-2">
+                {articles.map((article: any) => (
+                  <ArticleCard
+                    slug={article.slug}
+                    title={article.title}
+                    excerpt={article.excerpt}
+                    image={article.featured_image}
+                    date={article.published_at}
+                    category={article.categories?.name || "Uncategorized"}
+                    showExcerpt={true}
+                  />
+                ))}
+              </div>
+
+              <!-- Pagination -->
+              {totalPages > 1 && (
+                <div class="flex justify-center items-center gap-2 mt-12">
+                  <a
+                    href={
+                      currentPage > 1
+                        ? buildUrl({ category: categoryId, sort, page: currentPage - 1, q: query })
+                        : "#"
+                    }
+                    class={`h-9 px-3 rounded inline-flex items-center gap-1 text-sm font-medium border border-input bg-background hover:bg-accent/50 transition-colors ${
+                      currentPage === 1 ? "opacity-50 pointer-events-none" : "text-foreground"
+                    }`}
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    Previous
+                  </a>
+
+                  <div class="flex gap-1">
+                    {visiblePages.map((p) =>
+                      typeof p === "number" ? (
+                        <a
+                          href={buildUrl({ category: categoryId, sort, page: p, q: query })}
+                          class={`h-9 px-3 rounded inline-flex items-center justify-center text-sm font-medium transition-colors ${
+                            currentPage === p
+                              ? "bg-primary text-primary-foreground"
+                              : "border border-input bg-background hover:bg-accent/50 text-foreground"
+                          }`}
+                        >
+                          {p}
+                        </a>
+                      ) : (
+                        <span class="px-2 flex items-center text-muted-foreground">...</span>
+                      )
+                    )}
+                  </div>
+
+                  <a
+                    href={
+                      currentPage < totalPages
+                        ? buildUrl({ category: categoryId, sort, page: currentPage + 1, q: query })
+                        : "#"
+                    }
+                    class={`h-9 px-3 rounded inline-flex items-center gap-1 text-sm font-medium border border-input bg-background hover:bg-accent/50 transition-colors ${
+                      currentPage === totalPages ? "opacity-50 pointer-events-none" : "text-foreground"
+                    }`}
+                  >
+                    Next
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </a>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <!-- Sidebar (Desktop only) -->
+        <aside class="hidden lg:block w-80 flex-shrink-0">
+          <div class="sticky top-24 space-y-6">
+            <!-- Community Buzz Widget -->
+            <div class="overflow-hidden rounded-lg border-0 bg-gradient-to-b from-card to-background shadow-lg">
+              <div class="p-6 border-b border-border/50 bg-gradient-to-r from-primary/5 via-transparent to-accent/5">
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                    <svg
+                      class="h-5 w-5 text-primary"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="font-serif text-xl font-medium tracking-tight text-foreground">Community Buzz</h3>
+                    <p class="text-xs text-muted-foreground">Popular discussions</p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-4">
+                <p class="text-sm text-muted-foreground text-center py-8">
+                  <a href="/community" class="text-primary hover:underline">Join the community</a> to see trending
+                  posts
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  // Client-side form submission
+  document.getElementById("filter-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const params = new URLSearchParams();
+
+    const category = formData.get("category") as string;
+    const sort = formData.get("sort") as string;
+    const q = formData.get("q") as string;
+
+    if (category && category !== "all") params.set("category", category);
+    if (sort && sort !== "latest") params.set("sort", sort);
+    if (q) params.set("q", q);
+
+    const qs = params.toString();
+    window.location.href = `/editorial${qs ? "?" + qs : ""}`;
+  });
+</script>

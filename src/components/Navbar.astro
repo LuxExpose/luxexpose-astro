@@ -6,6 +6,12 @@
  * - Close menu on outside click + Escape
  * - Close menu after tapping any link
  */
+
+import { fetchCategories } from "../utils/categories";
+
+// Fetch categories from Supabase
+const categories = await fetchCategories();
+const displayCategories = categories.slice(0, 8); // Show first 8 categories in dropdown
 ---
 
 <nav class="lux-navbar sticky top-0 z-50">
@@ -20,11 +26,11 @@
           </svg>
         </button>
 
-        <button class="lux-icon-btn" aria-label="Search" type="button">
+        <a href="/search" class="lux-icon-btn" aria-label="Search">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-        </button>
+        </a>
 
         <button class="lux-icon-btn" aria-label="Notifications" type="button">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -39,8 +45,13 @@
   <div class="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6">
     <div class="flex items-center justify-between gap-3 py-3">
       <!-- Logo -->
-      <a href="/" class="lux-logo hover:opacity-90 transition-opacity">
-        <div class="lux-logo-mark" aria-hidden="true"></div>
+      <a href="/" class="lux-logo hover:opacity-90 transition-opacity flex items-center gap-3">
+        <img 
+          src="/images/lux-logo.png" 
+          alt="Lux Exposé" 
+          class="h-8 w-auto"
+          loading="eager"
+        />
         <div class="lux-logo-type">
           <span class="lux-logo-lux">LUX</span>
           <span class="lux-logo-expose">EXPOSÉ</span>
@@ -68,7 +79,25 @@
             </div>
           </div>
 
-          <a href="/editorial" class="lux-nav-link">Editorial</a>
+          <div class="lux-dd group">
+            <a href="/editorial" class="lux-nav-link">Editorial<span class="lux-caret">▾</span></a>
+            {displayCategories.length > 0 && (
+              <div class="lux-dd-panel">
+                {displayCategories.map((category) => (
+                  <a class="lux-dd-item" href={`/category/${category.slug}`}>
+                    <div class="lux-dd-title">{category.name}</div>
+                    {category.article_count && (
+                      <div class="lux-dd-desc">{category.article_count} articles</div>
+                    )}
+                  </a>
+                ))}
+                <a class="lux-dd-item" href="/editorial">
+                  <div class="lux-dd-title">View All Editorial</div>
+                  <div class="lux-dd-desc">Browse all articles</div>
+                </a>
+              </div>
+            )}
+          </div>
           <a href="/experiences" class="lux-nav-link">Experiences</a>
           <a href="/community" class="lux-nav-link">Community</a>
 
@@ -114,11 +143,11 @@
 
       <!-- Mobile buttons -->
       <div class="flex md:hidden items-center gap-2">
-        <button class="lux-icon-btn" aria-label="Search" type="button">
+        <a href="/search" class="lux-icon-btn" aria-label="Search">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-        </button>
+        </a>
 
         <button id="mobileMenuBtn" class="lux-icon-btn" aria-label="Open menu" aria-expanded="false" type="button">
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -135,7 +164,24 @@
       <a href="/concierge" class="lux-mobile-primary">Contact Concierge</a>
       <a href="/signin" class="lux-mobile-secondary">Sign In</a>
 
-      <a href="/editorial" class="lux-mobile-link" data-close-mobile>Editorial</a>
+      <div class="lux-acc">
+        <button class="lux-acc-btn" type="button" aria-expanded="false" data-acc="editorial">
+          Editorial <span class="lux-acc-caret">▼</span>
+        </button>
+        <div class="lux-acc-panel" data-panel="editorial" aria-hidden="true">
+          <div class="space-y-2">
+            {displayCategories.map((category) => (
+              <a href={`/category/${category.slug}`} class="lux-mobile-link" data-close-mobile>
+                {category.name}
+                {category.article_count && (
+                  <span class="text-white/40 ml-2">({category.article_count})</span>
+                )}
+              </a>
+            ))}
+            <a href="/editorial" class="lux-mobile-link" data-close-mobile>View All Editorial</a>
+          </div>
+        </div>
+      </div>
       <a href="/experiences" class="lux-mobile-link" data-close-mobile>Experiences</a>
       <a href="/community" class="lux-mobile-link" data-close-mobile>Community</a>
 

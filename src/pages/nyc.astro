@@ -1,0 +1,496 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ArticleGrid from "../components/ArticleGrid.astro";
+import BostonHero from "../components/BostonHero.astro";
+import HeroTagline from "../components/HeroTagline.astro";
+import CityStatsBox from "../components/CityStatsBox.astro";
+import CityMap from "../components/CityMap.astro";
+import SearchFilters from "../components/SearchFilters.astro";
+import GlobalTrendingWidget from "../components/GlobalTrendingWidget.astro";
+import ExperiencesSidebar from "../components/ExperiencesSidebar.astro";
+import Pagination from "../components/Pagination.astro";
+import NeighborhoodExplorer from "../components/NeighborhoodExplorer.astro";
+import { getCityConfig } from "../utils/cityConfig";
+import { fetchCategories } from "../utils/categories";
+import { fetchLocationIdBySlug, fetchLocationBySlug } from "../utils/locations";
+import { fetchCompleteCityData } from "../utils/cities/fetchCityData";
+import {
+  getCityLocationId,
+  getCityData,
+  cityMapLocations,
+} from "../data/cities";
+
+const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
+const SITE_URL = "https://luxexpose.com";
+const SUPABASE_URL = "https://ppmdgygupuzthqxfippv.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4";
+
+const citySlug = "nyc";
+const city = getCityConfig(citySlug);
+if (!city) {
+  return new Response("City not found", { status: 404 });
+}
+
+// Database-First Approach: Fetch all city data from Supabase
+const cityDataFromDB = await fetchCompleteCityData(citySlug);
+const cityData = getCityData(citySlug); // Static fallback
+
+// Use database data if available, otherwise fallback to static
+const locationId = cityDataFromDB?.location.id || null;
+const cityMetadata = cityDataFromDB?.location || null;
+
+// Neighborhoods: Database first, static fallback
+let neighborhoods = [];
+if (cityDataFromDB?.neighborhoods && cityDataFromDB.neighborhoods.length > 0) {
+  neighborhoods = cityDataFromDB.neighborhoods.map(function(n) {
+    return {
+      name: n.name,
+      slug: n.slug,
+      description: n.description,
+      image: n.image_url,
+    };
+  });
+} else {
+  neighborhoods = cityData?.neighborhoods || [];
+}
+
+// Stats: Database first, static fallback
+let stats = [];
+if (cityDataFromDB?.stats && cityDataFromDB.stats.length > 0) {
+  stats = cityDataFromDB.stats.map(s => ({
+    icon: s.icon,
+    label: s.label,
+    value: s.value,
+    description: s.description || '',
+  }));
+} else {
+  stats = cityData?.stats || [];
+}
+
+// Copy: Database first, static fallback
+const copy = cityDataFromDB?.copy || cityData?.copy || null;
+
+// Get location_id for article fetching (database first, then fallback)
+let articleLocationId = locationId;
+if (!articleLocationId) {
+  const fallbackLocationId = getCityLocationId(citySlug);
+  if (fallbackLocationId) {
+    if (import.meta.env.DEV) {
+      console.warn(`[NYC Page] Using fallback location_id: ${fallbackLocationId}`);
+    }
+    articleLocationId = fallbackLocationId;
+  } else if (import.meta.env.DEV) {
+    console.warn(`[NYC Page] No location_id found for city slug: ${citySlug}. Articles will be empty.`);
+  }
+}
+
+// Fetch featured articles for hero (featured_in_city = true, limit 5)
+let featuredArticles = [];
+if (articleLocationId) {
+  try {
+    const featuredResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/articles?location_id=eq.${articleLocationId}&featured_in_city=eq.true&status=eq.published&select=id,title,slug,excerpt,featured_image,featured_video_url,published_at,categories(name,slug)&order=published_at.desc&limit=5`,
+      {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      }
+    );
+    if (featuredResponse.ok) {
+      featuredArticles = await featuredResponse.json() || [];
+    }
+  } catch (error) {
+    console.error("Error fetching featured articles:", error);
+  }
+}
+
+// Get URL query parameters
+const url = new URL(Astro.request.url);
+const searchQuery = url.searchParams.get('q') || '';
+const categorySlug = url.searchParams.get('category') || 'all';
+const currentPage = parseInt(url.searchParams.get('page') || '1');
+const ARTICLES_PER_PAGE = 12;
+
+// Fetch categories
+const categoriesData = await fetchCategories();
+const categories = categoriesData.map((cat) => ({
+  slug: cat.slug,
+  name: cat.name,
+}));
+
+// Fetch regular articles (filtered by location_id, search, category)
+let articles = [];
+let totalArticles = 0;
+
+if (articleLocationId) {
+  try {
+    let articlesUrl = `${SUPABASE_URL}/rest/v1/articles?location_id=eq.${articleLocationId}&status=eq.published&select=id,title,slug,excerpt,featured_image,published_at,categories(name,slug)`;
+    
+    if (categorySlug !== 'all') {
+      const category = categoriesData.find((c) => c.slug === categorySlug);
+      if (category) {
+        articlesUrl += `&category_id=eq.${category.id}`;
+      }
+    }
+    
+    if (searchQuery) {
+      articlesUrl += `&title=ilike.%25${encodeURIComponent(searchQuery)}%25`;
+    }
+    
+    const countUrl = articlesUrl.replace(
+      'select=id,title,slug,excerpt,featured_image,published_at,categories(name,slug)',
+      'select=id'
+    );
+    const countResponse = await fetch(countUrl, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Prefer: 'count=exact',
+      },
+    });
+    if (countResponse.ok) {
+      const countHeader = countResponse.headers.get('content-range');
+      if (countHeader) {
+        totalArticles = parseInt(countHeader.split('/')[1]) || 0;
+      }
+    }
+
+    const offset = (currentPage - 1) * ARTICLES_PER_PAGE;
+    articlesUrl += `&order=published_at.desc&limit=${ARTICLES_PER_PAGE}&offset=${offset}`;
+
+    const articlesResponse = await fetch(articlesUrl, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+    if (articlesResponse.ok) {
+      articles = (await articlesResponse.json()) || [];
+    }
+  } catch (error) {
+    console.error('Error fetching city articles:', error);
+  }
+}
+
+// Fetch trending articles for sidebar (globally)
+let trendingArticles = [];
+try {
+  const trendingResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/articles?status=eq.published&select=id,title,slug,featured_image,categories(name,slug),locations(name,slug)&order=published_at.desc&limit=5`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    }
+  );
+  if (trendingResponse.ok) {
+    trendingArticles = (await trendingResponse.json()) || [];
+  }
+} catch (error) {
+  console.error('Error fetching trending articles:', error);
+}
+
+// Fetch experiences for sidebar
+let experiences = [];
+
+// SEO
+const seoTitle = cityMetadata?.meta_title || `${city.name} Luxury Lifestyle | ${city.fullName} - Premier Guide to New York's Finest | Lux Exposé`;
+const seoDescription = cityMetadata?.meta_description || copy?.hero_subtext || copy?.heroSubtext || city.description;
+const canonicalUrl = `${SITE_URL}/${city.slug}`;
+const heroImage = cityMetadata?.hero_image || featuredArticles[0]?.featured_image || "https://luxexpose.com/wp-content/uploads/2023/08/LuxExpose-Logo.png";
+
+// Multiple JSON-LD Schemas
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: city.fullName,
+  description: seoDescription,
+  url: canonicalUrl,
+  logo: "https://luxexpose.com/wp-content/uploads/2023/08/LuxExpose-Logo.png",
+  image: heroImage,
+  areaServed: {
+    "@type": "City",
+    name: city.name,
+    ...(city.state && { addressRegion: city.state }),
+    addressCountry: city.country,
+  },
+  keywords: city.keywords.join(", "),
+};
+
+const collectionPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: `${city.name} Luxury Lifestyle Guide`,
+  description: seoDescription,
+  url: canonicalUrl,
+  about: {
+    "@type": "City",
+    name: city.name,
+    ...(city.state && { addressRegion: city.state }),
+    addressCountry: city.country,
+  },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: city.name, item: canonicalUrl },
+  ],
+};
+
+const articleListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `${city.name} Luxury Articles`,
+  numberOfItems: totalArticles,
+  itemListElement: articles.slice(0, 10).map((article: any, index: number) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    url: `${SITE_URL}/${article.slug}`,
+    name: article.title,
+  })),
+};
+
+const allSchemas = [localBusinessSchema, collectionPageSchema, breadcrumbSchema, articleListSchema];
+---
+
+<Layout>
+  <span slot="title">{seoTitle}</span>
+
+  <meta slot="head" name="description" content={seoDescription} />
+  <meta slot="head" name="keywords" content={city.keywords.join(", ")} />
+  <link slot="head" rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph -->
+  <meta slot="head" property="og:title" content={seoTitle} />
+  <meta slot="head" property="og:description" content={seoDescription} />
+  <meta slot="head" property="og:image" content={heroImage} />
+  <meta slot="head" property="og:url" content={canonicalUrl} />
+  <meta slot="head" property="og:type" content="website" />
+  <meta slot="head" property="og:site_name" content="Lux Exposé" />
+  <meta slot="head" property="og:region" content={city.state} />
+  <meta slot="head" property="og:country-name" content={city.country} />
+
+  <!-- Twitter -->
+  <meta slot="head" name="twitter:card" content="summary_large_image" />
+  <meta slot="head" name="twitter:title" content={seoTitle} />
+  <meta slot="head" name="twitter:description" content={seoDescription} />
+  <meta slot="head" name="twitter:image" content={heroImage} />
+
+  <!-- Geo Tags -->
+  <meta slot="head" name="geo.region" content={city.state ? `${city.country}-${city.state}` : city.country} />
+  <meta slot="head" name="geo.placename" content={city.name} />
+
+  <!-- Multiple JSON-LD Schemas -->
+  {allSchemas.map((schema) => (
+    <script slot="head" type="application/ld+json" set:html={JSON.stringify(schema)} />
+  ))}
+
+  <div class={`relative bg-gradient-subtle min-h-screen ${city.themeClass || ''}`}>
+    <!-- Hero Section -->
+    <BostonHero articles={featuredArticles || []} />
+
+    <!-- Hero Tagline Section -->
+    {cityData?.copy?.heroTagline && (
+      <HeroTagline
+        tagline={cityData.copy.heroTagline}
+        subtext={cityData.copy.heroSubtext || city.description}
+      />
+    )}
+
+    <!-- Stats Box (if stats exist) -->
+    {cityData?.stats && cityData.stats.length > 0 && (
+      <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+        <CityStatsBox
+          stats={cityData.stats}
+          explorationHeadline={cityData.copy?.explorationHeadline}
+          explorationSubtext={cityData.copy?.explorationSubtext}
+          cityName={city.name}
+        />
+      </section>
+    )}
+
+    <!-- Search & Filters Section -->
+    <SearchFilters
+      currentCity={citySlug}
+      searchQuery={searchQuery}
+      selectedCategory={categorySlug}
+      categories={categories}
+      totalArticles={totalArticles}
+      showingCount={articles.length}
+    />
+
+    <!-- Main Content Section -->
+    <section class="main-content-section">
+      <div class="content-layout">
+        <!-- Articles Column (70%) -->
+        <main class="main-content-column">
+          {articles.length > 0 ? (
+            <>
+              <ArticleGrid articles={articles} />
+              {Math.ceil(totalArticles / ARTICLES_PER_PAGE) > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(totalArticles / ARTICLES_PER_PAGE)}
+                  baseUrl={`/${citySlug}`}
+                  queryParams={url.search}
+                />
+              )}
+            </>
+          ) : (
+            <div class="text-center py-12">
+              <p class="text-white/60 text-lg">
+                No articles found. Try adjusting your filters.
+              </p>
+            </div>
+          )}
+        </main>
+
+        <!-- Sidebar Column (30%) -->
+        <aside class="sidebar-column">
+          <div class="sidebar-sticky">
+            <GlobalTrendingWidget
+              articles={trendingArticles.map((art) => ({
+                id: art.id,
+                title: art.title,
+                slug: art.slug,
+                featured_image: art.featured_image,
+                categories: art.categories
+                  ? { name: art.categories.name, slug: art.categories.slug }
+                  : undefined,
+                locations: art.locations
+                  ? { name: art.locations.name, slug: art.locations.slug }
+                  : undefined,
+              }))}
+            />
+            <ExperiencesSidebar experiences={experiences} />
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <style>
+      .main-content-section {
+        width: 100%;
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 0 1rem 3rem;
+      }
+
+      .content-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      @media (min-width: 1024px) {
+        .content-layout {
+          flex-direction: row;
+          gap: 2rem;
+        }
+      }
+
+      .main-content-column {
+        flex: 1;
+        min-width: 0;
+      }
+
+      @media (min-width: 1024px) {
+        .main-content-column {
+          width: 70%;
+          flex: none;
+        }
+      }
+
+      .sidebar-column {
+        width: 100%;
+      }
+
+      @media (min-width: 1024px) {
+        .sidebar-column {
+          width: 30%;
+          flex-shrink: 0;
+        }
+      }
+
+      .sidebar-sticky {
+        position: sticky;
+        top: 6rem;
+        height: fit-content;
+        max-height: calc(100vh - 8rem);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(218, 165, 32, 0.3) transparent;
+      }
+
+      .sidebar-sticky::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .sidebar-sticky::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .sidebar-sticky::-webkit-scrollbar-thumb {
+        background-color: rgba(218, 165, 32, 0.3);
+        border-radius: 4px;
+      }
+
+      .sidebar-sticky > :global(* + *) {
+        margin-top: 1.5rem;
+      }
+    </style>
+
+    <!-- Additional Content Sections -->
+    <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <!-- Category Introduction -->
+      {(copy?.category_intro || copy?.categoryIntro) && (
+        <div class="max-w-4xl mx-auto mb-12 md:mb-16">
+          <div class="prose prose-invert max-w-none">
+            <p class="text-white/80 text-lg md:text-xl leading-relaxed text-center">
+              {copy.category_intro || copy.categoryIntro}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <!-- Map Section -->
+      <div class="mb-12 md:mb-16">
+        <CityMap
+          cityName={city.name}
+          centerLat={40.7128}
+          centerLng={-74.0060}
+          zoom={11}
+          locations={cityMapLocations[citySlug] || []}
+        />
+      </div>
+    </section>
+
+    <!-- Neighborhoods Section -->
+    {neighborhoods && neighborhoods.length > 0 && (
+      <NeighborhoodExplorer
+        citySlug={citySlug}
+        neighborhoods={neighborhoods}
+        title="Explore the Neighborhoods"
+        subtitle="Discover the unique character and luxury offerings of each distinctive area"
+      />
+    )}
+
+    <!-- Experience Callout -->
+    {(copy?.experience_callout || copy?.experienceCallout) && (
+      <section class="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+        <div class="max-w-4xl mx-auto pt-12 border-t border-white/10">
+          <div class="text-center">
+            <p class="text-white/80 text-lg md:text-xl italic leading-relaxed">
+              {copy.experience_callout || copy.experienceCallout}
+            </p>
+          </div>
+        </div>
+      </section>
+    )}
+  </div>
+</Layout>

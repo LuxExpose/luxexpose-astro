@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
 import FeaturedHero from "../components/FeaturedHero.astro";
 import EditorialGrid from "../components/EditorialGrid.astro";
+import Footer from "../components/Footer.astro";
 
 const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
 const SITE_URL = "https://luxexpose.com";
@@ -54,8 +55,10 @@ const canonicalUrl = `${SITE_URL}/`;
 
   <Navbar />
 
-  <div class="relative bg-gradient-subtle overflow-hidden min-h-screen">
+  <div class="relative bg-glass-option-9 overflow-hidden min-h-screen">
     <FeaturedHero article={featured} />
     <EditorialGrid articles={rest} />
   </div>
+
+  <Footer />
 </Layout>

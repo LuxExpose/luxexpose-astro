@@ -1,0 +1,56 @@
+---
+interface Article {
+  id?: string;
+  title: string;
+  slug: string;
+  featured_image?: string;
+  categories?: { name?: string; slug?: string };
+  locations?: { name?: string; slug?: string };
+}
+
+interface Props {
+  articles?: Article[];
+}
+
+const { articles = [] } = Astro.props;
+---
+
+{articles.length > 0 && (
+  <div class="rounded-xl border border-white/10 bg-black/40 backdrop-blur-sm p-6">
+    <h3 class="font-serif text-xl md:text-2xl text-white mb-4">
+      Trending Globally
+    </h3>
+    <div class="space-y-4">
+      {articles.slice(0, 5).map((article) => {
+        const href = article.slug?.startsWith("/") ? article.slug : `/${article.slug}`;
+        return (
+          <a href={href} class="group block">
+            <div class="flex gap-4">
+              {article.featured_image && (
+                <div class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden">
+                  <img
+                    src={article.featured_image}
+                    alt={article.title}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div class="flex-1 min-w-0">
+                <h4 class="font-serif text-sm md:text-base text-white group-hover:text-[hsl(var(--luxury-gold))] transition-colors line-clamp-2 mb-1">
+                  {article.title}
+                </h4>
+                {article.categories?.name && (
+                  <p class="text-xs text-white/50 uppercase tracking-wider">
+                    {article.categories.name}
+                  </p>
+                )}
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+)}
+

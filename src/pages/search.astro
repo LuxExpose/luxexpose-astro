@@ -1,0 +1,316 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+import { fetchCategories } from "../utils/categories";
+
+const FUNCTIONS_BASE = "https://ppmdgygupuzthqxfippv.supabase.co/functions/v1";
+const SITE_URL = "https://luxexpose.com";
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbWRneWd1cHV6dGhxeGZpcHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MDU0MjYsImV4cCI6MjA3NDk4MTQyNn0.JdOoMgW7oXtHycvJGl9buYagZaGXoqkU9rF0KnTNKX4";
+
+// Get query parameters
+const url = Astro.url;
+const queryParam = url.searchParams.get("q") || "";
+const categoryParam = url.searchParams.get("category") || "all";
+const pageParam = parseInt(url.searchParams.get("page") || "1");
+const currentPage = Math.max(1, pageParam);
+
+const ARTICLES_PER_PAGE = 12;
+
+// Fetch categories for filter dropdown
+const categories = await fetchCategories();
+const selectedCategory = categories.find((cat) => cat.id === categoryParam || cat.slug === categoryParam) || null;
+
+// Fetch search results
+let articles = [];
+let totalArticles = 0;
+
+if (queryParam.trim()) {
+  try {
+    // Fetch a larger set of results for client-side pagination
+    // Note: semantic-search doesn't support pagination, so we fetch all and paginate client-side
+    const MAX_RESULTS = 100; // Reasonable limit for client-side pagination
+    
+    const searchResponse = await fetch(`${FUNCTIONS_BASE}/semantic-search`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        query: queryParam.trim(),
+        filters: selectedCategory ? { categoryId: selectedCategory.id } : {},
+        limit: MAX_RESULTS,
+      }),
+    });
+
+    if (searchResponse.ok) {
+      const searchData = await searchResponse.json();
+      const allResults = searchData.results || [];
+      totalArticles = allResults.length;
+
+      // Apply pagination (client-side since semantic-search doesn't support pagination)
+      const startIndex = (currentPage - 1) * ARTICLES_PER_PAGE;
+      const endIndex = startIndex + ARTICLES_PER_PAGE;
+      articles = allResults.slice(startIndex, endIndex);
+    }
+  } catch (error) {
+    console.error("Error fetching search results:", error);
+    articles = [];
+    totalArticles = 0;
+  }
+}
+
+const totalPages = Math.ceil(totalArticles / ARTICLES_PER_PAGE);
+
+// Calculate pagination page numbers in frontmatter (to avoid JSX parsing issues)
+const maxPages = 5;
+let pageNumbers = [];
+if (totalPages <= maxPages) {
+  // Show all pages
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+} else {
+  // Show first, last, and pages around current
+  pageNumbers.push(1);
+  
+  if (currentPage > 3) pageNumbers.push('...');
+  
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  
+  for (let i = start; i <= end; i++) {
+    if (i !== 1 && i !== totalPages) pageNumbers.push(i);
+  }
+  
+  if (currentPage < totalPages - 2) pageNumbers.push('...');
+  
+  pageNumbers.push(totalPages);
+}
+
+// Build URL helper
+function buildSearchUrl(params: Record<string, string | number>) {
+  const searchParams = new URLSearchParams();
+  if (params.q) searchParams.set("q", String(params.q));
+  if (params.category && params.category !== "all") searchParams.set("category", String(params.category));
+  if (params.page && params.page !== 1) searchParams.set("page", String(params.page));
+  const qs = searchParams.toString();
+  return `/search${qs ? "?" + qs : ""}`;
+}
+
+// SEO
+const searchQuery = queryParam.trim();
+const seoTitle = searchQuery ? `Search Results for "${searchQuery}" | Lux Exposé` : "Search | Lux Exposé";
+const seoDescription = searchQuery
+  ? `Search results for "${searchQuery}" on Lux Exposé. Find luxury editorial articles about travel, horology, automotive, real estate, and exclusive experiences.`
+  : "Search Lux Exposé for luxury editorial articles about travel, horology, automotive, real estate, and exclusive experiences.";
+const canonicalUrl = `${SITE_URL}/search${url.search ? `?${url.search}` : ""}`;
+---
+
+<Layout>
+  <span slot="title">{seoTitle}</span>
+
+  <meta slot="head" name="description" content={seoDescription} />
+  <link slot="head" rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph -->
+  <meta slot="head" property="og:title" content={seoTitle} />
+  <meta slot="head" property="og:description" content={seoDescription} />
+  <meta slot="head" property="og:url" content={canonicalUrl} />
+  <meta slot="head" property="og:type" content="website" />
+  <meta slot="head" property="og:site_name" content="Lux Exposé" />
+
+  <!-- Twitter -->
+  <meta slot="head" name="twitter:card" content="summary" />
+  <meta slot="head" name="twitter:title" content={seoTitle} />
+  <meta slot="head" name="twitter:description" content={seoDescription} />
+
+  <div class="relative bg-gradient-subtle overflow-hidden min-h-screen">
+    <!-- Search Header -->
+    <section class="border-b border-border bg-muted/30">
+      <div class="container mx-auto px-4 py-8 md:py-12">
+        <div class="max-w-4xl mx-auto">
+          <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl text-white mb-6 text-center">Search</h1>
+
+          <!-- Search Form -->
+          <form id="search-form" method="GET" action="/search" class="space-y-4">
+            <div class="relative">
+              <svg
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                type="text"
+                name="q"
+                value={queryParam}
+                placeholder="Search articles..."
+                class="w-full h-12 pl-12 pr-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                autofocus
+              />
+            </div>
+
+            <!-- Category Filter -->
+            <div class="flex gap-3 items-center">
+              <select
+                name="category"
+                class="h-10 w-[200px] rounded-lg border border-input bg-background px-3 text-sm"
+              >
+                <option value="all" selected={categoryParam === "all"}>All Categories</option>
+                {categories.map((cat) => (
+                  <option value={cat.id} selected={categoryParam === cat.id || categoryParam === cat.slug}>
+                    {cat.name} {cat.article_count ? `(${cat.article_count})` : ""}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="submit"
+                class="h-10 px-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Search
+              </button>
+
+              {queryParam || categoryParam !== "all" ? (
+                <a
+                  href="/search"
+                  class="h-10 px-4 rounded-lg border border-input bg-background text-sm font-medium flex items-center hover:bg-muted transition-colors"
+                >
+                  Clear
+                </a>
+              ) : null}
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search Results -->
+    <section class="container mx-auto px-4 py-12">
+      {!queryParam.trim() ? (
+        <!-- Empty State - No Query -->
+        <div class="text-center py-16">
+          <div class="max-w-md mx-auto">
+            <svg
+              class="w-16 h-16 mx-auto mb-6 text-muted-foreground"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <h2 class="font-serif text-2xl md:text-3xl text-white mb-4">Start Your Search</h2>
+            <p class="text-muted-foreground mb-8">Enter a search term above to find articles on Lux Exposé.</p>
+          </div>
+        </div>
+      ) : articles.length === 0 ? (
+        <!-- No Results -->
+        <div class="text-center py-16">
+          <div class="max-w-md mx-auto">
+            <h2 class="font-serif text-2xl md:text-3xl text-white mb-4">No Results Found</h2>
+            <p class="text-muted-foreground mb-4">
+              We couldn't find any articles matching <strong class="text-white">"{queryParam}"</strong>.
+            </p>
+            <p class="text-muted-foreground mb-8">Try different keywords or browse our categories.</p>
+            <div class="flex gap-3 justify-center">
+              <a
+                href="/search"
+                class="inline-flex h-10 px-6 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                New Search
+              </a>
+              <a
+                href="/editorial"
+                class="inline-flex h-10 px-6 items-center justify-center rounded-lg border border-input bg-background text-sm font-medium hover:bg-muted transition-colors"
+              >
+                Browse All Articles
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <!-- Results -->
+        <Fragment>
+          <div class="mb-8">
+            <p class="text-muted-foreground">
+              Found {totalArticles} result{totalArticles !== 1 ? "s" : ""} for{" "}
+              <strong class="text-white">"{queryParam}"</strong>
+            </p>
+          </div>
+
+          <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {articles.map((article: any) => (
+              <ArticleCard
+                id={article.id}
+                title={article.title}
+                slug={article.slug}
+                excerpt={article.excerpt}
+                image={article.featured_image}
+                date={article.published_at}
+                category={article.categories?.name || "Uncategorized"}
+                showExcerpt={true}
+              />
+            ))}
+          </div>
+
+          <!-- Pagination -->
+          {totalPages > 1 ? (
+            <div class="flex justify-center items-center gap-2 mt-12">
+              {currentPage > 1 ? (
+                <a
+                  href={buildSearchUrl({ q: queryParam, category: categoryParam, page: currentPage - 1 })}
+                  class="h-9 px-3 rounded inline-flex items-center gap-1 text-sm font-medium border border-input bg-background hover:bg-accent/50 transition-colors"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                  Previous
+                </a>
+              ) : null}
+
+              <div class="flex gap-1">
+                {pageNumbers.map((page) => {
+                  if (typeof page === 'string') {
+                    return <span class="px-2 flex items-center text-muted-foreground">...</span>;
+                  }
+                  return (
+                    <a
+                      href={buildSearchUrl({ q: queryParam, category: categoryParam, page })}
+                      class={`h-9 px-3 rounded inline-flex items-center justify-center text-sm font-medium transition-colors ${
+                        currentPage === page
+                          ? "bg-primary text-primary-foreground"
+                          : "border border-input bg-background hover:bg-accent/50"
+                      }`}
+                    >
+                      {page}
+                    </a>
+                  );
+                })}
+              </div>
+
+              {currentPage < totalPages ? (
+                <a
+                  href={buildSearchUrl({ q: queryParam, category: categoryParam, page: currentPage + 1 })}
+                  class="h-9 px-3 rounded inline-flex items-center gap-1 text-sm font-medium border border-input bg-background hover:bg-accent/50 transition-colors"
+                >
+                  Next
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+        </Fragment>
+      )}
+    </section>
+  </div>
+</Layout>
+
