@@ -58,19 +58,19 @@ const { city, cityName, headline, description, categoryName, categorySlug } = As
   }
 
   .city-headline {
-    font-family: 'Inter', system-ui, sans-serif; /* NOT Cormorant Garamond */
+    font-family: 'Cormorant Garamond', Georgia, serif; /* Serif font to match original site */
     font-weight: 700; /* font-bold */
     font-size: 36px; /* text-4xl */
-    line-height: 1.1;
-    letter-spacing: normal;
+    line-height: 1.2; /* Slightly more relaxed for serif */
+    letter-spacing: 0.02em; /* Subtle letter spacing for elegance */
     margin-bottom: 24px; /* mb-6 */
     
-    /* Golden Gradient Text Effect */
+    /* Golden/Bronze Gradient Text Effect - more visible gold */
     background: linear-gradient(
       to right,
-      hsl(43 35% 48%),  /* --primary */
-      hsl(43 35% 48%),  /* --accent (same as primary) */
-      hsl(43 35% 48%)   /* --primary */
+      hsl(43 74% 52%),  /* Rich gold/bronze */
+      hsl(43 85% 58%),  /* Brighter gold highlight */
+      hsl(43 74% 52%)   /* Rich gold/bronze */
     );
     background-clip: text;
     -webkit-background-clip: text;
