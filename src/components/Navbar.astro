@@ -550,9 +550,9 @@ try {
   updateNavbarSpacer();
   window.addEventListener('resize', updateNavbarSpacer);
   
-  // Also update when mobile menu opens/closes
-  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-  mobileMenuToggle?.addEventListener('click', () => {
+  // Also update when mobile menu opens/closes (reuse existing mobileMenuToggle)
+  const existingToggle = document.getElementById('mobile-menu-toggle');
+  existingToggle?.addEventListener('click', () => {
     setTimeout(updateNavbarSpacer, 100);
   });
 </script>
