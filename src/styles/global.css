@@ -46,8 +46,13 @@
     --elegant-gray: 0 0% 25%;
     --subtle-gray: 0 0% 40%;
 
-    /* City Accent Colors */
+    /* City Accent Colors - Boston Palette */
     --boston-burgundy: 345 79% 31%;
+    --boston-navy: 222 50% 13%;
+    --boston-gold: 43 74% 52%;
+    --boston-forest: 145 40% 25%;
+    --boston-cream: 45 60% 92%;
+    --boston-accent: 345 79% 42%;  /* HSL: hsl(345, 79%, 42%) = #c1254b */
     --boston-accent: 345 79% 42%;
     --miami-turquoise: 174 70% 56%;
     --miami-accent: 174 85% 45%;
