@@ -443,7 +443,7 @@ try {
   // Close dropdowns when clicking outside
   document.addEventListener('click', (e) => {
     const target = e.target;
-    if (target && !target.closest('.nav-item')) {
+    if (target && target instanceof Element && !target.closest('.nav-item')) {
       navItems.forEach(item => {
         item.classList.remove('open');
         item.querySelector('.nav-trigger')?.setAttribute('aria-expanded', 'false');
