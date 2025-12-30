@@ -33,8 +33,30 @@ const sortedCategories = [...categories].sort((a, b) => {
   return a.name.localeCompare(b.name);
 });
 
-const featuredCategories = sortedCategories.filter(cat => featuredCategorySlugs.includes(cat.slug));
-const dropdownCategories = sortedCategories.filter(cat => !featuredCategorySlugs.includes(cat.slug));
+// Filter featured categories - check if slug matches (case-insensitive and handle variations)
+const featuredCategories = sortedCategories.filter(cat => {
+  const catSlug = cat.slug.toLowerCase();
+  return featuredCategorySlugs.some(featured => {
+    const featuredSlug = featured.toLowerCase();
+    // Exact match or handle common variations
+    return catSlug === featuredSlug || 
+           catSlug === featuredSlug.replace(/-/g, '') ||
+           catSlug.includes(featuredSlug) ||
+           featuredSlug.includes(catSlug);
+  });
+});
+
+// All other categories go in dropdown
+const dropdownCategories = sortedCategories.filter(cat => {
+  const catSlug = cat.slug.toLowerCase();
+  return !featuredCategorySlugs.some(featured => {
+    const featuredSlug = featured.toLowerCase();
+    return catSlug === featuredSlug || 
+           catSlug === featuredSlug.replace(/-/g, '') ||
+           catSlug.includes(featuredSlug) ||
+           featuredSlug.includes(catSlug);
+  });
+});
 
 // Get city accent color CSS variable
 const cityAccentVar = `var(--${config.accent})`;
